@@ -6,17 +6,9 @@
 #include "header.h"
 #include "message_types.h"
 #include "Data.h"
+#include "Socket.h"
 
 #define NETWORK_VERSION = 0
-
-class Socket //dummy class
-{
-	Socket() {}
-	~Socket() {}
-
-	int recv(std::string p_str) { p_str = ""; return 0;}
-	int send(std::string p_str) { return 0; }
-};
 
 class Network
 {
