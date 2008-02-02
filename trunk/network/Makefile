@@ -1,5 +1,5 @@
-network.o : Data.o Network.o Socket.o strip.o fill.o
-	g++ -o temp/network.o temp/Data.o temp/Network.o temp/Socket.o temp/strip.o temp/fill.o
+app : Data.o Network.o Socket.o strip.o fill.o test.o
+	g++ -o temp/app temp/Data.o temp/Network.o temp/Socket.o temp/strip.o temp/fill.o temp/test.o
 
 Data.o : Data.cpp Data.h
 	g++ -c -o temp/Data.o Data.cpp
@@ -16,5 +16,8 @@ strip.o : strip.cpp strip.h
 fill.o : fill.cpp fill.h
 	g++ -c -o temp/fill.o fill.cpp
 
+test.o : test.cpp
+	g++ -c -o temp/test.o test.cpp
+
 clean :
-	rm temp/*.o
+	rm temp/*.o temp/app

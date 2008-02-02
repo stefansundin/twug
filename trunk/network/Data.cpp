@@ -3,10 +3,11 @@
 Data::Data()
 {
 }
-Data::Data(int p_type, const void *p_data)
+Data::Data(int p_type, const void *p_data, unsigned int p_length)
 {
 	m_type = p_type;
 	m_data = p_data;
+	m_length = p_length;
 }
 Data::~Data()
 {
@@ -23,5 +24,5 @@ int Data::getType()
 
 unsigned int Data::getLength()
 {
-	return m_data.length();
+	return m_length;
 }
