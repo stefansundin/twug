@@ -1,5 +1,8 @@
 #include "Socket.h"
 
+Socket::Socket()
+{
+}
 Socket::Socket( int domain, int type )
 {
 	if( domain != AF_INET || (type != SOCK_STREAM && type != SOCK_DGRAM) )
@@ -16,23 +19,23 @@ Socket::Socket( int file_descriptor )
 Socket::~Socket()
 {}
 
-int Socket::connect( const std::string address, int port )
+int Socket::connect( const std::string p_address, unsigned int p_port )
 {
-	inet_pton( addr.sin_family, address.c_str(), &addr.sin_addr );
-	addr.sin_port = htons( port );
+	inet_pton( addr.sin_family, p_address.c_str(), &addr.sin_addr );
+	addr.sin_port = htons( p_port );
 	return ::connect( sock, (sockaddr *) &addr, sizeof(addr) );
 }
-int Socket::bind( std::string address, int port )
+int Socket::bind( std::string p_address, unsigned int p_port )
 {
-	if( address == "" )
+	if( p_address == "" )
 	{
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	}
 	else
 	{
-		inet_pton( addr.sin_family, address.c_str(), &addr.sin_addr );
+		inet_pton( addr.sin_family, p_address.c_str(), &addr.sin_addr );
 	}
-	addr.sin_port = htons( port );
+	addr.sin_port = htons( p_port );
 	return ::bind( sock, (struct sockaddr *) &addr, sizeof(addr) );
 }
 int Socket::listen( int backlog )
@@ -47,19 +50,14 @@ Socket Socket::accept()
 }
 
 
-int Socket::recv( std::string &data, int max_recive )
+int Socket::recv( void *buffer, unsigned int p_max_recive )
 {
-	data = "";
-	char buffer[max_recive+1];
-	memset( buffer, 0, max_recive+1 );
-	int returned = ::recv( sock, &buffer, max_recive, 0 );
-	data = buffer;
+	int returned = ::recv( sock, buffer, p_max_recive, 0 );
 	return returned;
 }
-int Socket::send( std::string data )
+int Socket::send( const void *buffer, unsigned int p_length )
 {
-	const char *buffer = data.c_str();
-	return ::send( sock, buffer, data.size() ,0 );
+	return ::send( sock, buffer, sizeof(buffer) ,0 );
 }
 int Socket::shutdown( int how )
 {

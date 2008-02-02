@@ -8,7 +8,7 @@ Data::Data(int p_type, std::string p_data)
 	m_type = p_type;
 	m_data = p_data;
 }
-~Data()
+Data::~Data()
 {
 }
 

@@ -2,46 +2,54 @@
 
 Network::Network()
 {
-	//m_socket = tcp socket;
+	m_connected = false;
+	m_message_in_buffer = false;
+	m_socket = Socket(AF_INET, SOCK_STREAM);
 }
 Network::~Network()
 {
+	if(m_connected)
+		disconnect();
 }
 
 int Network::connect(std::string p_address, int p_port)
 {
-	return 0;
+	int status = m_socket.connect(p_address, p_port);
+	if(status == 0)
+		m_connected = true;
+	return status;
 }
 int Network::disconnect()
 {
-	return 0;
+	return m_socket.close();
 }
 
-int sendData(Data p_data)
+int Network::sendData(Data p_data)
 {
+	/*
 	header h;
 	h.id = "BULL";
 	h.version = NETWORK_VERSION;
 	h.message_type = p_data.getType();
 	h.message_length = p_data.getLength();
 
-	m_socket.send(header);
-	m_socket.send(p_data.getData().c_str());
+	m_socket.send(h);
+	*/
+
+	m_socket.send("TWUG", 4);
+	m_socket.send("", 0);
+	m_socket.send(p_data.getData().c_str(), sizeof(p_data.getData().c_str()));
 
 	return 0;
 }
-int getData(Data &p_data)
+int Network::getData(Data &p_data)
 {
 	//socket.read() to a buffer
 	//get a whole message from the buffer if there is one
 	//process it
-	if(/*buffer has complete message*/true)
+	if(m_message_in_buffer)
 	{
-		the_mentioned_complete_message = Data(123, "sender", 456); //temp
-		if(p_data = the_mentioned_complete_message)
-			return 1;
-		else
-			return -1;
+//		the_mentioned_complete_message		Data(123, "sender");
 	}
 	else
 		return 0;

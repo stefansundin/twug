@@ -1,4 +1,6 @@
-bool fill(std::string &p_str)
+#include <string>
+
+bool fill(std::string &p_str, unsigned int p_length)
 {
 	if(p_str.length() > p_length)
 		return false;

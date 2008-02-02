@@ -23,3 +23,4 @@ password both filled out with 0 until they are 20 chars long (filled at the end)
 */
 
 #endif /*MESSAGE_TYPES_H_*/
+

@@ -1,4 +1,4 @@
-#include "strip.h"
+#include <string>
 
 bool strip(std::string &p_str)
 {

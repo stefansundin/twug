@@ -12,17 +12,18 @@
 class Socket
 {
 public:
+	Socket();
 	Socket(int domain, int type);
 	Socket(int file_descriptor);
 	~Socket();
 
-	int connect(std::string address, int port);
-	int bind(std::string, int port);
+	int connect(std::string address, unsigned int port);
+	int bind(std::string, unsigned int port);
 	int listen(int backlog);
 	Socket accept();
 
-	int recv(std::string &data, int max_recive);
-	int send(std::string data);
+	int recv(void *p_buffer, unsigned int p_max_recive);
+	int send(const void *p_buffer, unsigned int p_length);
 
 	int shutdown(int how);
 	int close();
