@@ -3,7 +3,7 @@
 
 struct header
 {
-	char	id[5]; // "BULL"
+	char	id[5]; // "TWUG"
 	short	version;
 	short	message_type;
 	int		message_length;

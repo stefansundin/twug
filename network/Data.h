@@ -7,7 +7,7 @@ class Data
 {
 public:
 	Data();
-	Data(int p_type, const void *data);
+	Data(int p_type, const void *data, unsigned int p_length);
 	~Data();
 
 	int getType();
@@ -17,6 +17,7 @@ public:
 private:
 	int m_type;
 	const void *m_data;
+	unsigned int m_length;
 };
 
 #endif /*DATA_H_*/
