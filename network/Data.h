@@ -7,16 +7,16 @@ class Data
 {
 public:
 	Data();
-	Data(int p_type, std::string p_data);
+	Data(int p_type, const void *data);
 	~Data();
 
 	int getType();
-	std::string getData();
+	const void* getData();
 
-	int getLength();
+	unsigned int getLength();
 private:
 	int m_type;
-	std::string m_data;
+	const void *m_data;
 };
 
 #endif /*DATA_H_*/
