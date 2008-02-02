@@ -3,7 +3,7 @@
 Data::Data()
 {
 }
-Data::Data(int p_type, std::string p_data)
+Data::Data(int p_type, const void *p_data)
 {
 	m_type = p_type;
 	m_data = p_data;
@@ -12,7 +12,7 @@ Data::~Data()
 {
 }
 
-std::string Data::getData()
+const void* Data::getData()
 {
 	return m_data;
 }
@@ -21,7 +21,7 @@ int Data::getType()
 	return m_type;
 }
 
-int Data::getLength()
+unsigned int Data::getLength()
 {
 	return m_data.length();
 }

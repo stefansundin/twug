@@ -26,19 +26,14 @@ int Network::disconnect()
 
 int Network::sendData(Data p_data)
 {
-	/*
 	header h;
 	h.id = "BULL";
 	h.version = NETWORK_VERSION;
 	h.message_type = p_data.getType();
 	h.message_length = p_data.getLength();
 
-	m_socket.send(h);
-	*/
-
-	m_socket.send("TWUG", 4);
-	m_socket.send("", 0);
-	m_socket.send(p_data.getData().c_str(), sizeof(p_data.getData().c_str()));
+	m_socket.send(h, sizeof(h));
+	m_socket.send(p_data.getData(), p_data.getLength());
 
 	return 0;
 }
