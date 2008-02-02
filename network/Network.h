@@ -23,6 +23,9 @@ public:
 	int getData(Data &p_data);
 protected:
 	Socket m_socket;
+	bool m_connected;
+	bool m_message_in_buffer;
 };
 
 #endif /*NETWORK_H_*/
+
