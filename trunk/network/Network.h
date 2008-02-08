@@ -13,31 +13,34 @@
 
 #define NETWORK_VERSION 0
 
+struct buffer
+{
+	char *m_buffer;
+	int m_length;
+};
+
 class Network
 {
 public:
 	Network();
 	virtual ~Network();
 
+	/* the client can subclass this class and add these functions to that subclass instead
 	int connect(std::string p_address, int p_port);
 	int disconnect();
-
 	void loginRequest(std::string p_user, std::string p_password);
 	void logout();
+	*/
 
 	bool getMessage(Data &p_data);
-	void update();
+	void updateBuffer(int p_socket);
 
 protected:
-	int sendData(Data &p_data);
-	int getData(Data &p_data);
+	void sendData(Data &p_data);
+	bool getData(Data &p_data);
 
-	Socket m_socket;
-	bool m_connected;
-
-	std::queue<Data> m_message_buffer;
-	char *m_buffer;
-	unsigned int m_buffer_length;
+	std::queue<Data> m_messages;
+	std::map<int, buffer> m_buffers;		//<socket, its_buffer>
 };
 
 #endif /*NETWORK_H_*/

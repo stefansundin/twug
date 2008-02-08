@@ -11,6 +11,8 @@
 
 class Socket
 {
+friend select;
+
 public:
 	Socket();
 	Socket(int domain, int type);
@@ -31,3 +33,4 @@ private:
 	struct sockaddr_in addr;
 	int sock;
 };
+

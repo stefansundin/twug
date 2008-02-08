@@ -26,3 +26,4 @@ unsigned int Data::getLength()
 {
 	return m_length;
 }
+
