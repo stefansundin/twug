@@ -1,17 +1,15 @@
 #include "ServerNetwork.h"
 
-#include <errno.h>
-
 int main()
 {
-	extern int errno;
-
 	printf("running server\n");
 
 	ServerNetwork n = ServerNetwork();
-	printf("bind returned: %d\n", n.initSocket("", 6789));
-
-	printf("errno: %s\n", strerror( errno ));
+	if(!n.initSocket("", 6789))
+	{
+		printf("couln't initialize networking :(\nquiting\n");
+		return -1;
+	}
 
 	int selected_socket = 0;
 	message_t incomming_message;

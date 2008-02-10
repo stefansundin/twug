@@ -6,9 +6,15 @@ ServerNetwork::ServerNetwork()
 }
 ServerNetwork::~ServerNetwork()
 {
+	shutdown(m_accepting_socket, SHUT_RDWR);
+	std::map<int, buffer_t>::iterator mitr;
+	for(mitr = m_buffers.begin(); mitr != m_buffers.end(); mitr++)
+	{
+		disconnectClient(mitr->first);
+	}
 }
 
-int ServerNetwork::initSocket(std::string p_bind_address, unsigned int p_bind_port)
+bool ServerNetwork::initSocket(std::string p_bind_address, unsigned int p_bind_port)
 {
 	struct sockaddr_in addr;
 	if( p_bind_address == "" )
@@ -20,9 +26,17 @@ int ServerNetwork::initSocket(std::string p_bind_address, unsigned int p_bind_po
 		inet_pton(AF_INET, p_bind_address.c_str(), &addr.sin_addr);
 	}
 	addr.sin_port = htons(p_bind_port);
-	int result = bind(m_accepting_socket, (struct sockaddr*)&addr, sizeof(addr));
-	printf("listen returned: %d\n", listen(m_accepting_socket, 5));
-	return result;
+	if(bind(m_accepting_socket, (struct sockaddr*)&addr, sizeof(addr)) == -1)
+	{
+		report_error(strerror(errno));
+		return false;
+	}
+	if(listen(m_accepting_socket, 5) == -1)
+	{
+		report_error(strerror(errno));
+		return false;
+	}
+	return true;
 }
 
 void ServerNetwork::processNetworking()
@@ -48,7 +62,6 @@ void ServerNetwork::processNetworking()
 	tv.tv_sec = 5;
 	tv.tv_usec = 0;
 	int select_returned = select(highest+1, &readable, NULL, NULL, &tv);
-	printf("select returned: %d\n", select_returned);
 	if(select_returned == -1)
 	{
 		report_error(strerror(errno));
@@ -75,7 +88,7 @@ void ServerNetwork::processNetworking()
 				int new_client_socket = accept(m_accepting_socket, NULL, NULL);
 				if(new_client_socket == -1)
 				{
-					printf("errno when accepting: %s\n", strerror(errno));
+					report_error(strerror(errno));
 				}
 
 				buffer_t b;
@@ -88,7 +101,6 @@ void ServerNetwork::processNetworking()
 				printf("updating buffer\n");
 				if(!updateBuffer(i))
 				{
-					printf("panda bear\n");
 					disconnectClient(i);
 				}
 			}
@@ -99,9 +111,7 @@ void ServerNetwork::processNetworking()
 void ServerNetwork::disconnectClient(int p_socket)
 {
 	int removed = m_buffers.erase(p_socket);			//remove the client from the list of sockets
-	printf("removed %d\n", removed);
-	while(true)
-		removed++;
+	printf("removed socket %d\n", removed);
 	shutdown(p_socket, SHUT_RDWR);		//we dont care if this fails since (AFAIK) it only does if the socket is already disconnect (or if it's not a socket, which it should be :P)
 }
 

@@ -15,7 +15,7 @@ public:
 	ServerNetwork();
 	~ServerNetwork();
 
-	int initSocket(std::string p_bind_address, unsigned int p_bind_port);
+	bool initSocket(std::string p_bind_address, unsigned int p_bind_port);
 	void processNetworking();
 	void disconnectClient(int p_socket);
 
