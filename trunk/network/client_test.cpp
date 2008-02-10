@@ -18,8 +18,6 @@ int main()
 
 	n.loginRequest("basse", "omgkaka");
 
-	send(n.m_socket, "hejsan", strlen("hejsan"), 0);
-
 	message_t incomming_message;
 
 	while(n.processNetworking())

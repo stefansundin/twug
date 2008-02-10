@@ -36,6 +36,10 @@ void ClientNetwork::loginRequest(std::string p_user, std::string p_password)
 	fill(p_password, 20);
 	std::string temp = p_user + p_password;
 
+	printf("sent message length: %d\n", temp.size());
+	printf("kaka: %d\n", strlen(temp.c_str()));
+	printf("kaka: %d\n", sizeof(temp.c_str()));
+
 	Data data = Data(CLIENT_LOGIN_REQUEST, temp.c_str(), temp.size());
 	sendData(m_socket, data);
 }
@@ -60,20 +64,9 @@ bool ClientNetwork::processNetworking()
 	tv.tv_sec = 5;
 	tv.tv_usec = 0;
 	int select_returned = select(m_socket+1, &readable, NULL, NULL, &tv);
-	printf("select returned: %d\n", select_returned);
-
 	if(select_returned == -1)
 	{
-		printf("errno: %s\n", strerror( errno ));
-		switch(errno)
-		{
-			case EBADF:
-				printf("EBADF\n"); break;
-			case EINTR:
-				printf("EINTR\n"); break;
-			case EINVAL:
-				printf("EINVAL\n"); break;
-		}
+		report_error(strerror(errno));
 	}
 
 	if(FD_ISSET(m_socket, &readable))
@@ -86,5 +79,10 @@ bool ClientNetwork::processNetworking()
 	}
 
 	return true;
+}
+
+int ClientNetwork::getSocket()
+{
+	return m_socket;
 }
 

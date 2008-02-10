@@ -16,8 +16,10 @@ public:
 
 	bool processNetworking();
 
-	int m_socket;		//should be private
+	int getSocket();		//this is usefull when one needs tell GTK to watch the socket
+
 private:
+	int m_socket;
 	bool m_connected;
 };
 

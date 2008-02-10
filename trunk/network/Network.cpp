@@ -26,13 +26,11 @@ bool Network::getMessage(message_t &p_msg)
 bool Network::updateBuffer(int p_socket)
 {
 	//recived data
-	char *recv_buffer;
-	got_here();
-	int recv_length = recv(p_socket, recv_buffer, 2048, 0);
-	got_here();
+	char *recv_buffer = new char[2048];
+	int recv_length = recv(p_socket, (void*)recv_buffer, 2048, 0);
 	if(recv_length == -1)
 	{
-		report_error(strerror( errno ));
+		report_error(strerror(errno));
 		return false;
 	}
 	else if(recv_length == 0)
@@ -40,8 +38,6 @@ bool Network::updateBuffer(int p_socket)
 		log_this("disconnected");
 		return false;
 	}
-
-	got_here();
 
 	//create a temp variable big enough to contain the new and old data
 	char *new_buffer = new char[m_buffers[p_socket].m_length+recv_length];
@@ -54,8 +50,10 @@ bool Network::updateBuffer(int p_socket)
 
 	if(m_buffers[p_socket].m_length >= sizeof(header))
 	{
+		printf("we've got a message!\n");
 		int message_length;
 		memcpy(&message_length, m_buffers[p_socket].m_buffer+sizeof(char)*5+sizeof(short)*2, sizeof(int));
+		printf("message length: %d\n", message_length);
 
 		if(m_buffers[p_socket].m_length-sizeof(header) >= message_length)
 		{
@@ -68,6 +66,7 @@ bool Network::updateBuffer(int p_socket)
 			int new_length = m_buffers[p_socket].m_length - header_message_length;
 			new_buffer = new char[new_length];
 			memcpy(new_buffer, m_buffers[p_socket].m_buffer, header_message_length);
+			m_buffers[p_socket].m_length = new_length;
 			m_buffers[p_socket].m_buffer = new_buffer;
 
 			//add the new message to the message queue
