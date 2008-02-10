@@ -1,5 +1,8 @@
-app : Data.o Network.o Socket.o strip.o fill.o test.o
-	g++ -o temp/app temp/Data.o temp/Network.o temp/Socket.o temp/strip.o temp/fill.o temp/test.o
+server : Data.o ServerNetwork.o Network.o strip.o fill.o server.o debug.o
+	g++ -o temp/server temp/Data.o temp/ServerNetwork.o temp/Network.o temp/strip.o temp/fill.o temp/server.o temp/debug.o
+
+client_test : Data.o ClientNetwork.o Network.o strip.o fill.o client_test.o debug.o
+	g++ -o temp/client_test temp/Data.o temp/ClientNetwork.o temp/Network.o temp/strip.o temp/fill.o temp/client_test.o temp/debug.o
 
 Data.o : Data.cpp Data.h
 	g++ -c -o temp/Data.o Data.cpp
@@ -7,8 +10,11 @@ Data.o : Data.cpp Data.h
 Network.o : Network.cpp Network.h
 	g++ -c -o temp/Network.o Network.cpp
 
-Socket.o : Socket.cpp Socket.h
-	g++ -c -o temp/Socket.o Socket.cpp
+ServerNetwork.o : ServerNetwork.cpp ServerNetwork.h Network.h
+	g++ -c -o temp/ServerNetwork.o ServerNetwork.cpp
+
+ClientNetwork.o : ClientNetwork.cpp ClientNetwork.h Network.h
+	g++ -c -o temp/ClientNetwork.o ClientNetwork.cpp
 
 strip.o : strip.cpp strip.h
 	g++ -c -o temp/strip.o strip.cpp
@@ -16,8 +22,15 @@ strip.o : strip.cpp strip.h
 fill.o : fill.cpp fill.h
 	g++ -c -o temp/fill.o fill.cpp
 
-test.o : test.cpp
-	g++ -c -o temp/test.o test.cpp
+client_test.o : client_test.cpp ClientNetwork.h
+	g++ -c -o temp/client_test.o client_test.cpp
+
+server.o : server.cpp ServerNetwork.h
+	g++ -c -o temp/server.o server.cpp
+
+debug.o : ../debug.cpp ../debug.h
+	g++ -c -o temp/debug.o ../debug.cpp
 
 clean :
-	rm temp/*.o temp/app
+	-rm temp/*.o temp/client_test temp/server_test
+
