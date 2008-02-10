@@ -1,22 +1,37 @@
 #ifndef NETWORK_H_
 #define NETWORK_H_
 
+#include <errno.h>
+#include <map>
 #include <string>
 #include <queue>
+
+#ifdef __linux__
+#include <sys/socket.h>		//for connect, recv, send, CONSTANTS etc.
+//#include <unistd.h>		//dunno why this is here
+#include <arpa/inet.h>		//for htons() (atleast, maybe more :P)
+#endif
+
+#include "../debug.h"
 
 #include "header.h"
 #include "message_types.h"
 #include "fill.h"
 #include "strip.h"
 #include "Data.h"
-#include "Socket.h"
 
 #define NETWORK_VERSION 0
 
-struct buffer
+struct buffer_t
 {
 	char *m_buffer;
 	int m_length;
+};
+
+struct message_t
+{
+	int m_socket;
+	Data m_data;
 };
 
 class Network
@@ -25,22 +40,16 @@ public:
 	Network();
 	virtual ~Network();
 
-	/* the client can subclass this class and add these functions to that subclass instead
-	int connect(std::string p_address, int p_port);
-	int disconnect();
-	void loginRequest(std::string p_user, std::string p_password);
-	void logout();
-	*/
-
-	bool getMessage(Data &p_data);
-	void updateBuffer(int p_socket);
+	bool getMessage(message_t &p_msg);
+	void sendData(int p_socket, Data &p_data);
 
 protected:
-	void sendData(Data &p_data);
-	bool getData(Data &p_data);
+	bool updateBuffer(int p_socket);		//returns false if recv() returned 0, ie the socket is shutdown on the other end
 
-	std::queue<Data> m_messages;
-	std::map<int, buffer> m_buffers;		//<socket, its_buffer>
+
+
+	std::queue<message_t> m_messages;		//<sender_socket, message>
+	std::map<int, buffer_t> m_buffers;		//<socket, its_buffer>
 };
 
 #endif /*NETWORK_H_*/
