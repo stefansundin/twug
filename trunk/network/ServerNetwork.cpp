@@ -71,16 +71,12 @@ void ServerNetwork::processNetworking()
 		return;
 	}
 
-	printf("highest: %d\n", highest);
-
 	//do something about it
 	int i;
 	for(i = 0; i <= highest; i++)
 	{
 		if(FD_ISSET(i, &readable))
 		{
-			printf("FD_ISSET %d\n", i);
-
 			if(i == m_accepting_socket)
 			{
 				printf("accepting new connection\n");

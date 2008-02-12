@@ -16,9 +16,7 @@ int main()
 
 	while(true)
 	{
-		printf("calling processNetworking()\n");
 		n.processNetworking();
-		printf("processNetworking() returned\n");
 
 		if(n.getMessage(incomming_message))		//means we have incomming data in incomming_message
 		{
@@ -28,7 +26,12 @@ int main()
 			{
 				case CLIENT_LOGIN_REQUEST:
 					Data d = Data(SERVER_LOGIN_OK, "", 0);
+					std::string temp = (char*)incomming_message.m_data.getData();
+					printf("temp.c_str(): \"%s\"\n", temp.c_str());
+					printf("temp.size(): %d\n", temp.size());
+
 					n.sendData(incomming_message.m_socket, d);
+					printf("got login request\n");
 					break;
 			}
 		}
