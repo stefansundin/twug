@@ -22,8 +22,6 @@ int main()
 
 	while(n.processNetworking())
 	{
-		printf("still connected\n");
-
 		if(n.getMessage(incomming_message))		//means we have incomming data in incomming_message
 		{
 			printf("got message\n");
