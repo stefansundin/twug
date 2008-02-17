@@ -7,7 +7,7 @@ struct header
 	short	version;
 	short	message_type;
 	int		message_length;
-};
+}__atribute__((packed));		//apparently this prevents GCC from messing up the layout of the struct
 
 #endif /*HEADER_H_*/
 
