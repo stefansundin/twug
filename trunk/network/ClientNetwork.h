@@ -9,10 +9,12 @@ public:
 	ClientNetwork();
 	~ClientNetwork();
 
+	//sendable messages
 	int connect(std::string p_address, int p_port);
 	int disconnect();
 	void loginRequest(std::string p_user, std::string p_password);
 	void logout();
+	void sendText(std::string p_to_username, std::string p_message);
 
 	bool processNetworking();
 

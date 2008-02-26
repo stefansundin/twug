@@ -67,7 +67,7 @@ bool ClientNetwork::processNetworking()
 
 	if(FD_ISSET(m_socket, &readable))
 	{
-		printf("updating buffer\n");
+//		printf("updating buffer\n");
 		if(!updateBuffer(m_socket))
 		{
 			m_connected = false;
