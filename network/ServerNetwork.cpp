@@ -79,7 +79,7 @@ void ServerNetwork::processNetworking()
 		{
 			if(i == m_accepting_socket)
 			{
-				printf("accepting new connection\n");
+//				printf("accepting new connection\n");
 
 				int new_client_socket = accept(m_accepting_socket, NULL, NULL);
 				if(new_client_socket == -1)
@@ -91,7 +91,7 @@ void ServerNetwork::processNetworking()
 			}
 			else	//this is a client sending us data, update its buffer
 			{
-				printf("updating buffer\n");
+//				printf("updating buffer\n");
 				if(!updateBuffer(i))
 				{
 					disconnectClient(i);
@@ -104,7 +104,7 @@ void ServerNetwork::processNetworking()
 void ServerNetwork::disconnectClient(int p_socket)
 {
 	int removed = m_buffers.erase(p_socket);			//remove the client from the list of sockets
-	printf("removed socket %d\n", removed);
+//	printf("removed socket %d\n", removed);
 	shutdown(p_socket, SHUT_RDWR);		//we dont care if this fails since (AFAIK) it only does if the socket is already disconnect (or if it's not a socket, which it should be :P)
 }
 
