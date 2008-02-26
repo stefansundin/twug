@@ -12,7 +12,7 @@
 
 #define SAMPLE_RATE  (44100)
 #define FRAMES_PER_BUFFER (1024)
-#define NUM_SECONDS     (1)
+#define NUM_SECONDS     (3)
 #define NUM_CHANNELS    (1)
 
 #if 0
@@ -104,11 +104,32 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	/* Establish connection */
+	int sock;
+	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+		fprintf(stderr,"%s: socket() failed. file %s, line %d.\n",argv[0],__FILE__,__LINE__);
+		exit(1);
+	}
+
+	/* Construct the server address structure */
+	struct sockaddr_in serveraddr;
+	serveraddr.sin_family      = AF_INET;             /* Internet address family */
+	serveraddr.sin_addr.s_addr = inet_addr(argv[1]);   /* Server IP address */
+	serveraddr.sin_port        = htons(atoi(argv[2])); /* Server port */
+
+	/* Establish the connection to the server */
+	if (connect(sock, (struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0) {
+		fprintf(stderr,"%s: connect() failed. file %s, line %d.\n",argv[0],__FILE__,__LINE__);
+		exit(1);
+	}
+	
+	/* AUDIO */
+
     PaStreamParameters  inputParameters;
     PaStream*           stream;
     PaError             err = paNoError;
     paTestData          data;
-    int                 i;
+    //int                 i;
     int                 totalFrames;
     int                 numSamples;
     int                 numBytes;
@@ -125,7 +146,16 @@ int main(int argc, char *argv[])
         printf("Could not allocate record array.\n");
         goto done;
     }
-    for( i=0; i<numSamples; i++ ) data.recordedSamples[i] = 0;
+	memset(data.recordedSamples,0,numSamples);
+    //for( i=0; i<numSamples; i++ ) data.recordedSamples[i] = 0;
+
+	int numBytesSent;
+	/* Send the length of recordedSamples */
+	printf("recordedSamples length: %d bytes.\n",numBytes);
+	if ((numBytesSent=send(sock, &numBytes, sizeof(numBytes), 0)) != sizeof(numBytes)) {
+		fprintf(stderr,"send() sent a different number of bytes than expected (sent %d bytes). file %s, line %d.\n",numBytesSent,__FILE__,__LINE__);
+		exit(1);
+	}
 
     err = Pa_Initialize();
     if( err != paNoError ) goto done;
@@ -151,19 +181,31 @@ int main(int argc, char *argv[])
     err = Pa_StartStream( stream );
     if( err != paNoError ) goto done;
     printf("Now recording!!\n"); fflush(stdout);
-
+	
+	int sendFrameIndex=0;
     while( ( err = Pa_IsStreamActive( stream ) ) == 1 )
     {
-        Pa_Sleep(1000);
-        printf("index = %d\n", data.frameIndex ); fflush(stdout);
+        Pa_Sleep(10);
+		/* Send unsent frames */
+		if (sendFrameIndex < data.frameIndex) {
+			if ((numBytesSent=send(sock, data.recordedSamples+sendFrameIndex, data.frameIndex-sendFrameIndex, 0)) != data.frameIndex-sendFrameIndex) {
+				fprintf(stderr,"send() sent a different number of bytes than expected (sent %d bytes, expected %d). file %s, line %d.\n",numBytesSent,data.frameIndex-sendFrameIndex,__FILE__,__LINE__);
+				exit(1);
+			}
+			printf("\rSending frame %d (%d) of %d           ",sendFrameIndex,data.frameIndex-sendFrameIndex,data.frameIndex);
+			sendFrameIndex+=numBytesSent;
+		}
+        //printf("index = %d\n", data.frameIndex ); fflush(stdout);
+
     }
+    printf("\n");
     if( err < 0 ) goto done;
 
     err = Pa_CloseStream( stream );
     if( err != paNoError ) goto done;
 
 	/* write to file */
-    FILE  *fid;
+    /*FILE  *fid;
     fid = fopen("recorded-client.raw", "wb");
     if( fid == NULL )
     {
@@ -174,7 +216,7 @@ int main(int argc, char *argv[])
         fwrite( data.recordedSamples, 1, numBytes, fid );
         fclose( fid );
         printf("Wrote data to 'recorded-client.raw'\n");
-    }
+    }*/
 
 done:
     Pa_Terminate();
@@ -189,49 +231,9 @@ done:
     }
 
 	/* Send recordedSamples */
-	/* Create a stream socket using TCP */
-	int sock;
-	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		fprintf(stderr,"%s: socket() failed. file %s, line %d.\n",argv[0],__FILE__,__LINE__);
-		exit(1);
-	}
 
-	/* Construct the server address structure */
-	struct sockaddr_in serveraddr;
-	serveraddr.sin_family      = AF_INET;             /* Internet address family */
-	serveraddr.sin_addr.s_addr = inet_addr(argv[1]);   /* Server IP address */
-	serveraddr.sin_port        = htons(atoi(argv[2])); /* Server port */
 
-	/* Establish the connection to the server */
-	if (connect(sock, (struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0) {
-		fprintf(stderr,"%s: connect() failed. file %s, line %d.\n",argv[0],__FILE__,__LINE__);
-		exit(1);
-	}
 
-	int numBytesSent;
-	/* Send the length of recordedSamples */
-	printf("recordedSamples length: %d.\n",numBytes);
-	if ((numBytesSent=send(sock, &numBytes, sizeof(numBytes), 0)) != sizeof(numBytes)) {
-		fprintf(stderr,"send() sent a different number of bytes than expected (sent %d bytes). file %s, line %d.\n",numBytesSent,__FILE__,__LINE__);
-		exit(1);
-	}
-
-	/* Send recordedSamples */
-	int messagepos=0;
-	printf("Sending message: 0");
-	while (messagepos < numBytes) {
-		int bytestosend=1000;
-		if (messagepos+bytestosend > numBytes) {
-			bytestosend=numBytes-messagepos;
-		}
-		if ((numBytesSent=send(sock, data.recordedSamples+messagepos, bytestosend, 0)) != bytestosend) {
-			fprintf(stderr,"send() sent a different number of bytes than expected (sent %d bytes, expected %d). file %s, line %d.\n",numBytesSent,bytestosend,__FILE__,__LINE__);
-			exit(1);
-		}
-		messagepos+=bytestosend;
-		printf("\rSending message: %d (%d)             ",messagepos,bytestosend);
-	}
-	printf("\n");
 
 	/* close socket */
 	close(sock);
