@@ -16,7 +16,7 @@
 /* AUDIO */
 #define SAMPLE_RATE  (44100)
 #define FRAMES_PER_BUFFER (1024)
-#define NUM_SECONDS     (1)
+#define NUM_SECONDS     (3)
 #define NUM_CHANNELS    (1)
 
 #if 0
@@ -96,57 +96,6 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
     return finished;
 }
 
-/* TCP */
-
-int CreateTCPServerSocket(unsigned short port) {
-	/* Create socket for incoming connections */
-	int sock;
-	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		fprintf(stderr,"socket() failed. file %s, line %d.\n",__FILE__,__LINE__);
-		exit(1);
-	}
-	
-	/* Construct local address structure */
-	struct sockaddr_in serveraddr; /* Local address */
-	serveraddr.sin_family = AF_INET;                /* Internet address family */
-	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any incoming interface */
-	serveraddr.sin_port = htons(port);              /* Local port */
-	
-	/* Bind to the local address */
-	if (bind(sock, (struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0) {
-		fprintf(stderr,"bind() failed. file %s, line %d.\n",__FILE__,__LINE__);
-		exit(1);
-	}
-	
-	/* Mark the socket so it will listen for incoming connections */
-	if (listen(sock, MAXPENDING) < 0) {
-		fprintf(stderr,"listen() failed. file %s, line %d.\n",__FILE__,__LINE__);
-		exit(1);
-	}
-
-	return sock;
-}
-
-
-int AcceptTCPConnection(int serversock) {
-	struct sockaddr_in clientaddr; /* Client address */
-
-	/* Get the size of the in-out parameter */
-	unsigned int length = sizeof(clientaddr);
-	
-	/* Wait for a client to connect */
-	int clientsock; /* Socket descriptor for client */
-	if ((clientsock = accept(serversock, (struct sockaddr *) &clientaddr, &length)) < 0) {
-		fprintf(stderr,"accept() failed. file %s, line %d.\n",__FILE__,__LINE__);
-		exit(1);
-	}
-	
-	/* clientsock is connected to a client! */
-	printf("Handling client %s\n", inet_ntoa(clientaddr.sin_addr));
-	
-	return clientsock;
-}
-
 /* main */
 
 int main(int argc, char *argv[]) {
@@ -158,12 +107,47 @@ int main(int argc, char *argv[]) {
 	
 	/* <port> */
 	unsigned short serverport = atoi(argv[1]);
+
+	/* Create socket for incoming connections */
+	int serversock;
+	if ((serversock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+		fprintf(stderr,"socket() failed. file %s, line %d.\n",__FILE__,__LINE__);
+		exit(1);
+	}
 	
-	/* Create TCP Socket */
-	int serversock = CreateTCPServerSocket(serverport);
+	/* Construct local address structure */
+	struct sockaddr_in serveraddr; /* Local address */
+	serveraddr.sin_family = AF_INET;                /* Internet address family */
+	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any incoming interface */
+	serveraddr.sin_port = htons(serverport);              /* Local port */
+	
+	/* Bind to the local address */
+	if (bind(serversock, (struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0) {
+		fprintf(stderr,"bind() failed. file %s, line %d.\n",__FILE__,__LINE__);
+		exit(1);
+	}
+	
+	/* Mark the socket so it will listen for incoming connections */
+	if (listen(serversock, MAXPENDING) < 0) {
+		fprintf(stderr,"listen() failed. file %s, line %d.\n",__FILE__,__LINE__);
+		exit(1);
+	}
 
 	/* Wait for connections */
-	int clientsock = AcceptTCPConnection(serversock);
+	struct sockaddr_in clientaddr; /* Client address */
+
+	/* Get the size of the in-out parameter */
+	unsigned int addrlength = sizeof(clientaddr);
+	
+	/* Wait for a client to connect */
+	int clientsock; /* Socket descriptor for client */
+	if ((clientsock = accept(serversock, (struct sockaddr *) &clientaddr, &addrlength)) < 0) {
+		fprintf(stderr,"accept() failed. file %s, line %d.\n",__FILE__,__LINE__);
+		exit(1);
+	}
+	
+	/* clientsock is connected to a client! */
+	printf("Client connected: %s\n", inet_ntoa(clientaddr.sin_addr));
 	
 	/* Get the length of the message */
 	int length;
@@ -186,15 +170,13 @@ int main(int argc, char *argv[]) {
 	printf("Getting message: 0");
 	while (messagepos < length) {
 		int bytestorecv=1000;
+		int recvwarning=0;
 		if (messagepos+bytestorecv > length) {
 			bytestorecv=length-messagepos;
 		}
-		if ((bytesreceived=recv(clientsock, message+messagepos, bytestorecv, 0)) != bytestorecv) {
-			fprintf(stderr,"recv() received a different number of bytes than expected (received %d bytes, expected %d, errno: %d). file %s, line %d.\n",bytesreceived,bytestorecv,errno,__FILE__,__LINE__);
-			exit(1);
-		}
-		messagepos+=bytestorecv;
-		printf("\rGetting message: %d (%d)              ",messagepos,bytestorecv);
+		bytesreceived=recv(clientsock, message+messagepos, bytestorecv, 0);
+		messagepos+=bytesreceived;
+		printf("\rGetting message: %d (got %d)         ",messagepos,bytesreceived);
 	}
 	printf("\n");
 	
@@ -209,7 +191,7 @@ int main(int argc, char *argv[]) {
 	close(clientsock);    /* Close client socket */
 	
 	/* write to file */
-    FILE  *fid;
+    /*FILE  *fid;
     fid = fopen("recorded-server.raw", "wb");
     if( fid == NULL )
     {
@@ -220,7 +202,7 @@ int main(int argc, char *argv[]) {
         fwrite( message, 1, length, fid );
         fclose( fid );
         printf("Wrote data to 'recorded-server.raw'\n");
-    }
+    }*/
 
 	/* Play message */
     PaStreamParameters  outputParameters;
