@@ -1,8 +1,17 @@
-server : Data.o ServerNetwork.o Network.o strip.o fill.o server.o debug.o
-	g++ -o temp/server temp/Data.o temp/ServerNetwork.o temp/Network.o temp/strip.o temp/fill.o temp/server.o temp/debug.o
+server : Data.o ServerNetwork.o Network.o strip.o fill.o server.o debug.o Client.o Channel.o ChannelList.o
+	g++ -o temp/server temp/Data.o temp/ServerNetwork.o temp/Network.o temp/strip.o temp/fill.o temp/server.o temp/debug.o temp/Client.o temp/Channel.o temp/ChannelList.o
 
 client_test : Data.o ClientNetwork.o Network.o strip.o fill.o client_test.o debug.o
 	g++ -o temp/client_test temp/Data.o temp/ClientNetwork.o temp/Network.o temp/strip.o temp/fill.o temp/client_test.o temp/debug.o
+
+Client.o : Client.cpp Client.h
+	g++ -c -o temp/Client.o Client.cpp
+
+Channel.o : Channel.cpp Channel.h
+	g++ -c -o temp/Channel.o Channel.cpp
+
+ChannelList.o : ChannelList.cpp ChannelList.h
+	g++ -c -o temp/ChannelList.o ChannelList.cpp
 
 Data.o : Data.cpp Data.h
 	g++ -c -o temp/Data.o Data.cpp

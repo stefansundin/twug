@@ -1,6 +1,6 @@
 #include "ClientNetwork.h"
 
-#define SERVER_IP "127.0.0.1"
+#define SERVER_IP "10.200.34.254"
 #define SERVER_PORT 6789
 
 void handleMessage(Message p_message)
