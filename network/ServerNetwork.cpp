@@ -7,7 +7,7 @@ ServerNetwork::ServerNetwork()
 ServerNetwork::~ServerNetwork()
 {
 	shutdown(m_accepting_socket, SHUT_RDWR);
-	std::map<int, buffer_t>::iterator mitr;
+	std::map<int, Buffer>::iterator mitr;
 	for(mitr = m_buffers.begin(); mitr != m_buffers.end(); mitr++)
 	{
 		disconnectClient(mitr->first);
@@ -50,7 +50,7 @@ void ServerNetwork::processNetworking()
 	FD_SET(m_accepting_socket, &readable);
 	int highest = m_accepting_socket;
 
-	std::map<int, buffer_t>::iterator mitr;
+	std::map<int, Buffer>::iterator mitr;
 	for(mitr = m_buffers.begin(); mitr != m_buffers.end(); mitr++)
 	{
 		FD_SET(mitr->first, &readable);
@@ -87,10 +87,7 @@ void ServerNetwork::processNetworking()
 					report_error(strerror(errno));
 				}
 
-				buffer_t b;
-				b.m_buffer = NULL;
-				b.m_length = 0;
-				m_buffers[new_client_socket] = b;
+				m_buffers[new_client_socket] = Buffer();
 			}
 			else	//this is a client sending us data, update its buffer
 			{

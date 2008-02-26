@@ -1,5 +1,7 @@
 #include <string>
 
+#include "strip.h"
+
 bool strip(std::string &p_str)
 {
 	while(p_str.at(p_str.size()-1) == '0')

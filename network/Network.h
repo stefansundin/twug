@@ -22,16 +22,36 @@
 
 #define NETWORK_VERSION 0
 
-struct buffer_t
+class Buffer
 {
+public:
+	Buffer() { m_length = 0;}
+	~Buffer() { m_buffer = NULL; delete m_buffer; }
+
+	char* getBuffer() { return m_buffer; }
+	int getLength() { return m_length; }
+
+	void setBuffer(char *p_buffer) { m_buffer = p_buffer; }
+	void setLength(int p_length) { m_length = p_length; }
+private:
 	char *m_buffer;
 	int m_length;
 };
 
-struct message_t
+class Message
 {
+public:
+	Message() {}
+	~Message() { m_data = NULL; delete m_data; }
+
+	int getSocket() { return m_socket; }
+	Data& getData() { return *m_data; }
+
+	void setSocket(int p_socket) { m_socket = p_socket; }
+	void setData(Data *p_data) { m_data = p_data; }
+private:
 	int m_socket;
-	Data m_data;
+	Data *m_data;
 };
 
 class Network
@@ -40,16 +60,14 @@ public:
 	Network();
 	virtual ~Network();
 
-	bool getMessage(message_t &p_msg);
+	bool getMessage(Message &p_msg);
 	void sendData(int p_socket, Data &p_data);
 
 protected:
 	bool updateBuffer(int p_socket);		//returns false if recv() returned 0, ie the socket is shutdown on the other end
 
-
-
-	std::queue<message_t> m_messages;		//<sender_socket, message>
-	std::map<int, buffer_t> m_buffers;		//<socket, its_buffer>
+	std::queue<Message> *m_messages;		//<sender_socket, message>
+	std::map<int, Buffer> m_buffers;		//<socket, its_buffer>
 };
 
 #endif /*NETWORK_H_*/

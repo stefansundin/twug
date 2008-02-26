@@ -1,7 +1,13 @@
 #include "ClientNetwork.h"
 
-int main()
+int main(int argc, char **argv)
 {
+	if(argc < 3)
+	{
+		printf("usage: <appname> <username> <password>\n");
+		return 0;
+	}
+
 	ClientNetwork n = ClientNetwork();
 
 	int status = n.connect("127.0.0.1", 6789);
@@ -16,9 +22,9 @@ int main()
 		printf("connection failed :(\n");
 	}
 
-	n.loginRequest("basse", "omgkaka");
+	n.loginRequest(argv[1], argv[2]);
 
-	message_t incomming_message;
+	Message incomming_message;
 
 	while(n.processNetworking())
 	{
@@ -26,9 +32,17 @@ int main()
 		{
 			printf("got message\n");
 
-			switch(incomming_message.m_data.getType())
+			switch(incomming_message.getData().getType())
 			{
 				case SERVER_LOGIN_OK:
+					char *t = (char*)incomming_message.getData().getData();
+					char *k = new char[incomming_message.getData().getLength()+1];
+					memcpy(k, t, incomming_message.getData().getLength());
+					k[incomming_message.getData().getLength()] = '\0';
+
+					std::string temp = k;
+					printf("temp.c_str(): \"%s\"\n", temp.c_str());
+					printf("temp.size(): %d\n", temp.size());
 					printf("login ok\n");
 					break;
 			}
@@ -36,3 +50,4 @@ int main()
 	}
 	printf("disconnected\n");
 }
+
