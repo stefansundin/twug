@@ -2,22 +2,24 @@
 
 Network::Network()
 {
+	m_messages = new std::queue<Message>();
 }
 Network::~Network()
 {
-	std::map<int, buffer_t>::iterator bitr;
-	for(bitr = m_buffers.begin(); bitr != m_buffers.begin(); bitr++)
+	std::map<int, Buffer>::iterator bitr;
+	for(bitr = m_buffers.begin(); bitr != m_buffers.end(); bitr++)
 	{
 		close(bitr->first);
 	}
+	delete m_messages;
 }
 
-bool Network::getMessage(message_t &p_msg)
+bool Network::getMessage(Message &p_msg)
 {
-	if(!m_messages.empty())
+	if(!m_messages->empty())
 	{
-		p_msg = m_messages.front();
-		m_messages.pop();
+		p_msg = m_messages->front();
+		m_messages->pop();
 		return true;
 	}
 	return false;
@@ -42,20 +44,23 @@ bool Network::updateBuffer(int p_socket)
 	printf("recv() got: \"%s\" (%d bytes)\n", recv_buffer, recv_length);
 
 	//create a temp variable big enough to contain the new and old data
-	char *new_buffer = new char[m_buffers[p_socket].m_length+recv_length];
-	memcpy(new_buffer, m_buffers[p_socket].m_buffer, m_buffers[p_socket].m_length);
-	memcpy(new_buffer+m_buffers[p_socket].m_length, recv_buffer, recv_length);
+	printf("m_buffers[p_socket].getLength(): \"%d\"\n", m_buffers[p_socket].getLength());
+	printf("recv_length: \"%d\"\n", recv_length);
+	char *new_buffer = new char[m_buffers[p_socket].getLength()+recv_length];
+	memcpy(new_buffer, m_buffers[p_socket].getBuffer(), m_buffers[p_socket].getLength());
+	memcpy(new_buffer+m_buffers[p_socket].getLength(), recv_buffer, recv_length);
 
 	//update the buffer
-	m_buffers[p_socket].m_length += recv_length;
-	m_buffers[p_socket].m_buffer = new_buffer;
+	printf("setting buffer length to: \"%d\" + \"%d\"\n", m_buffers[p_socket].getLength(), recv_length);
+	m_buffers[p_socket].setLength(m_buffers[p_socket].getLength() + recv_length);
+	m_buffers[p_socket].setBuffer(new_buffer);
 
-	if(m_buffers[p_socket].m_length >= sizeof(header))
+	if(m_buffers[p_socket].getLength() >= sizeof(header))
 	{
 		printf("got part of a message\n");
 
 		header temp_header;
-		memcpy(&temp_header, m_buffers[p_socket].m_buffer, sizeof(header));
+		memcpy(&temp_header, m_buffers[p_socket].getBuffer(), sizeof(header));
 		printf("-----header-----\n");
 		printf("temp_header.id = %s\n", temp_header.id);
 		printf("temp_header.version = %d\n", temp_header.version);
@@ -63,31 +68,34 @@ bool Network::updateBuffer(int p_socket)
 		printf("temp_header.message_length = %d\n", temp_header.message_length);
 		printf("----------------\n");
 
-		if(m_buffers[p_socket].m_length-sizeof(header) >= temp_header.message_length)
+		if(m_buffers[p_socket].getLength()-sizeof(header) >= temp_header.message_length)
 		{
 			printf("got a complete message\n");
+			printf("length: %d\n", m_buffers[p_socket].getLength()-sizeof(header));
+			printf("lengthy: %d\n", temp_header.message_length);
 
 			//get the message
-			char *message = new char[sizeof(header)+temp_header.message_length];
-			memcpy(message, m_buffers[p_socket].m_buffer, sizeof(header)+temp_header.message_length);
+			char *message = new char[temp_header.message_length];	//dont include the header now
+			memcpy(message, m_buffers[p_socket].getBuffer()+sizeof(header), temp_header.message_length);
 
-			//remove message from the buffer
-			int new_length = m_buffers[p_socket].m_length - sizeof(header)+temp_header.message_length;
+			//setup nice temp length variables
+			int header_message_length = sizeof(header)+temp_header.message_length;
+			int new_length = m_buffers[p_socket].getLength()-header_message_length;
+
+			//setup the new buffer
 			new_buffer = new char[new_length];
-			memcpy(new_buffer, m_buffers[p_socket].m_buffer, sizeof(header)+temp_header.message_length);
-			m_buffers[p_socket].m_length = new_length;
-			m_buffers[p_socket].m_buffer = new_buffer;
+			memcpy(new_buffer, m_buffers[p_socket].getBuffer()+header_message_length, new_length);
+			m_buffers[p_socket].setLength(new_length);
+			m_buffers[p_socket].setBuffer(new_buffer);
 
 			//add the new message to the message queue
-			char *message_no_header[temp_header.message_length-sizeof(header)];
-
-			message_t m;
-			m.m_socket = p_socket;
-			m.m_data = Data(temp_header.message_type, message, temp_header.message_length);
-			m_messages.push(m);
+			Message m;
+			m.setSocket(p_socket);
+			printf("message_type: %d\nmessage: %s\nmessage_length: %d\n", temp_header.message_type, message, temp_header.message_length);
+			m.setData(new Data(temp_header.message_type, message, temp_header.message_length));
+			m_messages->push(m);
 		}
 	}
-
 	return true;
 }
 

@@ -36,10 +36,6 @@ void ClientNetwork::loginRequest(std::string p_user, std::string p_password)
 	fill(p_password, 20);
 	std::string temp = p_user + p_password;
 
-	printf("sent message length: %d\n", temp.size());
-	printf("kaka: %d\n", strlen(temp.c_str()));
-	printf("kaka: %d\n", sizeof(temp.c_str()));
-
 	Data data = Data(CLIENT_LOGIN_REQUEST, temp.c_str(), temp.size());
 	sendData(m_socket, data);
 }
