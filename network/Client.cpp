@@ -2,13 +2,13 @@
 
 Client::Client()
 {
-	m_socket = 0;
-	m_username = "";
+	m_channel = NULL;
+	m_username = "no_name_client";
 	m_privileges = 0x0;
 }
-Client::Client(int p_socket, std::string p_username)
+Client::Client(std::string p_username)
 {
-	m_socket = p_socket;
+	m_channel = NULL;
 	m_username = p_username;
 	m_privileges = 0x0;
 }
@@ -16,9 +16,10 @@ Client::~Client()
 {
 }
 
-int Client::getSocket()
+
+Channel* Client::getChannel()
 {
-	return m_socket;
+	return m_channel;
 }
 std::string Client::getUsername()
 {
@@ -29,9 +30,10 @@ unsigned char Client::getPrivileges()
 	return m_privileges;
 }
 
-void Client::setSocket(int p_socket)
+
+void Client::setChannel(Channel *p_channel)
 {
-	m_socket = p_socket;
+	m_channel = p_channel;
 }
 void Client::setUsername(std::string p_username)
 {

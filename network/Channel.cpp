@@ -67,59 +67,8 @@ bool Channel::removeClient(Client *p_client)
 	}
 	return false;
 }
-Client* Channel::getClient(int p_socket)
-{
-	int ch, cl;
-	Client *c;
-	for(cl = 0; cl < m_clients.size(); cl++)
-	{
-		if(m_clients.at(cl)->getSocket() == p_socket)
-			return m_clients.at(cl);
-	}
-	for(ch = 0; ch < m_subchannels.size(); ch++)
-	{
-		c = m_subchannels.at(ch)->getClient(p_socket);
-		if(c != NULL)
-			return c;
-	}
-	return NULL;	//no client found
-}
-bool Channel::removeClient(int p_socket)
-{
-	int ch;
-	Client *c;
-	std::vector<Client*>::iterator clitr;
-	for(clitr = m_clients.begin(); clitr != m_clients.end(); clitr++)
-	{
-		if((*clitr)->getSocket() == p_socket)
-		{
-			m_clients.erase(clitr);
-			return true;
-		}
-	}
-	for(ch = 0; ch < m_subchannels.size(); ch++)
-	{
-		if(m_subchannels.at(ch)->removeClient(p_socket))
-			return true;
-	}
-	return false;	//no client removed
-}
 
 
-bool Channel::newSubchannel(std::string p_name)
-{
-	std::vector<Channel*>::iterator citr;
-	for(citr = m_subchannels.begin(); citr != m_subchannels.end(); citr++)
-	{
-		if((*citr)->getName() == p_name)
-		{
-			return false;
-		}
-	}
-
-	m_subchannels.push_back(new Channel(p_name));
-	return true;
-}
 bool Channel::addSubchannel(Channel *p_channel)
 {
 	for(int i = 0; i < m_subchannels.size(); i++)
@@ -137,6 +86,7 @@ bool Channel::removeSubchannel(Channel *p_channel)
 	{
 		if((*sitr)->getName() == p_channel->getName())	
 		{
+			delete *sitr;
 			m_subchannels.erase(sitr);
 			return true;
 		}
@@ -144,42 +94,23 @@ bool Channel::removeSubchannel(Channel *p_channel)
 	return false;
 }
 
-Channel* Channel::getSubchannel(std::string p_name)
+
+void Channel::print(int p_extra_tab)		//server debug thingy
 {
-	std::vector<Channel*>::iterator sitr;
-	for(sitr = m_subchannels.begin(); sitr != m_subchannels.end(); sitr++)
-	{
-		if((*sitr)->getName() == p_name)	
-		{
-			return *sitr;
-		}
-	}
-	return NULL;
-}
-
-
-std::vector<Client*> Channel::getClients()
-{
-	return m_clients;
-}
-
-
-void Channel::print(int p_layer)		//server debug thingy
-{
-	for(int i = 0; i < p_layer; i++)
+	for(int i = 0; i < p_extra_tab; i++)
 		printf("\t");
 	printf("%s\n", m_name.c_str());
 
 	int ch, cl;
 	for(cl = 0; cl < m_clients.size(); cl++)
 	{
-		for(int i = 0; i <= p_layer; i++)
+		for(int i = 0; i <= p_extra_tab; i++)
 			printf("\t");
 		printf("%s\n", m_clients.at(cl)->getUsername().c_str());
 	}
 	for(ch = 0; ch < m_subchannels.size(); ch++)
 	{
-		m_subchannels.at(ch)->print(p_layer+1);
+		m_subchannels.at(ch)->print(p_extra_tab+1);
 	}
 }
 

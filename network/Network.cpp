@@ -2,7 +2,7 @@
 
 Network::Network()
 {
-	m_messages = new std::queue<Message>();
+	m_messages = std::queue<Message>();
 }
 Network::~Network()
 {
@@ -11,15 +11,14 @@ Network::~Network()
 	{
 		close(bitr->first);
 	}
-	delete m_messages;
 }
 
 bool Network::getMessage(Message &p_msg)
 {
-	if(!m_messages->empty())
+	if(!m_messages.empty())
 	{
-		p_msg = m_messages->front();
-		m_messages->pop();
+		p_msg = m_messages.front();
+		m_messages.pop();
 		return true;
 	}
 	return false;
@@ -89,7 +88,7 @@ bool Network::updateBuffer(int p_socket)
 			Message m;
 			m.setSocket(p_socket);
 			m.setData(new Data(temp_header.message_type, message, temp_header.message_length));
-			m_messages->push(m);
+			m_messages.push(m);
 		}
 	}
 	return true;

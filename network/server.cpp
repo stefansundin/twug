@@ -1,15 +1,9 @@
 #include "ServerNetwork.h"
 #include "strip.h"
-#include "Channel.h"
+#include "ChannelList.h"
 
 ServerNetwork *g_network;
-Channel *g_channel_list;
-
-void disconnect_client(int p_socket)
-{
-	g_channel_list->removeClient(p_socket);
-	g_channel_list->print(0);
-}
+ChannelList *g_channel_list;
 
 int checkLogin(std::string p_username, std::string p_password)
 {
@@ -17,48 +11,53 @@ int checkLogin(std::string p_username, std::string p_password)
 	printf("password: %s\n", p_password.c_str());
 
 	return 0;
+	return -1;	//bad username
+	return -2;	//bad password
+	return -3;	//username already logged in
 }
 
 void handle_message(Message p_message)
 {
 	printf("handle_message called\n");
-/*
-#define CLIENT_LOGIN_REQUEST 0	//message is a string containing username and password concatenated. both should be filled out with 0 until they are 20 chars long (0 come at the end).
-#define CLIENT_LOGOUT 1			//no message
-#define CLIENT_AUDIO_DATA 2		//message is audio data
-#define CLIENT_TEXT_DATA 3		//message is the username the text message is being sent to (filled out with 0 at the end until it is 20 chars long) concatenated with the text message.
-
-#define CLIENT_CHANNEL_CHANGE 4	//message is the name of the channel the user wants to change to concatenated with the channel password both filled out with 0 until they are 20 chars long (filled at the end).
-*/
 
 	char *data = (char*)p_message.getData().getData();
 	std::string data_str = data;
+	Data response;
+	got_here();
 
 	if(p_message.getData().getType() == CLIENT_LOGIN_REQUEST)
 	{
+		got_here();
 		printf("got \"CLIENT_LOGIN_REQUEST\"\n");
-
-		Data response;
-
+		got_here();
 		std::string username = data_str.substr(0, 20);
+		got_here();
 		std::string password = data_str.substr(20, 20);
+		got_here();
 		strip(username);
+		got_here();
 		strip(password);
 
-		if(checkLogin(username, password) == 0)	//this client babba ok kk
+		got_here();
+		int returned = checkLogin(username, password);
+		got_here();
+		if(returned == 0)	//this client babba ok kk
 		{
-			Client *c = new Client(p_message.getSocket(), username);
-			g_channel_list->addClient(c);
+		got_here();
+			g_channel_list->newClient(p_message.getSocket(), username);
+		got_here();
 			response = Data(SERVER_LOGIN_OK, "", 0);
+		got_here();
 
-			g_channel_list->print(0);
+			g_channel_list->print();
+		got_here();
 		}
-		else if(checkLogin(username, password) == -1)		//bad username
+		else if(returned == -1)		//bad username
 		{
 			int why = 1;
 			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
 		}
-		else if(checkLogin(username, password) == -2)		//bad password
+		else if(returned == -2)		//bad password
 		{
 			int why = 2;
 			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
@@ -70,7 +69,7 @@ void handle_message(Message p_message)
 	{
 		printf("socket %d sent CLIENT_LOGOUT", p_message.getSocket());
 		g_channel_list->removeClient(p_message.getSocket());
-		g_channel_list->print(0);
+		g_channel_list->print();
 	}
 	else if(p_message.getData().getType() == CLIENT_AUDIO_DATA)
 	{
@@ -95,9 +94,40 @@ void handle_message(Message p_message)
 		std::string password = data_str.substr(20,20);
 		strip(password);
 
-		Client *c = g_channel_list->getChannel(p_message.getSocket());
-		if(!strip(channel))
-			printf("couldn't strip channel at line %s", __LINE__);
+		int why;
+
+		int returned = g_channel_list->changeClientChannel(p_message.getSocket(), channel, password);
+		if(returned == -1)
+		{
+			report_error("user name passed too long");
+		}
+		else if(returned == -2)
+		{
+			report_error("channel name passed too long");
+		}
+		else if(returned == -3)
+		{
+			report_error("client not found");
+		}
+		else if(returned == -4)
+		{
+			report_error("channel name not found");
+			why =  1;
+		}
+		else if(returned == -5)
+		{
+			report_error("bad password");
+			why = 2;
+		}
+		else
+			why = 3;
+		response = Data(SERVER_CHANNEL_CHANGE_RESPONSE, &why, sizeof(why));
+	}
+	else if(p_message.getData().getType() == SOCKET_DISCONNECTED)
+	{
+		printf("socket %d sent SOCKET_DISCONNECTED", p_message.getSocket());
+		g_channel_list->removeClient(p_message.getSocket());
+		g_channel_list->print();
 	}
 
 }
@@ -108,7 +138,6 @@ int main()
 
 	//setup networking
 	g_network = new ServerNetwork();
-	g_network->setDisconnectClientCallback(disconnect_client);
 	if(!g_network->initSocket("", 6789))
 	{
 		printf("couldn't initialize networking :(\nquiting\n");
@@ -120,21 +149,11 @@ int main()
 	}
 
 	//setup the channel list
-	g_channel_list = new Channel("Lobby");
-	g_channel_list->newSubchannel("test1");
-	g_channel_list->newSubchannel("test2");
+	g_channel_list = new ChannelList();
+	g_channel_list->newChannel("test1");
+	g_channel_list->newChannel("test2");
 
-	Channel *test1 = g_channel_list->getSubchannel("test1");
-	if(test1 == NULL)
-		printf("didnt get test1\n");
-	else
-	{
-		test1->newSubchannel("sub1");
-	}
-
-	printf("----Channels---------------\n");
-	g_channel_list->print(0);
-	printf("---------------------------\n");
+	g_channel_list->print();
 
 	Message incomming_message;
 	while(true)

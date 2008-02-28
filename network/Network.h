@@ -66,7 +66,7 @@ public:
 protected:
 	bool updateBuffer(int p_socket);		//returns false if recv() returned 0, ie the socket is shutdown on the other end
 
-	std::queue<Message> *m_messages;		//<sender_socket, message>
+	std::queue<Message> m_messages;		//<sender_socket, message>
 	std::map<int, Buffer> m_buffers;		//<socket, its_buffer>
 };
 
