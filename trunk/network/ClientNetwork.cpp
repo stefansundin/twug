@@ -44,6 +44,15 @@ void ClientNetwork::logout()
 	Data data = Data(CLIENT_LOGOUT, "", 0);
 	sendData(m_socket, data);
 }
+void ClientNetwork::sendText(std::string p_to_username, std::string p_message)
+{
+	fill(p_to_username, 20);
+	std::string to_send = p_to_username + p_message;
+
+	Data data = Data(CLIENT_TEXT_DATA, to_send.c_str(), to_send.size()+1);
+	sendData(m_socket, data);
+}
+
 
 bool ClientNetwork::processNetworking()
 {
