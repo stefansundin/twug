@@ -121,6 +121,7 @@ void MainWindow::reloadChannels()
 	std::vector<std::string> channels = m_handler->getChannels();
 
 	Gtk::TreeModel::iterator iter;
+	Gtk::TreeModel::iterator child_iter;
 
 	for(int i=0;i<channels.size();i++)
 	{
@@ -142,7 +143,6 @@ void MainWindow::reloadChannels()
 			std::vector<std::string> channelMembers = m_handler->getChannelMembers( channels.at(i) );
 			if(!channelMembers.empty())
 			{
-				Gtk::TreeModel::iterator child_iter;
 				for(int a=0;a<channelMembers.size();a++)
 				{
 				child_iter = m_treestore->append(iter->children());
