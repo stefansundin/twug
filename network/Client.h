@@ -4,6 +4,7 @@ class Client
 {
 public:
 	Client();
+	Client(int p_socket, std::string p_username);
 	~Client();
 
 	int getSocket();

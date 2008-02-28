@@ -6,6 +6,12 @@ Client::Client()
 	m_username = "";
 	m_privileges = 0x0;
 }
+Client::Client(int p_socket, std::string p_username)
+{
+	m_socket = p_socket;
+	m_username = p_username;
+	m_privileges = 0x0;
+}
 Client::~Client()
 {
 }
