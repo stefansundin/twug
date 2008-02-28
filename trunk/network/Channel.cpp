@@ -41,7 +41,7 @@ bool Channel::setPassword(std::string p_password)
 		return false;
 }
 
-bool Channel::addClient(Client *&p_client)
+bool Channel::addClient(Client *p_client)
 {
 	std::vector<Client*>::iterator citr;
 	for(citr = m_clients.begin(); citr != m_clients.end(); citr++)
@@ -54,7 +54,7 @@ bool Channel::addClient(Client *&p_client)
 	m_clients.push_back(p_client);
 	return true;
 }
-bool Channel::removeClient(Client *&p_client)
+bool Channel::removeClient(Client *p_client)
 {
 	std::vector<Client*>::iterator citr;
 	for(citr = m_clients.begin(); citr != m_clients.end(); citr++)
@@ -67,28 +67,60 @@ bool Channel::removeClient(Client *&p_client)
 	}
 	return false;
 }
+Client* Channel::getClient(int p_socket)
+{
+	int ch, cl;
+	Client *c;
+	for(cl = 0; cl < m_clients.size(); cl++)
+	{
+		if(m_clients.at(cl)->getSocket() == p_socket)
+			return m_clients.at(cl);
+	}
+	for(ch = 0; ch < m_subchannels.size(); ch++)
+	{
+		c = m_subchannels.at(ch)->getClient(p_socket);
+		if(c != NULL)
+			return c;
+	}
+	return NULL;	//no client found
+}
+bool Channel::removeClient(int p_socket)
+{
+	int ch;
+	Client *c;
+	std::vector<Client*>::iterator clitr;
+	for(clitr = m_clients.begin(); clitr != m_clients.end(); clitr++)
+	{
+		if((*clitr)->getSocket() == p_socket)
+		{
+			m_clients.erase(clitr);
+			return true;
+		}
+	}
+	for(ch = 0; ch < m_subchannels.size(); ch++)
+	{
+		if(m_subchannels.at(ch)->removeClient(p_socket))
+			return true;
+	}
+	return false;	//no client removed
+}
 
 
 bool Channel::newSubchannel(std::string p_name)
 {
 	std::vector<Channel*>::iterator citr;
-	got_here();
 	for(citr = m_subchannels.begin(); citr != m_subchannels.end(); citr++)
 	{
-		got_here();
-		printf("*citr = \"%d\"\n", (unsigned int)*citr);
 		if((*citr)->getName() == p_name)
 		{
-			got_here();
 			return false;
 		}
 	}
 
-	got_here();
 	m_subchannels.push_back(new Channel(p_name));
 	return true;
 }
-bool Channel::addSubchannel(Channel *&p_channel)
+bool Channel::addSubchannel(Channel *p_channel)
 {
 	for(int i = 0; i < m_subchannels.size(); i++)
 	{
@@ -98,7 +130,7 @@ bool Channel::addSubchannel(Channel *&p_channel)
 	m_subchannels.push_back(p_channel);
 	return true;
 }
-bool Channel::removeSubchannel(Channel *&p_channel)
+bool Channel::removeSubchannel(Channel *p_channel)
 {
 	std::vector<Channel*>::iterator sitr;
 	for(sitr = m_subchannels.begin(); sitr != m_subchannels.end(); sitr++)
@@ -112,18 +144,17 @@ bool Channel::removeSubchannel(Channel *&p_channel)
 	return false;
 }
 
-bool Channel::getSubchannel(std::string p_name, Channel *&p_channel)
+Channel* Channel::getSubchannel(std::string p_name)
 {
 	std::vector<Channel*>::iterator sitr;
 	for(sitr = m_subchannels.begin(); sitr != m_subchannels.end(); sitr++)
 	{
 		if((*sitr)->getName() == p_name)	
 		{
-			p_channel = *sitr;
-			return true;
+			return *sitr;
 		}
 	}
-	return false;
+	return NULL;
 }
 
 
@@ -133,23 +164,22 @@ std::vector<Client*> Channel::getClients()
 }
 
 
-void Channel::print()		//server debug thingy
+void Channel::print(int p_layer)		//server debug thingy
 {
+	for(int i = 0; i < p_layer; i++)
+		printf("\t");
 	printf("%s\n", m_name.c_str());
 
 	int ch, cl;
 	for(cl = 0; cl < m_clients.size(); cl++)
 	{
-		printf("\t%s\n", m_clients.at(cl)->getUsername().c_str());
+		for(int i = 0; i <= p_layer; i++)
+			printf("\t");
+		printf("%s\n", m_clients.at(cl)->getUsername().c_str());
 	}
 	for(ch = 0; ch < m_subchannels.size(); ch++)
 	{
-		printf("\t%s\n", m_subchannels.at(ch)->getName().c_str());
-
-		for(cl = 0; cl < m_subchannels.at(ch)->getClients().size(); cl++)
-		{
-			printf("\t\t%s\n", m_subchannels.at(ch)->getClients().at(cl)->getUsername().c_str());
-		}
+		m_subchannels.at(ch)->print(p_layer+1);
 	}
 }
 

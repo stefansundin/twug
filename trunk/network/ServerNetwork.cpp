@@ -3,6 +3,7 @@
 ServerNetwork::ServerNetwork()
 {
 	m_accepting_socket = socket(AF_INET, SOCK_STREAM, 0);
+	m_disconnect_callback = NULL;
 }
 ServerNetwork::~ServerNetwork()
 {
@@ -103,9 +104,15 @@ void ServerNetwork::processNetworking()
 
 void ServerNetwork::disconnectClient(int p_socket)
 {
+	if(m_disconnect_callback != NULL)
+		m_disconnect_callback(p_socket);
 	int removed = m_buffers.erase(p_socket);			//remove the client from the list of sockets
 //	printf("removed socket %d\n", removed);
 	shutdown(p_socket, SHUT_RDWR);		//we dont care if this fails since (AFAIK) it only does if the socket is already disconnect (or if it's not a socket, which it should be :P)
+}
+void ServerNetwork::setDisconnectClientCallback(disconnect_callback_t p_callback)
+{
+	m_disconnect_callback = p_callback;
 }
 
 

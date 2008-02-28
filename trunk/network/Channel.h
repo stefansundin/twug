@@ -16,17 +16,19 @@ public:
 	bool setName(std::string p_name);
 	bool setPassword(std::string p_password);
 
-	bool addClient(Client *&p_client);
-	bool removeClient(Client *&p_client);
+	bool addClient(Client *p_client);
+	bool removeClient(Client *p_client);
+	Client* getClient(int p_socket);
+	bool removeClient(int p_socket);
 
 	bool newSubchannel(std::string p_name);
-	bool addSubchannel(Channel *&p_channel);
-	bool removeSubchannel(Channel *&p_channel);
-	bool getSubchannel(std::string p_name, Channel *&p_channel);
+	bool addSubchannel(Channel *p_channel);
+	bool removeSubchannel(Channel *p_channel);
+	Channel* getSubchannel(std::string p_name);
 
 	std::vector<Client*> getClients();
 
-	void print();		//server debug thingy
+	void print(int p_layer);		//server debug thingy
 
 private:
 	std::string m_name;
