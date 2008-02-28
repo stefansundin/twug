@@ -1,8 +1,13 @@
+#ifndef CHANNEL_H_
+#define CHANNEL_H_
+
 #include <vector>
 
 #include "Client.h"
 
 #include "../debug.h"
+
+class Client;
 
 class Channel
 {
@@ -18,17 +23,11 @@ public:
 
 	bool addClient(Client *p_client);
 	bool removeClient(Client *p_client);
-	Client* getClient(int p_socket);
-	bool removeClient(int p_socket);
 
-	bool newSubchannel(std::string p_name);
 	bool addSubchannel(Channel *p_channel);
 	bool removeSubchannel(Channel *p_channel);
-	Channel* getSubchannel(std::string p_name);
 
-	std::vector<Client*> getClients();
-
-	void print(int p_layer);		//server debug thingy
+	void print(int p_extra_tab);		//server debug thingy
 
 private:
 	std::string m_name;
@@ -37,4 +36,6 @@ private:
 	std::vector<Client*> m_clients;
 	std::vector<Channel*> m_subchannels;
 };
+
+#endif //CHANNEL_H_
 

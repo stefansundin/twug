@@ -9,8 +9,6 @@
 
 #include "Network.h"
 
-typedef void (*disconnect_callback_t)(int);
-
 class ServerNetwork : public Network
 {
 public:
@@ -20,11 +18,9 @@ public:
 	bool initSocket(std::string p_bind_address, unsigned int p_bind_port);
 	void processNetworking();
 	void disconnectClient(int p_socket);
-	void setDisconnectClientCallback(disconnect_callback_t p_callback);
 
 private:
 	int m_accepting_socket;
-	disconnect_callback_t m_disconnect_callback;
 };
 
 #endif /*SERVERNETWORK_H_*/

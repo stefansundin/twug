@@ -15,7 +15,12 @@
 #define SERVER_AUDIO_DATA 3		//audio data
 #define SERVER_TEXT_DATA 4		//message is the username the text message comes from (filled out with 0 at the end until it is 20 chars long) concatenated with the text message.
 
-#define SERVER_BUDDY_LIST_UPDATE 5	//
+#define SERVER_BUDDY_LIST_UPDATE 5	//
+#define SERVER_CHANNEL_CHANGE_RESPONSE 6	//int: 0 for ok, 1 for bad channel name, 2 for bad password, 3 for other
+
+
+//this one is just to make deleting disconnected sockets fit in with the normal message system
+#define SOCKET_DISCONNECTED 100
 #endif /*MESSAGE_TYPES_H_*/
 
 
