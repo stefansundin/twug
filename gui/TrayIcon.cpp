@@ -4,31 +4,27 @@
 TrayIcon::TrayIcon(MainWindow* p_window) : m_menu(0)
 {
 	m_window = p_window;
-
 	set(Gtk::Stock::NEW);
-
 	signal_activate().connect(sigc::mem_fun(*this,&TrayIcon::on_clicked));
 	signal_popup_menu().connect(sigc::mem_fun(*this,&TrayIcon::on_popup));
 
-	m_actiongroup = Gtk::ActionGroup::create();
+	// -- start popup initialization
+		m_actiongroup = Gtk::ActionGroup::create();
+		m_actiongroup->add(Gtk::Action::create("Popup", "Popup"));
+		m_actiongroup->add(Gtk::Action::create("Quit", Gtk::Stock::QUIT), sigc::mem_fun(*this, &TrayIcon::on_menu_quit) );
 
-	m_actiongroup->add(Gtk::Action::create("Popup", "Popup"));
-	m_actiongroup->add(Gtk::Action::create("Quit", Gtk::Stock::QUIT), sigc::mem_fun(*this, &TrayIcon::on_menu_quit) );
+		Glib::ustring ui = "<ui>"
+		"<popup name='Popup'>"
+		"	<menuitem action='Quit' />"
+		"</popup>"
+		"</ui>";
 
-	Glib::RefPtr<Gtk::UIManager> UIManager = Gtk::UIManager::create();
-	UIManager->insert_action_group(m_actiongroup);
+		Glib::RefPtr<Gtk::UIManager> UIManager = Gtk::UIManager::create();
+		UIManager->insert_action_group(m_actiongroup);
+		UIManager->add_ui_from_string(ui);
 
-	Glib::ustring ui = "<ui>"
-	"<popup name='Popup'>"
-	"	<menuitem action='Quit' />"
-	"</popup>"
-	"</ui>";
-
-	std::cout << ui << std::endl;
-
-	UIManager->add_ui_from_string(ui);
-
-	m_menu = dynamic_cast<Gtk::Menu*>(UIManager->get_widget("/Popup"));
+		m_menu = dynamic_cast<Gtk::Menu*>(UIManager->get_widget("/Popup"));
+	// -- end popup initialization
 }
 /*
 	right-click menu:

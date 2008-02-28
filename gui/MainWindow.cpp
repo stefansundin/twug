@@ -3,63 +3,45 @@
 MainWindow::MainWindow(Handler* p_handler)
 {
 	m_dontdoshit=false;
-	set_title("Twug UI 0.3");
 	m_handler = p_handler;
 
+	set_title("Twug UI 0.3");
 	//set_border_width(10);
-
 	Gtk::VBox* vbox = new Gtk::VBox();
  	add(*vbox);
 
-//initialize popup menu
+	//add popup menu
 	vbox->add(m_popup);
-	
-	//m_popup.append_text("Not Connected"); 
-	//m_popup.set_active_text("Not Connected");
 	m_popup.signal_changed().connect(sigc::mem_fun(*this,
               &MainWindow::on_popup_changed) );
 
-
-//add buttons
+	//add button
 	vbox->add(m_button);
 	m_button.set_label("Talk button");
 	m_button.signal_pressed().connect(sigc::mem_fun(*this,&MainWindow::on_button_pressed));
 	m_button.signal_released().connect(sigc::mem_fun(*this,&MainWindow::on_button_released));
 
-	show_all();
-}
+	//m_button.set_size_request(m_button.get_width(), m_button.get_height() );
 
-/*
-	VBox with 2 rows:
-		Popup menu:
-			Servers <GREYED TEXT>
-			[ ] Not connected
-			[X] Saved server 1
-			[ ] Saved server 2
-			(...)
-			---------------
-			Preferences...
-			About...
-			---------------
-			Quit this Application
-		TreeView:
-			<GREENICON> Channel 1
-				Random guy 1
-				Random guy 2
-				<yourself>
-				(...)
-			<REDICON> Channel 1
-				Random guy 3
-				(...)
-			(...)
-*/
+	//add treeview
+	m_columns = new mwColumns();
+	m_treestore = Gtk::TreeStore::create(*m_columns);
+	m_treeview = new Gtk::TreeView(m_treestore);
+	vbox->add(*m_treeview);
+	m_treeview->append_column("Name", m_columns->name);
+
+	show_all();
+
+	std::cout << m_button.get_width() << " " <<  m_button.get_height() << std::endl;
+	m_button.set_size_request(m_button.get_width(), m_button.get_height() );
+	m_treeview->set_size_request(180,400);
+}
 
 
 MainWindow::~MainWindow()
 {
 }
 
-//void MainWindow::reloadServers()
 void MainWindow::giveServers(std::vector<Glib::ustring> p_servers)
 {
 //todo: reconnect if ip for current server changed
@@ -75,7 +57,7 @@ void MainWindow::giveServers(std::vector<Glib::ustring> p_servers)
 		m_popup.clear_items();
 		m_popup.append_text("Not Connected");
 
-		std::cout << "MainWindow: Recieved new server list: ";
+		std::cout << "MainWindow: Received new server list: ";
 		for (int i=0;i<m_lastserverlist.size();i+=2)
 		{
 			m_popup.append_text(m_lastserverlist.at(i));
@@ -115,6 +97,7 @@ void MainWindow::on_popup_changed()
 			}
 		} else {
 			m_handler->connectToServer("0");
+			m_treestore->clear();
 		}
 	}
 }
@@ -131,23 +114,44 @@ std::string MainWindow::getServerIp(std::string text)
 	return text;
 }
 
-
 void MainWindow::reloadChannels()
 {
-	std::cout << "new channel list: \n";
+	m_treestore->clear();
+
 	std::vector<std::string> channels = m_handler->getChannels();
+
+	Gtk::TreeModel::iterator iter;
+
 	for(int i=0;i<channels.size();i++)
 	{
-		std::cout << channels.at(i) << std::endl;
-		std::vector<std::string> channelMembers = m_handler->getChannelMembers( channels.at(i) );
-		if(!channelMembers.empty())
-			for(int a=0;a<channelMembers.size();a++)
+		if(channels.at(i) == "__lobby__")
+		{
+			std::vector<std::string> channelMembers = m_handler->getChannelMembers( channels.at(i) );
+			if(!channelMembers.empty())
 			{
-				std::cout << "   " << channelMembers.at(a) << std::endl;
+				for(int a=0;a<channelMembers.size();a++)
+				{
+					iter = m_treestore->append();
+					(*iter)[m_columns->name] = channelMembers.at(a);
+				}
 			}
-	} 
-}
+		} else {
+			iter = m_treestore->append();
+			(*iter)[m_columns->name] = channels.at(i);
 
+			std::vector<std::string> channelMembers = m_handler->getChannelMembers( channels.at(i) );
+			if(!channelMembers.empty())
+			{
+				Gtk::TreeModel::iterator child_iter;
+				for(int a=0;a<channelMembers.size();a++)
+				{
+				child_iter = m_treestore->append(iter->children());
+				(*child_iter)[m_columns->name] = channelMembers.at(a);
+				}
+			}
+		}
+	}
+}
 
 void MainWindow::toggleVisibility()
 {
