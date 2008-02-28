@@ -12,7 +12,7 @@
 
 #define SAMPLE_RATE  (44100)
 #define FRAMES_PER_BUFFER (1024)
-#define NUM_SECONDS     (3)
+#define NUM_SECONDS     (7)
 #define NUM_CHANNELS    (1)
 
 #if 0
@@ -124,7 +124,6 @@ int main(int argc, char *argv[])
 	}
 	
 	/* AUDIO */
-
     PaStreamParameters  inputParameters;
     PaStream*           stream;
     PaError             err = paNoError;
@@ -192,8 +191,9 @@ int main(int argc, char *argv[])
 				fprintf(stderr,"send() sent a different number of bytes than expected (sent %d bytes, expected %d). file %s, line %d.\n",numBytesSent,data.frameIndex-sendFrameIndex,__FILE__,__LINE__);
 				exit(1);
 			}
-			printf("\rSending frame %d (%d) of %d           ",sendFrameIndex,data.frameIndex-sendFrameIndex,data.frameIndex);
 			sendFrameIndex+=numBytesSent;
+			printf("\rSending frame %d of %d (sent %d)          ",sendFrameIndex,data.frameIndex,data.frameIndex-sendFrameIndex);
+			fflush(stdout);
 		}
         //printf("index = %d\n", data.frameIndex ); fflush(stdout);
 

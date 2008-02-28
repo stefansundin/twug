@@ -16,7 +16,7 @@
 /* AUDIO */
 #define SAMPLE_RATE  (44100)
 #define FRAMES_PER_BUFFER (1024)
-#define NUM_SECONDS     (3)
+#define NUM_SECONDS     (7)
 #define NUM_CHANNELS    (1)
 
 #if 0
@@ -43,9 +43,11 @@ typedef unsigned char SAMPLE;
 
 typedef struct
 {
-    int          frameIndex;  /* Index into sample array. */
-    int          maxFrameIndex;
-    SAMPLE      *recordedSamples;
+	int play;
+    int frameIndex;
+    int maxFrameIndex;
+    int receivedFrameIndex;
+    SAMPLE *recordedSamples;
 }
 paTestData;
 
@@ -60,39 +62,55 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
     SAMPLE *wptr = (SAMPLE*)outputBuffer;
     unsigned int i;
     int finished;
-    unsigned int framesLeft = data->maxFrameIndex - data->frameIndex;
+    unsigned int framesLeft = data->maxFrameIndex - data->receivedFrameIndex;
 
     (void) inputBuffer; /* Prevent unused variable warnings. */
     (void) timeInfo;
     (void) statusFlags;
     (void) userData;
 
-    if( framesLeft < framesPerBuffer )
-    {
-        /* final buffer... */
-        for( i=0; i<framesLeft; i++ )
-        {
-            *wptr++ = *rptr++;  /* left */
-            if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
-        }
-        for( ; i<framesPerBuffer; i++ )
-        {
-            *wptr++ = 0;  /* left */
-            if( NUM_CHANNELS == 2 ) *wptr++ = 0;  /* right */
-        }
-        data->frameIndex += framesLeft;
-        finished = paComplete;
-    }
-    else
-    {
-        for( i=0; i<framesPerBuffer; i++ )
-        {
-            *wptr++ = *rptr++;  /* left */
-            if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
-        }
-        data->frameIndex += framesPerBuffer;
-        finished = paContinue;
-    }
+	if (!data->play) {
+		// silence
+		for( i=0; i<framesPerBuffer; i++ )
+	    {
+	        *wptr++ = 0;  /* left */
+	        if( NUM_CHANNELS == 2 ) *wptr++ = 0;  /* right */
+	    }
+	    finished = paContinue;
+	}
+	else {
+		if( framesLeft < framesPerBuffer )
+		{
+		    /* final buffer... */
+		    for( i=0; i<framesLeft; i++ )
+		    {
+		        *wptr++ = *rptr++;  /* left */
+		        if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
+		    }
+		    for( ; i<framesPerBuffer; i++ )
+		    {
+		        *wptr++ = 0;  /* left */
+		        if( NUM_CHANNELS == 2 ) *wptr++ = 0;  /* right */
+		    }
+		    data->frameIndex += framesLeft;
+		    if (data->frameIndex == data->maxFrameIndex) {
+			    finished = paComplete;
+			}
+			else {
+				finished=paContinue;
+			}
+		}
+		else
+		{
+		    for( i=0; i<framesPerBuffer; i++ )
+		    {
+		        *wptr++ = *rptr++;  /* left */
+		        if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
+		    }
+		    data->frameIndex += framesPerBuffer;
+		    finished = paContinue;
+		}
+	}
     return finished;
 }
 
@@ -108,6 +126,51 @@ int main(int argc, char *argv[]) {
 	/* <port> */
 	unsigned short serverport = atoi(argv[1]);
 
+
+	/* Audio */
+	printf("Initializing portaudio... "); fflush(stdout);
+	
+    PaStreamParameters  outputParameters;
+    PaStream*           stream;
+    PaError             err = paNoError;
+    paTestData          data;
+    int                 i;
+    int                 totalFrames;
+    int                 numSamples;
+    int                 numBytes;
+    SAMPLE              max, val;
+    double              average;
+
+    err = Pa_Initialize();
+    if( err != paNoError ) goto done;
+
+    data.frameIndex = 0;
+    data.maxFrameIndex = totalFrames = NUM_SECONDS * SAMPLE_RATE;
+    data.play=0;
+	data.receivedFrameIndex=0;
+
+    outputParameters.device = Pa_GetDefaultOutputDevice(); /* default output device */
+    outputParameters.channelCount = NUM_CHANNELS;                     /* stereo output */
+    outputParameters.sampleFormat = PA_SAMPLE_TYPE;
+    outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
+    outputParameters.hostApiSpecificStreamInfo = NULL;
+
+    err = Pa_OpenStream(
+              &stream,
+              NULL, /* no input */
+              &outputParameters,
+              SAMPLE_RATE,
+              FRAMES_PER_BUFFER,
+              paClipOff,      /* we won't output out of range samples so don't bother clipping them */
+              playCallback,
+              &data );
+    if( err != paNoError ) goto done;
+    
+    err = Pa_StartStream( stream );
+    if( err != paNoError ) goto done;
+
+	printf("done!\n"); fflush(stdout);
+
 	/* Create socket for incoming connections */
 	int serversock;
 	if ((serversock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -120,13 +183,14 @@ int main(int argc, char *argv[]) {
 	serveraddr.sin_family = AF_INET;                /* Internet address family */
 	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any incoming interface */
 	serveraddr.sin_port = htons(serverport);              /* Local port */
-	
+
 	/* Bind to the local address */
 	if (bind(serversock, (struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0) {
 		fprintf(stderr,"bind() failed. file %s, line %d.\n",__FILE__,__LINE__);
 		exit(1);
 	}
-	
+
+	printf("Waiting for connections... "); fflush(stdout);
 	/* Mark the socket so it will listen for incoming connections */
 	if (listen(serversock, MAXPENDING) < 0) {
 		fprintf(stderr,"listen() failed. file %s, line %d.\n",__FILE__,__LINE__);
@@ -147,7 +211,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	/* clientsock is connected to a client! */
-	printf("Client connected: %s\n", inet_ntoa(clientaddr.sin_addr));
+	printf("%s connected\n", inet_ntoa(clientaddr.sin_addr)); fflush(stdout);
 	
 	/* Get the length of the message */
 	int length;
@@ -158,36 +222,44 @@ int main(int argc, char *argv[]) {
 	printf("Length of message: %d bytes\n",length);
 	
 	/* Allocate size for message */
-	SAMPLE *message;
-	if ((message=(SAMPLE*)malloc(length)) == NULL) {
+	if ((data.recordedSamples=(SAMPLE*)malloc(length)) == NULL) {
 		fprintf(stderr,"malloc() failed. file %s, line %d.\n",__FILE__,__LINE__);
 		exit(1);
 	}
-
+	
 	/* Receive the message */
 	int bytesreceived;
-	int messagepos=0;
-	printf("Getting message: 0");
-	while (messagepos < length) {
+	printf("Getting message: 0"); fflush(stdout);
+	while (data.receivedFrameIndex < length) {
 		int bytestorecv=1000;
-		int recvwarning=0;
-		if (messagepos+bytestorecv > length) {
-			bytestorecv=length-messagepos;
+		if (data.receivedFrameIndex+bytestorecv > length) {
+			bytestorecv=length-data.receivedFrameIndex;
 		}
-		bytesreceived=recv(clientsock, message+messagepos, bytestorecv, 0);
-		messagepos+=bytesreceived;
-		printf("\rGetting message: %d (got %d)         ",messagepos,bytesreceived);
+		bytesreceived=recv(clientsock, data.recordedSamples+data.receivedFrameIndex, bytestorecv, 0);
+		data.receivedFrameIndex+=bytesreceived;
+		printf("\rGetting message: %d (got %d)         ",data.receivedFrameIndex,bytesreceived); fflush(stdout);
+		if (!data.play && data.receivedFrameIndex > 1000) {
+			data.play=1;
+		    printf("\rStarting playback.                 \n"); fflush(stdout);
+		}
 	}
 	printf("\n");
+    printf("Waiting for playback to finish... "); fflush(stdout);
 	
+    while( ( err = Pa_IsStreamActive( stream ) ) == 1 ) Pa_Sleep(100);
+    if( err < 0 ) goto done;
+    err = Pa_CloseStream( stream );
+    if( err != paNoError ) goto done;
+    printf(" done!\n");
+    
 	/* Verify that the length of the bytes expected and of the bytes received are the same */
-	if (length != messagepos) {
-		fprintf(stderr,"Didn't get the expected amount of bytes (got %d bytes). file %s, line %d.\n",messagepos,__FILE__,__LINE__);
+	if (length != data.receivedFrameIndex) {
+		fprintf(stderr,"Didn't get the expected amount of bytes (got %d bytes). file %s, line %d.\n",data.receivedFrameIndex,__FILE__,__LINE__);
 		exit(1);
 	}
 
 	/* We got the whole message */
-	printf("Received %d bytes\n", length);
+	printf("Received %d bytes!\n", length);
 	close(clientsock);    /* Close client socket */
 	
 	/* write to file */
@@ -203,44 +275,7 @@ int main(int argc, char *argv[]) {
         fclose( fid );
         printf("Wrote data to 'recorded-server.raw'\n");
     }*/
-
-	/* Play message */
-    PaStreamParameters  outputParameters;
-    PaStream*           stream;
-    PaError             err = paNoError;
-    paTestData          data;
-    int                 i;
-    int                 totalFrames;
-    int                 numSamples;
-    int                 numBytes;
-    SAMPLE              max, val;
-    double              average;
-
-    err = Pa_Initialize();
-    if( err != paNoError ) goto done;
-
-    data.frameIndex = 0;
-    data.maxFrameIndex = totalFrames = NUM_SECONDS * SAMPLE_RATE;
-	data.recordedSamples=message;
-
-    outputParameters.device = Pa_GetDefaultOutputDevice(); /* default output device */
-    outputParameters.channelCount = NUM_CHANNELS;                     /* stereo output */
-    outputParameters.sampleFormat = PA_SAMPLE_TYPE;
-    outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
-    outputParameters.hostApiSpecificStreamInfo = NULL;
-
-    printf("Begin playback.\n"); fflush(stdout);
-    err = Pa_OpenStream(
-              &stream,
-              NULL, /* no input */
-              &outputParameters,
-              SAMPLE_RATE,
-              FRAMES_PER_BUFFER,
-              paClipOff,      /* we won't output out of range samples so don't bother clipping them */
-              playCallback,
-              &data );
-    if( err != paNoError ) goto done;
-
+/*
     if( stream )
     {
         err = Pa_StartStream( stream );
@@ -255,7 +290,7 @@ int main(int argc, char *argv[]) {
         if( err != paNoError ) goto done;
         
         printf("Done.\n"); fflush(stdout);
-    }
+    }*/
 
 done:
     Pa_Terminate();
