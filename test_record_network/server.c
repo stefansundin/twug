@@ -62,7 +62,8 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
     SAMPLE *wptr = (SAMPLE*)outputBuffer;
     unsigned int i;
     int finished;
-    unsigned int framesLeft = data->maxFrameIndex - data->receivedFrameIndex;
+    unsigned int framesLeft = data->maxFrameIndex-data->frameIndex;
+    unsigned int framesToPlay = (framesLeft < framesPerBuffer?framesLeft:framesPerBuffer);
 
     (void) inputBuffer; /* Prevent unused variable warnings. */
     (void) timeInfo;
@@ -70,7 +71,7 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
     (void) userData;
 
 	if (!data->play) {
-		// silence
+		//Silence
 		for( i=0; i<framesPerBuffer; i++ )
 	    {
 	        *wptr++ = 0;  /* left */
@@ -79,36 +80,24 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
 	    finished = paContinue;
 	}
 	else {
-		if( framesLeft < framesPerBuffer )
-		{
-		    /* final buffer... */
-		    for( i=0; i<framesLeft; i++ )
-		    {
-		        *wptr++ = *rptr++;  /* left */
-		        if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
-		    }
-		    for( ; i<framesPerBuffer; i++ )
-		    {
-		        *wptr++ = 0;  /* left */
-		        if( NUM_CHANNELS == 2 ) *wptr++ = 0;  /* right */
-		    }
-		    data->frameIndex += framesLeft;
-		    if (data->frameIndex == data->maxFrameIndex) {
-			    finished = paComplete;
-			}
-			else {
-				finished=paContinue;
-			}
+		//We got some audio to play
+	    for( i=0; i < framesToPlay; i++ )
+	    {
+	        *wptr++ = *rptr++;  /* left */
+	        if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
+	    }
+	    //Fill the rest of the buffer with silence
+	    for( ; i<framesPerBuffer; i++ )
+	    {
+	        *wptr++ = 0;  /* left */
+	        if( NUM_CHANNELS == 2 ) *wptr++ = 0;  /* right */
+	    }
+	    data->frameIndex += framesToPlay;
+	    if (data->frameIndex == data->maxFrameIndex) {
+		    finished = paComplete;
 		}
-		else
-		{
-		    for( i=0; i<framesPerBuffer; i++ )
-		    {
-		        *wptr++ = *rptr++;  /* left */
-		        if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
-		    }
-		    data->frameIndex += framesPerBuffer;
-		    finished = paContinue;
+		else {
+			finished=paContinue;
 		}
 	}
     return finished;
@@ -190,7 +179,7 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	printf("Waiting for connections... "); fflush(stdout);
+	printf("Waiting for connection... "); fflush(stdout);
 	/* Mark the socket so it will listen for incoming connections */
 	if (listen(serversock, MAXPENDING) < 0) {
 		fprintf(stderr,"listen() failed. file %s, line %d.\n",__FILE__,__LINE__);
@@ -238,7 +227,7 @@ int main(int argc, char *argv[]) {
 		bytesreceived=recv(clientsock, data.recordedSamples+data.receivedFrameIndex, bytestorecv, 0);
 		data.receivedFrameIndex+=bytesreceived;
 		printf("\rGetting message: %d (got %d)         ",data.receivedFrameIndex,bytesreceived); fflush(stdout);
-		if (!data.play && data.receivedFrameIndex > 1000) {
+		if (!data.play && data.receivedFrameIndex > FRAMES_PER_BUFFER*5) {
 			data.play=1;
 		    printf("\rStarting playback.                 \n"); fflush(stdout);
 		}
@@ -250,7 +239,7 @@ int main(int argc, char *argv[]) {
     if( err < 0 ) goto done;
     err = Pa_CloseStream( stream );
     if( err != paNoError ) goto done;
-    printf(" done!\n");
+    printf("done!\n");
     
 	/* Verify that the length of the bytes expected and of the bytes received are the same */
 	if (length != data.receivedFrameIndex) {
@@ -261,36 +250,6 @@ int main(int argc, char *argv[]) {
 	/* We got the whole message */
 	printf("Received %d bytes!\n", length);
 	close(clientsock);    /* Close client socket */
-	
-	/* write to file */
-    /*FILE  *fid;
-    fid = fopen("recorded-server.raw", "wb");
-    if( fid == NULL )
-    {
-        printf("Could not open file.");
-    }
-    else
-    {
-        fwrite( message, 1, length, fid );
-        fclose( fid );
-        printf("Wrote data to 'recorded-server.raw'\n");
-    }*/
-/*
-    if( stream )
-    {
-        err = Pa_StartStream( stream );
-        if( err != paNoError ) goto done;
-        
-        printf("Waiting for playback to finish.\n"); fflush(stdout);
-
-        while( ( err = Pa_IsStreamActive( stream ) ) == 1 ) Pa_Sleep(100);
-        if( err < 0 ) goto done;
-        
-        err = Pa_CloseStream( stream );
-        if( err != paNoError ) goto done;
-        
-        printf("Done.\n"); fflush(stdout);
-    }*/
 
 done:
     Pa_Terminate();
