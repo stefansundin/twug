@@ -37,18 +37,20 @@ public:
 	Gtk::CheckButton *m_chkbtn_blinking;
 	virtual void loadSettings();
 	std::vector<Glib::ustring> getServerList();
-	virtual void on_tree_changed();
+
 protected:
 	MainWindow* m_window;
+	Gtk::StatusIcon* m_icon;	
+
 	void reloadServers();
+
 	Columns *m_columns;
-	//Gtk::ListStore *m_serverstore;
 	Gtk::TreeView *m_serverlist;
 	Glib::RefPtr<Gtk::ListStore> m_serverstore;
 	Glib::RefPtr<Gnome::Conf::Client> m_gconf;
-	Gtk::StatusIcon* m_icon;
-	virtual void on_button_clicked();
 
+	virtual void on_button_clicked();
+	virtual void on_tree_changed();
 	virtual void onGConfChanged(const Glib::ustring&, const Gnome::Conf::Value&);
 
 };

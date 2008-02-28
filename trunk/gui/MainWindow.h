@@ -11,6 +11,19 @@
 #include <gtkmm/comboboxtext.h>
 #include "../handler/Handler.h"
 
+#include <gtkmm/treeview.h>
+#include <gtkmm/treestore.h>
+
+class mwColumns : public Gtk::TreeModelColumnRecord
+{
+public:
+	Gtk::TreeModelColumn<Glib::ustring> name;
+	mwColumns()
+	{
+		add(name);
+	}
+};
+
 class MainWindow : public Gtk::Window
 {
 public:
@@ -30,6 +43,11 @@ protected:
 	Handler* m_handler;
 	std::string getServerIp(std::string text);
 	bool m_dontdoshit;
+
+	//treeview stuff:
+	mwColumns *m_columns;
+	Gtk::TreeView *m_treeview;
+	Glib::RefPtr<Gtk::TreeStore> m_treestore;
 };
 
 #endif
