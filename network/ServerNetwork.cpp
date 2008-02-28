@@ -79,7 +79,7 @@ void ServerNetwork::processNetworking()
 		{
 			if(i == m_accepting_socket)
 			{
-//				printf("accepting new connection\n");
+				printf("accepting new connection\n");
 
 				int new_client_socket = accept(m_accepting_socket, NULL, NULL);
 				if(new_client_socket == -1)
@@ -91,7 +91,7 @@ void ServerNetwork::processNetworking()
 			}
 			else	//this is a client sending us data, update its buffer
 			{
-//				printf("updating buffer\n");
+				printf("updating buffer\n");
 				if(!updateBuffer(i))
 				{
 					disconnectClient(i);

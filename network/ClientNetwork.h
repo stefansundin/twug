@@ -14,7 +14,7 @@ public:
 	int disconnect();
 	void loginRequest(std::string p_user, std::string p_password);
 	void logout();
-	void sendText(std::string p_to_username, std::string p_message){}
+	void sendText(std::string p_to_username, std::string p_message);
 
 	bool processNetworking();
 
