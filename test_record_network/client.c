@@ -12,7 +12,7 @@
 
 #define SAMPLE_RATE  (44100)
 #define FRAMES_PER_BUFFER (1024)
-#define NUM_SECONDS     (7)
+#define NUM_SECONDS     (60)
 #define NUM_CHANNELS    (1)
 
 #if 0
@@ -39,9 +39,10 @@ typedef unsigned char SAMPLE;
 
 typedef struct
 {
-    int          frameIndex;  /* Index into sample array. */
-    int          maxFrameIndex;
-    SAMPLE      *recordedSamples;
+    SAMPLE *samples;
+    int frameIndex;
+    int maxFrameIndex;
+    int tx_pos;
 }
 paTestData;
 
@@ -53,16 +54,11 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
 {
     paTestData *data = (paTestData*)userData;
     const SAMPLE *rptr = (const SAMPLE*)inputBuffer;
-    SAMPLE *wptr = &data->recordedSamples[data->frameIndex * NUM_CHANNELS];
+    SAMPLE *wptr = &data->samples[data->frameIndex * NUM_CHANNELS];
     long framesToCalc;
     long i;
     int finished;
     unsigned long framesLeft = data->maxFrameIndex - data->frameIndex;
-
-    (void) outputBuffer; /* Prevent unused variable warnings. */
-    (void) timeInfo;
-    (void) statusFlags;
-    (void) userData;
 
     if( framesLeft < framesPerBuffer )
     {
@@ -103,11 +99,13 @@ int main(int argc, char *argv[])
 		fprintf(stderr,"%s: Usage: %s <ip> <port>\n", argv[0], argv[0]);
 		exit(1);
 	}
+	
+	printf("Connecting to %s:%s... ",argv[1],argv[2]);
 
 	/* Establish connection */
 	int sock;
 	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		fprintf(stderr,"%s: socket() failed. file %s, line %d.\n",argv[0],__FILE__,__LINE__);
+		fprintf(stderr,"failed.\nsocket() failed. file %s, line %d.\n",__FILE__,__LINE__);
 		exit(1);
 	}
 
@@ -119,39 +117,33 @@ int main(int argc, char *argv[])
 
 	/* Establish the connection to the server */
 	if (connect(sock, (struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0) {
-		fprintf(stderr,"%s: connect() failed. file %s, line %d.\n",argv[0],__FILE__,__LINE__);
+		fprintf(stderr,"failed.\nconnect() failed. file %s, line %d.\n",__FILE__,__LINE__);
 		exit(1);
 	}
+	
+	printf("success!\n");
 	
 	/* AUDIO */
     PaStreamParameters  inputParameters;
     PaStream*           stream;
     PaError             err = paNoError;
     paTestData          data;
-    //int                 i;
-    int                 totalFrames;
-    int                 numSamples;
-    int                 numBytes;
     SAMPLE              max, val;
     double              average;
 
-    data.maxFrameIndex = totalFrames = NUM_SECONDS * SAMPLE_RATE; /* Record for a few seconds. */
+    data.maxFrameIndex = NUM_SECONDS * SAMPLE_RATE;
     data.frameIndex = 0;
-    numSamples = totalFrames * NUM_CHANNELS;
-    numBytes = numSamples * sizeof(SAMPLE);
-    data.recordedSamples = (SAMPLE*) malloc( numBytes ); /* From now on, recordedSamples is initialised. */
-    if( data.recordedSamples == NULL )
-    {
-        printf("Could not allocate record array.\n");
-        goto done;
+    data.tx_pos = 0;
+    if ((data.samples = (SAMPLE*)malloc(sizeof(SAMPLE)*NUM_CHANNELS*data.maxFrameIndex)) == NULL) {
+		fprintf(stderr,"malloc() failed. file %s, line %d.\n",__FILE__,__LINE__);
+		exit(1);
     }
-	memset(data.recordedSamples,0,numSamples);
-    //for( i=0; i<numSamples; i++ ) data.recordedSamples[i] = 0;
+	//memset(data.samples,0,sizeof(SAMPLE)*NUM_CHANNELS*data.maxFrameIndex);
 
+	/* Send info about the data */
 	int numBytesSent;
-	/* Send the length of recordedSamples */
-	printf("recordedSamples length: %d bytes.\n",numBytes);
-	if ((numBytesSent=send(sock, &numBytes, sizeof(numBytes), 0)) != sizeof(numBytes)) {
+	printf("maxFrameIndex: %d frames.\n",data.maxFrameIndex);
+	if ((numBytesSent=send(sock, &data.maxFrameIndex, sizeof(data.maxFrameIndex), 0)) != sizeof(data.maxFrameIndex)) {
 		fprintf(stderr,"send() sent a different number of bytes than expected (sent %d bytes). file %s, line %d.\n",numBytesSent,__FILE__,__LINE__);
 		exit(1);
 	}
@@ -181,22 +173,18 @@ int main(int argc, char *argv[])
     if( err != paNoError ) goto done;
     printf("Now recording!!\n"); fflush(stdout);
 	
-	int sendFrameIndex=0;
     while( ( err = Pa_IsStreamActive( stream ) ) == 1 )
     {
         Pa_Sleep(10);
 		/* Send unsent frames */
-		if (sendFrameIndex < data.frameIndex) {
-			if ((numBytesSent=send(sock, data.recordedSamples+sendFrameIndex, data.frameIndex-sendFrameIndex, 0)) != data.frameIndex-sendFrameIndex) {
-				fprintf(stderr,"send() sent a different number of bytes than expected (sent %d bytes, expected %d). file %s, line %d.\n",numBytesSent,data.frameIndex-sendFrameIndex,__FILE__,__LINE__);
+		if (data.tx_pos < sizeof(SAMPLE)*NUM_CHANNELS*data.frameIndex) {
+			if ((numBytesSent=send(sock, data.samples+data.tx_pos, sizeof(SAMPLE)*NUM_CHANNELS*data.frameIndex-data.tx_pos, 0)) != sizeof(SAMPLE)*NUM_CHANNELS*data.frameIndex-data.tx_pos) {
+				fprintf(stderr,"send() sent a different number of bytes than expected (sent %d bytes, expected %d). file %s, line %d.\n",numBytesSent,sizeof(SAMPLE)*NUM_CHANNELS*data.frameIndex-data.tx_pos,__FILE__,__LINE__);
 				exit(1);
 			}
-			sendFrameIndex+=numBytesSent;
-			printf("\rSending frame %d of %d (sent %d)          ",sendFrameIndex,data.frameIndex,data.frameIndex-sendFrameIndex);
-			fflush(stdout);
+			printf("\rSending byte %d of %d (sent %d bytes)          ",data.tx_pos,data.maxFrameIndex,numBytesSent); fflush(stdout);
+			data.tx_pos+=numBytesSent;
 		}
-        //printf("index = %d\n", data.frameIndex ); fflush(stdout);
-
     }
     printf("\n");
     if( err < 0 ) goto done;
@@ -204,24 +192,10 @@ int main(int argc, char *argv[])
     err = Pa_CloseStream( stream );
     if( err != paNoError ) goto done;
 
-	/* write to file */
-    /*FILE  *fid;
-    fid = fopen("recorded-client.raw", "wb");
-    if( fid == NULL )
-    {
-        printf("Could not open file.");
-    }
-    else
-    {
-        fwrite( data.recordedSamples, 1, numBytes, fid );
-        fclose( fid );
-        printf("Wrote data to 'recorded-client.raw'\n");
-    }*/
-
 done:
     Pa_Terminate();
-//    if( data.recordedSamples )       /* Sure it is NULL or valid. */
-//        free( data.recordedSamples );
+    if( data.samples )       /* Sure it is NULL or valid. */
+        free( data.samples );
     if( err != paNoError )
     {
         fprintf( stderr, "An error occured while using the portaudio stream\n" );
@@ -229,11 +203,6 @@ done:
         fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
 	    return 1;
     }
-
-	/* Send recordedSamples */
-
-
-
 
 	/* close socket */
 	close(sock);
