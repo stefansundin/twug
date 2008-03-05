@@ -32,9 +32,10 @@ MainWindow::MainWindow(Handler* p_handler)
 
 	show_all();
 
-	std::cout << m_button.get_width() << " " <<  m_button.get_height() << std::endl;
-	m_button.set_size_request(m_button.get_width(), m_button.get_height() );
+
 	m_treeview->set_size_request(180,400);
+
+	m_button.set_border_width(5);
 }
 
 
