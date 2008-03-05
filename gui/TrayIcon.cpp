@@ -1,7 +1,7 @@
 #include "TrayIcon.h"
 
 
-TrayIcon::TrayIcon(MainWindow* p_window) : m_menu(0)
+TrayIcon::TrayIcon(MainWindow* p_window)
 {
 	m_window = p_window;
 	set(Gtk::Stock::NEW);
@@ -11,7 +11,8 @@ TrayIcon::TrayIcon(MainWindow* p_window) : m_menu(0)
 	// -- start popup initialization
 		m_actiongroup = Gtk::ActionGroup::create();
 		m_actiongroup->add(Gtk::Action::create("Popup", "Popup"));
-		m_actiongroup->add(Gtk::Action::create("Quit", Gtk::Stock::QUIT), sigc::mem_fun(*this, &TrayIcon::on_menu_quit) );
+		m_actiongroup->add(Gtk::Action::create("Quit", Gtk::Stock::QUIT),
+			sigc::mem_fun(*this, &TrayIcon::on_menu_quit) );
 
 		Glib::ustring ui = "<ui>"
 		"<popup name='Popup'>"
@@ -26,13 +27,8 @@ TrayIcon::TrayIcon(MainWindow* p_window) : m_menu(0)
 		m_menu = dynamic_cast<Gtk::Menu*>(UIManager->get_widget("/Popup"));
 	// -- end popup initialization
 }
-/*
-	right-click menu:
-		Hide/show channel list(BOLD,SAME AS LEFT CLICK)
-		-------
-		About Twug...
-		Quit
-*/
+
+
 
 TrayIcon::~TrayIcon()
 {
