@@ -20,7 +20,6 @@ public:
 	unsigned char getPrivileges();
 
 	void setChannel(Channel *p_channel);
-	void setUsername(std::string p_username);
 	void setPrivileges(unsigned char p_privileges);
 
 //the ChannelList keeps track of this

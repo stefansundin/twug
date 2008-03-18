@@ -40,21 +40,17 @@ bool ChannelList::removeChannel(std::string p_name)
 
 bool ChannelList::newClient(int p_socket, std::string p_name)
 {
-		try
-		{
+	printf("newClient()\np_socket=%d\np_name=%s\n", p_socket, p_name.c_str());
+
 	std::map<int, Client*>::iterator citr;
 	for(citr = m_clients.begin(); citr != m_clients.end(); citr++)
 	{
 		if((*citr).second->getUsername() == p_name)
 			return false;
 	}
-		}
-		catch(...)
-		{
-			printf("0x0000\n");
-		}
 
 	Client *c = new Client(p_name);
+	printf("adding c=%x to m_clients at p_socket=%d\n", c, p_socket);
 	m_clients[p_socket] = c;
 	changeClientChannel(p_name, LOBBY, "");		//move the new client to the lobby
 }
@@ -77,7 +73,25 @@ bool ChannelList::removeClient(std::string p_name)
 }
 bool ChannelList::removeClient(int p_socket)
 {
-	return removeClient(m_clients[p_socket]->getUsername());
+	Client *c = m_clients[p_socket];
+	printf("removeClient()\n");
+	printf("m_clients.size() = %d\n", m_clients.size());
+	printf("p_socket = %d\nc = %x\n", p_socket, c);
+	got_here();
+	if(c == 0)
+	{
+		printf("m_clients[%d] return a fucking NULL pointer!\n", p_socket);
+		return false;
+	}
+	Client a = *c;
+	got_here();
+	std::string hej;
+	got_here();
+	hej = a.getUsername();
+	got_here();
+	hej = c->getUsername();
+	got_here();
+	return removeClient(hej);
 }
 
 
