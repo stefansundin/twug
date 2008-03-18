@@ -9,6 +9,7 @@ Client::Client()
 Client::Client(std::string p_username)
 {
 	m_channel = NULL;
+	printf("setting m_username to %s\n", m_username.c_str());
 	m_username = p_username;
 	m_privileges = 0x0;
 }
@@ -23,6 +24,8 @@ Channel* Client::getChannel()
 }
 std::string Client::getUsername()
 {
+	printf("getUsername()\n");
+	printf("returning %s\n", m_username.c_str());
 	return m_username;
 }
 unsigned char Client::getPrivileges()
@@ -34,10 +37,6 @@ unsigned char Client::getPrivileges()
 void Client::setChannel(Channel *p_channel)
 {
 	m_channel = p_channel;
-}
-void Client::setUsername(std::string p_username)
-{
-	m_username = p_username;
 }
 void Client::setPrivileges(unsigned char p_privileges)
 {
