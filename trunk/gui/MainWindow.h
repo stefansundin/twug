@@ -14,6 +14,8 @@
 
 #include <gtkmm/treeview.h>
 #include <gtkmm/treestore.h>
+#include <gtkmm/menu.h>
+//#include <gtkmm.h>
 
 class mwColumns : public Gtk::TreeModelColumnRecord
 {
@@ -46,12 +48,18 @@ protected:
 	bool m_dontdoshit;
 
 	//treeview stuff:
+
+	Glib::ustring getSelectionValue();
 	mwColumns *m_columns;
 	Gtk::TreeView *m_treeview;
 	Glib::RefPtr<Gtk::TreeStore> m_treestore;
 
+	void on_person_clicked(GdkEventButton* evb);
+	void on_menuitem_clicked();
+
 	//MessageHandler* m_msgs;
 	MessageHandler* m_msghandler;
+	Gtk::Menu* m_menu;
 };
 
 #endif
