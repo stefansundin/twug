@@ -5,6 +5,7 @@
 #include "MainWindow.h"
 #include "../handler/Handler.h"
 #include "PrefsWindow.h"
+//#include "MessageHandler.h"
 
 class AppMan
 {

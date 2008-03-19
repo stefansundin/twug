@@ -36,6 +36,9 @@ public:
 
 	void iStopTalking();
 	//körs när du släpper push-to-talk
+
+	void postMessage(std::string destination, std::string contents);
+	//skicka textmeddelande till användaren "destination" med innehållet "contents" 
 private:
 	void disconnect();
 	std::string m_connectedTo;

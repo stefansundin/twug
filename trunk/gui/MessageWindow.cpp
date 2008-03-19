@@ -1,0 +1,77 @@
+#include "MessageWindow.h"
+
+MessageWindow::MessageWindow(std::string p_name, Handler* p_handler)
+{
+	m_myname = "<myself>"; //temp
+	m_handler = p_handler;
+	m_name = p_name;
+
+	set_border_width(10);
+	set_title("Text conversation with " + m_name);
+
+	//m_buffer = new Gtk::TextBuffer();
+
+	Gtk::VBox* vbox = new Gtk::VBox();
+	m_scrolled = new Gtk::ScrolledWindow();	
+
+	m_textview = new Gtk::TextView(); 
+	m_buffer = m_textview->get_buffer();
+	m_textview->set_editable(false);
+
+	m_scrolled->add(*m_textview);
+	m_scrolled->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+	//vbox->add(*m_textview);
+	vbox->add(*m_scrolled);
+	 
+	Gtk::HBox* hbox = new Gtk::HBox();
+	
+	m_entry = new Gtk::Entry(); 
+	hbox->add(*m_entry);
+	m_button = new Gtk::Button("Send");
+	hbox->add(*m_button);
+
+	vbox->add(*hbox);
+	
+	add(*vbox);
+
+
+	m_textview->set_size_request(280,220);
+	m_textview->set_wrap_mode(Gtk::WRAP_CHAR);
+	m_button->signal_clicked().connect(sigc::mem_fun(*this,&MessageWindow::sendEntry));
+	m_entry->signal_activate().connect(sigc::mem_fun(*this,&MessageWindow::sendEntry));
+
+	show_all();
+}
+
+void MessageWindow::giveMessage(std::string p_msg)
+{
+	std::cout << "MessageWindow(" << m_name << "): Recieved new message: " << p_msg << std::endl;
+	//std::string kaka = p_msg;
+
+	m_buffer->insert(m_buffer->end(), m_name+": "+p_msg+"\n");
+	//m_buffer->set_text(p_msg);
+	scrollDown();
+}
+
+std::string MessageWindow::getName()
+{
+	return m_name;
+}
+
+void MessageWindow::sendEntry()
+{
+	std::string msg = m_entry->get_text();
+	m_entry->set_text("");
+
+	m_handler->postMessage(m_name,msg);
+
+	m_buffer->insert(m_buffer->end(), m_myname+": "+msg+"\n");
+	scrollDown();
+}
+
+void MessageWindow::scrollDown()
+{
+	Gtk::Adjustment* adj = m_scrolled->get_vadjustment();
+	
+	adj->set_value( adj->get_upper() );	
+}

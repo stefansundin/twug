@@ -2,10 +2,13 @@
 
 MainWindow::MainWindow(Handler* p_handler)
 {
+	m_msghandler = new MessageHandler(m_handler);
+
+
 	m_dontdoshit=false;
 	m_handler = p_handler;
 
-	set_title("Twug UI 0.3");
+	set_title("Twug");
 	//set_border_width(10);
 	Gtk::VBox* vbox = new Gtk::VBox();
  	add(*vbox);
@@ -63,6 +66,7 @@ void MainWindow::giveServers(std::vector<Glib::ustring> p_servers)
 		{
 			m_popup.append_text(m_lastserverlist.at(i));
 			std::cout << m_lastserverlist.at(i+1) << " ";
+			//m_msgs->showWindow(m_lastserverlist.at(i));
 		}
 		std::cout << std::endl;
 
@@ -72,14 +76,17 @@ void MainWindow::giveServers(std::vector<Glib::ustring> p_servers)
 
 void MainWindow::on_button_pressed()
 {
-  //std::cout << "button pressed" << std::endl;
-  m_handler->iStartTalking();
+	//std::cout << "button pressed" << std::endl;
+	m_handler->iStartTalking();
 }
 
 void MainWindow::on_button_released()
 {
-  //std::cout << "button released" << std::endl;
-  m_handler->iStopTalking();
+	//std::cout << "button released" << std::endl;
+	m_handler->iStopTalking();
+	std::string kaka = "Basse";
+	std::string kaka2 = "Hejsan";
+	m_msghandler->handleMessage(kaka,kaka2); 
 }
 
 void MainWindow::on_popup_changed()
