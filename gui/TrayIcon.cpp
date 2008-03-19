@@ -1,9 +1,12 @@
 #include "TrayIcon.h"
 
 
-TrayIcon::TrayIcon(MainWindow* p_window)
+TrayIcon::TrayIcon(MainWindow* p_window, PrefsWindow* p_prefswindow)
 {
+	m_restoreprefs = false;
 	m_window = p_window;
+	m_prefswindow = p_prefswindow;
+
 	set(Gtk::Stock::NEW);
 	signal_activate().connect(sigc::mem_fun(*this,&TrayIcon::on_clicked));
 	signal_popup_menu().connect(sigc::mem_fun(*this,&TrayIcon::on_popup));
@@ -43,6 +46,22 @@ void TrayIcon::on_clicked()
 {
 	std::cout << "clicked tray icon" << std::endl;
 	
+	if (m_window->is_visible())
+	{
+		if(m_prefswindow->is_visible())
+			{
+				m_prefswindow->toggleVisibility();
+				m_restoreprefs = true;
+			}
+	} else {
+		if(m_restoreprefs)
+		{
+			m_prefswindow->show();
+			m_restoreprefs=false;
+		}
+	}
+
+
 	m_window->toggleVisibility();
 }
 
@@ -50,5 +69,6 @@ void TrayIcon::on_popup(const unsigned int& btn, const unsigned int& time)
 {
 	std::cout << "open menu\n";
 	//popup_menu_at_position (Menu& menu, guint  	button, guint32 activate_time)	
-	popup_menu_at_position (*m_menu, btn, time);	
+	//popup_menu_at_position (*m_menu, btn, time);	
+	m_prefswindow->toggleVisibility();	
 }

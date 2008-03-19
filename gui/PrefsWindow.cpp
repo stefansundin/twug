@@ -1,8 +1,8 @@
 #include "PrefsWindow.h"
 
-PrefsWindow::PrefsWindow(TrayIcon* p_icon, MainWindow* p_window)
+PrefsWindow::PrefsWindow(MainWindow* p_window)
 {
-	m_icon = p_icon;
+	//m_icon = p_icon;
 	m_window = p_window;
 
 	set_title("Twug Preferences");
@@ -107,7 +107,15 @@ void PrefsWindow::on_button_clicked()
 {
   bool active = m_chkbtn_blinking->get_active();
 
-  m_icon->set_blinking( active );
+  //m_icon->set_blinking( active );
   m_gconf->set("/apps/twug/use_blinking_trayicon",active);
 }
 
+void PrefsWindow::toggleVisibility()
+{
+	std::cout << "toggling" << std::endl;
+	if(!is_visible())
+	  	show();
+	else
+		hide();
+}

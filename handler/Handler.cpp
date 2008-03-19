@@ -97,3 +97,9 @@ void Handler::iStopTalking()
 	if (m_connectedTo!="0")
 		std::cout << "Handler: Push-to-talk now inactive\n";
 }
+
+
+void Handler::postMessage(std::string destination, std::string contents)
+{
+	std::cout << "Handler: Message \"" << contents << "\" posted to user named \"" << destination << "\"\n"; 	
+}

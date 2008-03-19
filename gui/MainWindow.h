@@ -10,6 +10,7 @@
 #include <string>
 #include <gtkmm/comboboxtext.h>
 #include "../handler/Handler.h"
+#include "MessageHandler.h"
 
 #include <gtkmm/treeview.h>
 #include <gtkmm/treestore.h>
@@ -48,6 +49,9 @@ protected:
 	mwColumns *m_columns;
 	Gtk::TreeView *m_treeview;
 	Glib::RefPtr<Gtk::TreeStore> m_treestore;
+
+	//MessageHandler* m_msgs;
+	MessageHandler* m_msghandler;
 };
 
 #endif

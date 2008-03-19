@@ -13,7 +13,7 @@
 #include <glibmm/slisthandle.h>
 #include <iostream>
 #include <gconfmm-2.6/gconfmm.h>
-#include "TrayIcon.h"
+//#include "TrayIcon.h"
 #include <vector>
 #include "MainWindow.h"
 
@@ -32,15 +32,15 @@ public:
 class PrefsWindow : public Gtk::Window
 {
 public:
-	PrefsWindow(TrayIcon* p_icon,MainWindow* p_window);
+	PrefsWindow(/*TrayIcon* p_icon,*/MainWindow* p_window);
 	virtual ~PrefsWindow();
 	Gtk::CheckButton *m_chkbtn_blinking;
 	virtual void loadSettings();
 	std::vector<Glib::ustring> getServerList();
-
+	void toggleVisibility();
 protected:
 	MainWindow* m_window;
-	Gtk::StatusIcon* m_icon;	
+	//Gtk::StatusIcon* m_icon;	
 
 	void reloadServers();
 
