@@ -20,13 +20,18 @@ MainWindow::MainWindow(Handler* p_handler)
 
 	//add button
 	vbox->add(m_button);
-	m_button.set_label("Talk button");
+	m_button.set_label("Temp test button");
 	m_button.signal_pressed().connect(sigc::mem_fun(*this,&MainWindow::on_button_pressed));
 	m_button.signal_released().connect(sigc::mem_fun(*this,&MainWindow::on_button_released));
 
 	//m_button.set_size_request(m_button.get_width(), m_button.get_height() );
 
 	//add treeview
+	m_menu = new Gtk::Menu();
+
+	m_menu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Message", sigc::mem_fun(
+		*this,&MainWindow::on_menuitem_clicked) ));
+
 	m_columns = new mwColumns();
 	m_treestore = Gtk::TreeStore::create(*m_columns);
 	m_treeview = new Gtk::TreeView(m_treestore);
@@ -39,6 +44,8 @@ MainWindow::MainWindow(Handler* p_handler)
 	m_treeview->set_size_request(180,400);
 
 	m_button.set_border_width(5);
+
+	m_treeview->signal_button_press_event().connect_notify(sigc::mem_fun(*this,&MainWindow::on_person_clicked));
 }
 
 
@@ -168,4 +175,31 @@ void MainWindow::toggleVisibility()
 	  	show();
 	else
 		hide();
+}
+
+
+void MainWindow::on_menuitem_clicked()
+{
+	//Gtk::TreeModel::iterator iter = m_treeview->get_selection()->get_selected();
+	//Glib::ustring temp = (*iter)[m_columns->name];
+
+	m_msghandler->showWindow( getSelectionValue() );	
+}
+
+Glib::ustring MainWindow::getSelectionValue()
+{
+	Gtk::TreeModel::iterator iter = m_treeview->get_selection()->get_selected();
+	Glib::ustring temp = (*iter)[m_columns->name];
+	return temp; 
+}
+
+
+void MainWindow::on_person_clicked(GdkEventButton* evb)
+{
+	//bool val = m_treeview.on_button_press_event(evb);
+
+	if( (evb->type == GDK_BUTTON_PRESS) && (evb->button == 3) )
+	{
+		m_menu->popup(evb->button,evb->time);
+	}	
 }

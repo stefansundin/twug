@@ -17,7 +17,8 @@ protected:
 	PrefsWindow* m_prefswindow;
 	virtual void on_clicked();
 	virtual void on_popup(const unsigned int&, const unsigned int&);
-	void on_menu_quit();
+	void on_action_quit();
+	void on_action_prefs();
 	Glib::RefPtr<Gtk::ActionGroup> m_actiongroup;
 	Gtk::Menu* m_menu;
 	bool m_restoreprefs;
