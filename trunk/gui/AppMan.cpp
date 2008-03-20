@@ -3,7 +3,6 @@
 
 AppMan::AppMan()
 {
-	//initialize the Handler
 	m_handler = new Handler();
 
 	m_window = new MainWindow(m_handler);
@@ -14,11 +13,6 @@ AppMan::AppMan()
 	m_prefswindow->loadSettings();
 
 	m_window->show();
-	m_prefswindow->hide();
-	
-/*
-networkmanager integration	
-*/
 }
 
 

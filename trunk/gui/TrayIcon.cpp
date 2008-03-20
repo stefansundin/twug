@@ -30,8 +30,6 @@ TrayIcon::~TrayIcon()
 
 void TrayIcon::on_clicked()
 {
-	std::cout << "clicked tray icon" << std::endl;
-	
 	if (m_window->is_visible())
 	{
 		if(m_prefswindow->is_visible())

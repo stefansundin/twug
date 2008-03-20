@@ -15,6 +15,8 @@
 class MessageWindow : public Gtk::Window
 {
 private:
+	void scrollDown();
+	
 	Handler* m_handler;
 	std::string m_name;
 	std::string m_myname;
@@ -24,8 +26,6 @@ private:
 	Gtk::Button* m_button;
 	Gtk::Entry* m_entry;
 	Gtk::ScrolledWindow* m_scrolled;
-
-	void scrollDown();
 public:
 	MessageWindow(std::string p_name, Handler* p_handler);
 	void giveMessage(std::string p_msg);

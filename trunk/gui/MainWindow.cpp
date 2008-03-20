@@ -2,6 +2,8 @@
 
 MainWindow::MainWindow(Handler* p_handler)
 {
+	m_autoopen = false;
+
 	m_msghandler = new MessageHandler(m_handler);
 
 
@@ -23,8 +25,6 @@ MainWindow::MainWindow(Handler* p_handler)
 	m_button.set_label("Temp test button");
 	m_button.signal_pressed().connect(sigc::mem_fun(*this,&MainWindow::on_button_pressed));
 	m_button.signal_released().connect(sigc::mem_fun(*this,&MainWindow::on_button_released));
-
-	//m_button.set_size_request(m_button.get_width(), m_button.get_height() );
 
 	//add treeview
 	m_menu = new Gtk::Menu();
@@ -55,7 +55,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::giveServers(std::vector<Glib::ustring> p_servers)
 {
-//todo: reconnect if ip for current server changed
+//todo: reconnect if ip for current server changed(?)
 	m_lastserverlist = p_servers;
 
 	Glib::ustring temp;
@@ -73,7 +73,6 @@ void MainWindow::giveServers(std::vector<Glib::ustring> p_servers)
 		{
 			m_popup.append_text(m_lastserverlist.at(i));
 			std::cout << m_lastserverlist.at(i+1) << " ";
-			//m_msgs->showWindow(m_lastserverlist.at(i));
 		}
 		std::cout << std::endl;
 
@@ -138,30 +137,37 @@ void MainWindow::reloadChannels()
 	Gtk::TreeModel::iterator iter;
 	Gtk::TreeModel::iterator child_iter;
 
+	std::vector<std::string> channelMembers;
+	int a;
+
 	for(int i=0;i<channels.size();i++)
 	{
 		if(channels.at(i) == "__lobby__")
 		{
-			std::vector<std::string> channelMembers = m_handler->getChannelMembers( channels.at(i) );
+			channelMembers = m_handler->getChannelMembers( channels.at(i) );
 			if(!channelMembers.empty())
 			{
-				for(int a=0;a<channelMembers.size();a++)
+				for(a=0;a<channelMembers.size();a++)
 				{
 					iter = m_treestore->append();
 					(*iter)[m_columns->name] = channelMembers.at(a);
+					if (m_autoopen) 
+						m_msghandler->showWindow(channelMembers.at(a));
 				}
 			}
 		} else {
 			iter = m_treestore->append();
 			(*iter)[m_columns->name] = channels.at(i);
 
-			std::vector<std::string> channelMembers = m_handler->getChannelMembers( channels.at(i) );
+			channelMembers = m_handler->getChannelMembers( channels.at(i) );
 			if(!channelMembers.empty())
 			{
-				for(int a=0;a<channelMembers.size();a++)
+				for(a=0;a<channelMembers.size();a++)
 				{
 				child_iter = m_treestore->append(iter->children());
 				(*child_iter)[m_columns->name] = channelMembers.at(a);
+				if (m_autoopen) 
+					m_msghandler->showWindow(channelMembers.at(a));
 				}
 			}
 		}
@@ -170,7 +176,7 @@ void MainWindow::reloadChannels()
 
 void MainWindow::toggleVisibility()
 {
-	std::cout << "toggling" << std::endl;
+	//std::cout << "toggling" << std::endl;
 	if(!is_visible())
 	  	show();
 	else
@@ -180,9 +186,6 @@ void MainWindow::toggleVisibility()
 
 void MainWindow::on_menuitem_clicked()
 {
-	//Gtk::TreeModel::iterator iter = m_treeview->get_selection()->get_selected();
-	//Glib::ustring temp = (*iter)[m_columns->name];
-
 	m_msghandler->showWindow( getSelectionValue() );	
 }
 
@@ -196,10 +199,15 @@ Glib::ustring MainWindow::getSelectionValue()
 
 void MainWindow::on_person_clicked(GdkEventButton* evb)
 {
-	//bool val = m_treeview.on_button_press_event(evb);
-
 	if( (evb->type == GDK_BUTTON_PRESS) && (evb->button == 3) )
 	{
 		m_menu->popup(evb->button,evb->time);
 	}	
+}
+
+
+void MainWindow::set_autoopen(bool active)
+{
+	std::cout << "Setting m_autoopen to " << active << std::endl;
+	m_autoopen = active;	
 }
