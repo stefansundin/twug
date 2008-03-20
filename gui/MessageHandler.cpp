@@ -11,7 +11,7 @@ void MessageHandler::handleMessage(std::string p_sendername, std::string p_msg)
 {
 	std::cout << "MessageHandler: Handling message to " << p_sendername << std::endl;
 	showWindow(p_sendername);
-	std::cout << "MessageHandler: <DEBUG> Window is shown\n";	
+	//std::cout << "MessageHandler: <DEBUG> Window is shown\n";	
 
 	std::vector<MessageWindow*>::iterator iter;
 	for(iter=m_windows.begin();iter!=m_windows.end();iter++)

@@ -36,11 +36,15 @@ PrefsWindow::PrefsWindow(MainWindow* p_window)
 
 
 
-	m_chkbtn_blinking = new Gtk::CheckButton("Use blinking tray icon");
+	m_chkbtn_blinking = new Gtk::CheckButton("Open chat windows with everyone upon connected :)");
 	vbox->add(*m_chkbtn_blinking);
 	m_chkbtn_blinking->signal_clicked().connect(sigc::mem_fun(*this,&PrefsWindow::on_button_clicked));
 
-	show_all();
+	m_serverlist->set_size_request(300,230);
+
+	vbox->show_all();
+	//show_all();
+
 }
 
 void PrefsWindow::on_tree_changed()
@@ -105,15 +109,16 @@ PrefsWindow::~PrefsWindow()
 
 void PrefsWindow::on_button_clicked()
 {
-  bool active = m_chkbtn_blinking->get_active();
+	bool active = m_chkbtn_blinking->get_active();
 
-  //m_icon->set_blinking( active );
-  m_gconf->set("/apps/twug/use_blinking_trayicon",active);
+	m_gconf->set("/apps/twug/use_blinking_trayicon",active);
+	//m_icon->set_blinking( active );
+	m_window->set_autoopen(active);		
 }
 
 void PrefsWindow::toggleVisibility()
 {
-	std::cout << "toggling" << std::endl;
+	//std::cout << "toggling" << std::endl;
 	if(!is_visible())
 	  	show();
 	else

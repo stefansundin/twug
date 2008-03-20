@@ -9,8 +9,6 @@ MessageWindow::MessageWindow(std::string p_name, Handler* p_handler)
 	set_border_width(10);
 	set_title("Text conversation with " + m_name);
 
-	//m_buffer = new Gtk::TextBuffer();
-
 	Gtk::VBox* vbox = new Gtk::VBox();
 	m_scrolled = new Gtk::ScrolledWindow();	
 
@@ -20,7 +18,7 @@ MessageWindow::MessageWindow(std::string p_name, Handler* p_handler)
 
 	m_scrolled->add(*m_textview);
 	m_scrolled->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
-	//vbox->add(*m_textview);
+
 	vbox->add(*m_scrolled);
 	 
 	Gtk::HBox* hbox = new Gtk::HBox();
@@ -39,6 +37,8 @@ MessageWindow::MessageWindow(std::string p_name, Handler* p_handler)
 	m_textview->set_wrap_mode(Gtk::WRAP_CHAR);
 	m_button->signal_clicked().connect(sigc::mem_fun(*this,&MessageWindow::sendEntry));
 	m_entry->signal_activate().connect(sigc::mem_fun(*this,&MessageWindow::sendEntry));
+
+	//m_button->set_size_request(m_button->get_width(), m_button->get_height() );
 
 	show_all();
 }

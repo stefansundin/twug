@@ -30,11 +30,13 @@ public:
 class MainWindow : public Gtk::Window
 {
 public:
+	void set_autoopen(bool active);
 	MainWindow(Handler* p_handler);
 	virtual ~MainWindow();
 	void toggleVisibility();
 	void giveServers(std::vector<Glib::ustring> p_servers);
 protected:
+	bool m_autoopen;
 	//virtual void on_button_clicked();
 	virtual void on_button_released();
 	virtual void on_button_pressed();
