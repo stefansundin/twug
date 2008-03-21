@@ -88,7 +88,7 @@ void PrefsWindow::loadSettings()
 	std::cout << "PrefsWindow: Loading settings...\n";
 	reloadServers();
 
-	m_chkbtn_blinking->set_active( m_gconf->get_bool("/apps/twug/use_blinking_trayicon") );
+	m_chkbtn_blinking->set_active( m_gconf->get_bool("/apps/twug/autoopen_enabled") );
 	
 	std::cout << "PrefsWindow: Loaded settings\n";
 }

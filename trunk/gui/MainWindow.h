@@ -38,22 +38,26 @@ protected:
 
 	std::string getServerIp(std::string text);
 	Glib::ustring getSelectionValue();
-	void on_person_clicked(GdkEventButton* evb);
-	void on_menuitem_clicked();
+	bool isChannel(std::string name);
+	void on_treeview_clicked(GdkEventButton* evb);
+	void on_personmenu_message();
+	void on_channelmenu_join();
 
 	bool m_dontdoshit;
 	std::vector<Glib::ustring> m_lastserverlist;
 
-	MessageHandler* m_msghandler;
+	
 	Handler* m_handler;
 
 	Gtk::Button m_button;
 	Gtk::ComboBoxText m_popup;
-	Gtk::Menu* m_menu;
+	Gtk::Menu* m_personmenu;
+	Gtk::Menu* m_channelmenu;
 	mwColumns *m_columns;
 	Gtk::TreeView *m_treeview;
 	Glib::RefPtr<Gtk::TreeStore> m_treestore;
 public:
+MessageHandler* m_msghandler;
 	MainWindow(Handler* p_handler);
 	virtual ~MainWindow();
 	void toggleVisibility();

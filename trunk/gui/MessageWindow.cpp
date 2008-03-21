@@ -59,10 +59,10 @@ void MessageWindow::sendEntry()
 	std::string msg = m_entry->get_text();
 	m_entry->set_text("");
 
-	m_handler->postMessage(m_name,msg);
-
 	m_buffer->insert(m_buffer->end(), m_myname+": "+msg+"\n");
 	scrollDown();
+
+	m_handler->postMessage(m_name,msg);
 }
 
 void MessageWindow::scrollDown()

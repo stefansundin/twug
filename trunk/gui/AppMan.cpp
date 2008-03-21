@@ -15,10 +15,10 @@ bool AppMan::on_socket_changed(Glib::IOCondition io)
 	return true;
 }
 
-
-AppMan::AppMan()
+AppMan::AppMan(Handler* p_handler)
 {
-	m_handler = new Handler();
+	m_handler = p_handler;
+
 	m_window = new MainWindow(m_handler);
 	m_prefswindow = new PrefsWindow(m_window);
 	m_icon = new TrayIcon(m_window,m_prefswindow);
@@ -28,7 +28,3 @@ AppMan::AppMan()
 
 	m_window->show();
 }
-
-
-
-

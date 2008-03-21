@@ -2,8 +2,14 @@
 #include <ctime>
 
 
-Handler::Handler()
+Handler::Handler(
+	void (*p_cb0)(std::string,std::string),
+	void (*p_cb1)(std::string)
+	)
 {
+	m_cb0 = p_cb0;
+	m_cb1 = p_cb1;
+
 	m_connectedTo = "0";
 
 	channel kaka;
@@ -46,9 +52,11 @@ std::vector<std::string> Handler::getChannels()
 	return temp;	
 }
 
-bool Handler::joinChannel(std::string channel_name)
+void Handler::joinChannel(std::string channel_name)
 {
-	
+	std::cout << "Handler: Trying to join channel \"" << channel_name << "\"\n"; 
+
+	m_cb1(channel_name);
 }
 
 bool Handler::connectToServer(std::string p_ip)
@@ -101,7 +109,9 @@ void Handler::iStopTalking()
 
 void Handler::postMessage(std::string destination, std::string contents)
 {
-	std::cout << "Handler: Message \"" << contents << "\" posted to user named \"" << destination << "\"\n"; 	
+	std::cout << "Handler: Message \"" << contents << "\" posted to user named \"" << destination << "\"\n";
+
+	m_cb0(destination,"(Bounce back!) " + contents); 	
 }
 
 int Handler::getSocket()

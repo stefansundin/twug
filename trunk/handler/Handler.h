@@ -1,8 +1,6 @@
 #ifndef HANDLER_H
 #define	HANDLER_H
 
-//denna klass ska instanceras av GTKMM UI:et, och sköter bl.a. kommunikation med programmets extratråd
-
 #include <iostream>
 #include <vector>
 #include <string>
@@ -15,17 +13,20 @@ struct channel
 
 class Handler {
 public:
-	Handler(); //startar en tråd som ska köra en instans av klassen "Thread"
+	Handler(
+	void (*p_cb0)(std::string,std::string),
+	void (*p_cb1)(std::string)
+	);
 	
 	~Handler();
 	std::vector<std::string> getChannelMembers(std::string channel_name);
 	//returnerar en std::vector med personerna i den specifierade kanalen
 
 	std::vector<std::string> getChannels();
-	//returnerar alla channels, inkl de som är utanför någon channel, dvs "lobbyn"
+	//returnerar alla channels
 
-	bool joinChannel(std::string channel_name);
-	//försöker joina channeln channel_name och returnar true om det går annars false
+	void joinChannel(std::string channel_name);
+	//försöker joina channeln channel_name
 
 	bool connectToServer(std::string ip);
 	//försöker ansluta till servern "ip", passa NULL så försöker den disconnecta bara.
@@ -49,6 +50,10 @@ private:
 	void disconnect();
 	std::string m_connectedTo;
 	std::vector<channel> m_channels;
+
+	// Callback pointers
+	void (*m_cb0)(std::string,std::string);
+	void (*m_cb1)(std::string);
 };
 
 #endif
