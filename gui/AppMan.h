@@ -3,8 +3,8 @@
 
 #include "TrayIcon.h"
 #include "MainWindow.h"
-#include "../handler/Handler.h"
 #include "PrefsWindow.h"
+#include "../handler/Handler.h"
 
 class AppMan
 {

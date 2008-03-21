@@ -3,22 +3,25 @@
 
 TrayIcon::TrayIcon(MainWindow* p_window, PrefsWindow* p_prefswindow)
 {
+	set_from_file("/usr/share/pixmaps/twug.png");
+
 	m_restoreprefs = false;
+
 	m_window = p_window;
 	m_prefswindow = p_prefswindow;
 
-	set(Gtk::Stock::NEW);
+	m_about = new AboutTwug();
+	m_menu = new Gtk::Menu();
+	
 	signal_activate().connect(sigc::mem_fun(*this,&TrayIcon::on_clicked));
 	signal_popup_menu().connect(sigc::mem_fun(*this,&TrayIcon::on_popup));
 
-	// -- start popup initialization
-		m_menu = new Gtk::Menu();
-
-		m_menu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Preferences",
-		 	sigc::mem_fun(*this,&TrayIcon::on_action_prefs) ));
-		m_menu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Quit",
-		 	sigc::mem_fun(*this,&TrayIcon::on_action_quit) ));
-	// -- end popup initialization
+	m_menu->items().push_back(Gtk::Menu_Helpers::MenuElem("_About",
+	 	sigc::mem_fun(*this,&TrayIcon::on_action_about) ));
+	m_menu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Preferences",
+	 	sigc::mem_fun(*this,&TrayIcon::on_action_prefs) ));
+	m_menu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Quit",
+	 	sigc::mem_fun(*this,&TrayIcon::on_action_quit) ));
 }
 
 
@@ -65,3 +68,7 @@ void TrayIcon::on_action_quit()
 	Gtk::Main::quit();
 }
 
+void TrayIcon::on_action_about()
+{
+	m_about->show();	
+}

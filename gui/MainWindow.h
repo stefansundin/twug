@@ -1,21 +1,22 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <iostream>
+#include <vector>
+#include <string>
+
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
 #include <gtkmm/main.h>
 #include <gtkmm/box.h>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <gtkmm/comboboxtext.h>
-#include "../handler/Handler.h"
-#include "MessageHandler.h"
-
 #include <gtkmm/treeview.h>
 #include <gtkmm/treestore.h>
 #include <gtkmm/menu.h>
-//#include <gtkmm.h>
+#include <gtkmm/comboboxtext.h>
+
+#include "../handler/Handler.h"
+#include "MessageHandler.h"
+
 
 class mwColumns : public Gtk::TreeModelColumnRecord
 {
@@ -29,39 +30,36 @@ public:
 
 class MainWindow : public Gtk::Window
 {
-public:
-	void set_autoopen(bool active);
-	MainWindow(Handler* p_handler);
-	virtual ~MainWindow();
-	void toggleVisibility();
-	void giveServers(std::vector<Glib::ustring> p_servers);
 protected:
-	bool m_autoopen;
-	//virtual void on_button_clicked();
 	virtual void on_button_released();
 	virtual void on_button_pressed();
 	virtual void on_popup_changed();
 	void reloadChannels();
-	std::vector<Glib::ustring> m_lastserverlist;
-	Gtk::Button m_button;
-	Gtk::ComboBoxText m_popup;
-	Handler* m_handler;
+
 	std::string getServerIp(std::string text);
-	bool m_dontdoshit;
-
-	//treeview stuff:
-
 	Glib::ustring getSelectionValue();
-	mwColumns *m_columns;
-	Gtk::TreeView *m_treeview;
-	Glib::RefPtr<Gtk::TreeStore> m_treestore;
-
 	void on_person_clicked(GdkEventButton* evb);
 	void on_menuitem_clicked();
 
-	//MessageHandler* m_msgs;
+	bool m_dontdoshit;
+	std::vector<Glib::ustring> m_lastserverlist;
+
 	MessageHandler* m_msghandler;
+	Handler* m_handler;
+
+	Gtk::Button m_button;
+	Gtk::ComboBoxText m_popup;
 	Gtk::Menu* m_menu;
+	mwColumns *m_columns;
+	Gtk::TreeView *m_treeview;
+	Glib::RefPtr<Gtk::TreeStore> m_treestore;
+public:
+	MainWindow(Handler* p_handler);
+	virtual ~MainWindow();
+	void toggleVisibility();
+	void giveServers(std::vector<Glib::ustring> p_servers);
+
+	bool m_autoopen;
 };
 
 #endif
