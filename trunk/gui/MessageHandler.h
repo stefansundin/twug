@@ -1,11 +1,13 @@
 #ifndef MESSAGEHANDLER_H
 #define	MESSAGEHANDLER_H
 
-#include "MessageWindow.h"
-#include "../handler/Handler.h"
 #include <vector>
 #include <string>
 #include <iostream>
+
+#include "MessageWindow.h"
+#include "../handler/Handler.h"
+
 
 class MessageHandler
 {

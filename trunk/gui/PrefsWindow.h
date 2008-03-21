@@ -1,6 +1,9 @@
 #ifndef PREFSWINDOW_H
 #define PREFSWINDOW_H
 
+#include <iostream>
+#include <vector>
+
 #include <gtkmm/window.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/box.h>
@@ -11,10 +14,8 @@
 #include <gtkmm/cellrenderer.h>
 #include <gtkmm/cellrenderertext.h>
 #include <glibmm/slisthandle.h>
-#include <iostream>
 #include <gconfmm-2.6/gconfmm.h>
-//#include "TrayIcon.h"
-#include <vector>
+
 #include "MainWindow.h"
 
 class Columns : public Gtk::TreeModelColumnRecord

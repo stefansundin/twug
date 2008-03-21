@@ -1,5 +1,7 @@
 #include <gtkmm/main.h>
+
 #include "AppMan.h"
+
 
 int main (int argc, char *argv[])
 {

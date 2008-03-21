@@ -10,46 +10,42 @@ MessageWindow::MessageWindow(std::string p_name, Handler* p_handler)
 	set_title("Text conversation with " + m_name);
 
 	Gtk::VBox* vbox = new Gtk::VBox();
+	Gtk::HBox* hbox = new Gtk::HBox();
 	m_scrolled = new Gtk::ScrolledWindow();	
-
 	m_textview = new Gtk::TextView(); 
+	m_entry = new Gtk::Entry(); 
+	m_button = new Gtk::Button("Send");
 	m_buffer = m_textview->get_buffer();
-	m_textview->set_editable(false);
 
-	m_scrolled->add(*m_textview);
+	m_textview->set_editable(false);
+	m_textview->set_size_request(280,220);
+	m_textview->set_wrap_mode(Gtk::WRAP_CHAR);
 	m_scrolled->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
 
+	m_scrolled->add(*m_textview);
 	vbox->add(*m_scrolled);
-	 
-	Gtk::HBox* hbox = new Gtk::HBox();
-	
-	m_entry = new Gtk::Entry(); 
-	hbox->add(*m_entry);
-	m_button = new Gtk::Button("Send");
-	hbox->add(*m_button);
 
+	hbox->add(*m_entry);	
+	hbox->add(*m_button);
 	vbox->add(*hbox);
 	
 	add(*vbox);
 
+	show_all();
 
-	m_textview->set_size_request(280,220);
-	m_textview->set_wrap_mode(Gtk::WRAP_CHAR);
 	m_button->signal_clicked().connect(sigc::mem_fun(*this,&MessageWindow::sendEntry));
 	m_entry->signal_activate().connect(sigc::mem_fun(*this,&MessageWindow::sendEntry));
 
 	//m_button->set_size_request(m_button->get_width(), m_button->get_height() );
-
-	show_all();
+	
+	std::cout << "MessageWindow(" << m_name << "): constructed\n";
 }
 
 void MessageWindow::giveMessage(std::string p_msg)
 {
 	std::cout << "MessageWindow(" << m_name << "): Recieved new message: " << p_msg << std::endl;
-	//std::string kaka = p_msg;
 
 	m_buffer->insert(m_buffer->end(), m_name+": "+p_msg+"\n");
-	//m_buffer->set_text(p_msg);
 	scrollDown();
 }
 
