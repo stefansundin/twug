@@ -14,7 +14,8 @@ MainWindow::MainWindow(Handler* p_handler)
 	m_msghandler = new MessageHandler(m_handler);
 
 	Gtk::VBox* vbox = new Gtk::VBox();
-	m_menu = new Gtk::Menu();
+	m_personmenu = new Gtk::Menu();
+	m_channelmenu = new Gtk::Menu();
 	m_columns = new mwColumns();
 	m_treestore = Gtk::TreeStore::create(*m_columns);
 	m_treeview = new Gtk::TreeView(m_treestore);
@@ -22,7 +23,7 @@ MainWindow::MainWindow(Handler* p_handler)
 	m_treeview->append_column("Name", m_columns->name);	
 	m_treeview->set_size_request(180,400);
 	m_button.set_border_width(5);
-	m_button.set_label("Temp test button");
+	m_button.set_label("Talk button");
 
 	vbox->add(m_popup);
 	vbox->add(m_button);
@@ -30,8 +31,11 @@ MainWindow::MainWindow(Handler* p_handler)
 	add(*vbox);
 	show_all();
 
-	m_menu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Message",
-		sigc::mem_fun(*this,&MainWindow::on_menuitem_clicked) ));
+	m_personmenu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Message",
+		sigc::mem_fun(*this,&MainWindow::on_personmenu_message) ));
+
+	m_channelmenu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Join Channel",
+		sigc::mem_fun(*this,&MainWindow::on_channelmenu_join) ));
 
 	m_popup.signal_changed().connect(
 		sigc::mem_fun(*this,&MainWindow::on_popup_changed) );
@@ -40,7 +44,7 @@ MainWindow::MainWindow(Handler* p_handler)
 	m_button.signal_released().connect(
 		sigc::mem_fun(*this,&MainWindow::on_button_released));
 	m_treeview->signal_button_press_event().connect_notify(
-		sigc::mem_fun(*this,&MainWindow::on_person_clicked));
+		sigc::mem_fun(*this,&MainWindow::on_treeview_clicked));
 }
 
 
@@ -83,10 +87,6 @@ void MainWindow::on_button_pressed()
 void MainWindow::on_button_released()
 {
 	m_handler->iStopTalking();
-
-	std::string kaka = "Basse";
-	std::string kaka2 = "Hejsan";
-	m_msghandler->handleMessage(kaka,kaka2); 
 }
 
 void MainWindow::on_popup_changed()
@@ -166,6 +166,7 @@ void MainWindow::reloadChannels()
 			}
 		}
 	}
+	m_treeview->expand_all();
 }
 
 void MainWindow::toggleVisibility()
@@ -177,7 +178,12 @@ void MainWindow::toggleVisibility()
 }
 
 
-void MainWindow::on_menuitem_clicked()
+void MainWindow::on_channelmenu_join()
+{
+	m_handler->joinChannel( getSelectionValue() );
+}
+
+void MainWindow::on_personmenu_message()
 {
 	m_msghandler->showWindow( getSelectionValue() );	
 }
@@ -189,11 +195,30 @@ Glib::ustring MainWindow::getSelectionValue()
 	return temp; 
 }
 
-
-void MainWindow::on_person_clicked(GdkEventButton* evb)
+bool MainWindow::isChannel(std::string name)
 {
-	if( (evb->type == GDK_BUTTON_PRESS) && (evb->button == 3) )
+	std::vector<std::string> channels = m_handler->getChannels();
+	
+	for(int i=0; i<channels.size(); i++)
 	{
-		m_menu->popup(evb->button,evb->time);
+		if (channels.at(i) == name)
+		{
+			return true;
+		}
 	}	
+	return false;
+}
+
+void MainWindow::on_treeview_clicked(GdkEventButton* evb)
+{
+	if (evb->type == GDK_BUTTON_PRESS)	
+		if( (evb->button == 3) )
+		{
+			if ( isChannel( getSelectionValue() ) )
+			{
+				m_channelmenu->popup(evb->button,evb->time);
+			} else {
+				m_personmenu->popup(evb->button,evb->time);
+			}
+		}	
 }

@@ -9,7 +9,7 @@ MessageHandler::MessageHandler(Handler* p_handler)
 
 void MessageHandler::handleMessage(std::string p_sendername, std::string p_msg)
 {
-	std::cout << "MessageHandler: Handling message to " << p_sendername << std::endl;
+	std::cout << "MessageHandler: Handling message from " << p_sendername << std::endl;
 	showWindow(p_sendername);
 	//std::cout << "MessageHandler: <DEBUG> Window is shown\n";	
 

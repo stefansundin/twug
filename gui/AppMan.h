@@ -9,15 +9,15 @@
 class AppMan
 {
 protected:
+	void setupSocket();
+	bool on_socket_changed(Glib::IOCondition io);
+public:
 	MainWindow *m_window;
 	PrefsWindow *m_prefswindow;
 	TrayIcon *m_icon;
 	Handler *m_handler;
 
-	void setupSocket();
-	bool on_socket_changed(Glib::IOCondition io);
-public:
-	AppMan();
+	AppMan(Handler* p_handler);
 	//~AppMan();
 };
 
