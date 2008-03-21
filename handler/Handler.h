@@ -39,6 +39,12 @@ public:
 
 	void postMessage(std::string destination, std::string contents);
 	//skicka textmeddelande till användaren "destination" med innehållet "contents" 
+
+	int getSocket();
+	// returns the socket file descriptor. the UI will monitor it, and call the method update() when its changed
+
+	void update();
+	// described in above comment	 
 private:
 	void disconnect();
 	std::string m_connectedTo;

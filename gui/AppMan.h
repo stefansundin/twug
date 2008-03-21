@@ -13,6 +13,9 @@ protected:
 	PrefsWindow *m_prefswindow;
 	TrayIcon *m_icon;
 	Handler *m_handler;
+
+	void setupSocket();
+	bool on_socket_changed(Glib::IOCondition io);
 public:
 	AppMan();
 	//~AppMan();

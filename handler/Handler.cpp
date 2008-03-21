@@ -103,3 +103,13 @@ void Handler::postMessage(std::string destination, std::string contents)
 {
 	std::cout << "Handler: Message \"" << contents << "\" posted to user named \"" << destination << "\"\n"; 	
 }
+
+int Handler::getSocket()
+{
+	return 0; //temp	
+}
+
+void Handler::update()
+{
+	std::cout << "lol\n";	
+}
