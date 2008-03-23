@@ -2,6 +2,7 @@
 
 PrefsWindow::PrefsWindow(MainWindow* p_window)
 {
+	m_dontdoshit = false;
 	m_window = p_window;
 
 	set_title("Twug Preferences");
@@ -26,28 +27,47 @@ PrefsWindow::PrefsWindow(MainWindow* p_window)
 	m_serverlist->append_column_editable("Address", m_columns->ip);
 	m_serverlist->set_size_request(300,230);
 
+	Gtk::HBox* buttonbox = new Gtk::HBox();
+
+	m_buttonAdd.set_label("Add");
+	m_buttonRemove.set_label("Remove");
+	
+	buttonbox->add(m_buttonAdd);
+	buttonbox->add(m_buttonRemove);
+	
 	vbox->add(*label); 
 	vbox->add(*m_serverlist);
+	vbox->add(*buttonbox);
 	vbox->add(*m_chkbtn_blinking);
 	vbox->show_all();
 	add(*vbox);
 
-	m_chkbtn_blinking->signal_clicked().connect(
-		sigc::mem_fun(*this,&PrefsWindow::on_button_clicked));
+	Gtk::CellRendererText* temp = dynamic_cast<Gtk::CellRendererText*>(m_serverlist->get_column_cell_renderer(0));
+	temp->signal_edited().connect( sigc::mem_fun(*this,
+              &PrefsWindow::on_tree_changed) );
+	temp = dynamic_cast<Gtk::CellRendererText*>(m_serverlist->get_column_cell_renderer(1));
+	temp->signal_edited().connect( sigc::mem_fun(*this,
+              &PrefsWindow::on_tree_changed) );
+
+
 	m_gconf->signal_value_changed().connect(
 		sigc::mem_fun(*this,&PrefsWindow::onGConfChanged));
 
-	//m_serverlist->get_selection()->signal_changed().connect(sigc::mem_fun(*this,&PrefsWindow::on_tree_changed));
-	//m_serverlist->signal_columns_changed().connect(sigc::mem_fun(*this,&PrefsWindow::on_tree_changed));
-	//kaka->signal_edited().connect(sigc::mem_fun(*this,&PrefsWindow::on_tree_changed));
-	//Gtk::CellRendererText* kaka = dynamic_cast<Gtk::CellRendererText*>(m_serverlist->get_column_cell_renderer(1));
-	
+	m_buttonAdd.signal_clicked().connect(
+		sigc::mem_fun(*this,&PrefsWindow::on_buttonAdd_clicked));
+	m_buttonRemove.signal_clicked().connect(
+		sigc::mem_fun(*this,&PrefsWindow::on_buttonRemove_clicked));
+
+	m_chkbtn_blinking->signal_clicked().connect(
+		sigc::mem_fun(*this,&PrefsWindow::on_button_clicked));	
 }
 
-void PrefsWindow::on_tree_changed()
+void PrefsWindow::on_tree_changed(const Glib::ustring&, const Glib::ustring&)
 {
 	std::cout << "PrefsWindow: Tree changed\n";
+	saveServerList();
 }
+
 
 std::vector<Glib::ustring> PrefsWindow::getServerList()
 {
@@ -59,8 +79,12 @@ std::vector<Glib::ustring> PrefsWindow::getServerList()
 
 	for(int i=0;i<entries.size();i++)
 	{
-		servers.push_back(entries.at(i).get_key().substr(19));
-		servers.push_back(entries.at(i).get_value().get_string());
+		//if (entries.at(i).get_value().get_string() != "")
+		if (entries.at(i).get_value().get_type() != Gnome::Conf::VALUE_INVALID)
+		{
+			servers.push_back(entries.at(i).get_key().substr(19));
+			servers.push_back(entries.at(i).get_value().get_string());
+		}
 	}
 	return servers;
 }
@@ -83,6 +107,47 @@ void PrefsWindow::reloadServers()
 	m_window->giveServers(servers);
 }
 
+void PrefsWindow::saveServerList()
+{
+	std::vector<Gnome::Conf::Entry> entries = m_gconf->all_entries("/apps/twug/servers");
+	
+	for(int i=0;i<entries.size();i++)
+	{
+		m_gconf->unset ( entries.at(i).get_key() );
+	}
+
+	
+	Gtk::TreeModel::Children::iterator iter;
+	for(iter = m_serverstore->children().begin();
+		iter != m_serverstore->children().end();
+			iter++)
+	{
+		m_gconf->set( "/apps/twug/servers/" + (*iter)[m_columns->name],
+	(*iter)[m_columns->ip] );	
+	}
+	
+}
+
+void PrefsWindow::on_buttonAdd_clicked()
+{
+	Gtk::TreeModel::iterator iter;
+	
+	iter = m_serverstore->append();
+	(*iter)[m_columns->name] = "Server";
+	(*iter)[m_columns->ip] = "0.0.0.0";
+
+	saveServerList();
+}
+
+void PrefsWindow::on_buttonRemove_clicked()
+{
+	Gtk::TreeModel::iterator iter = m_serverlist->get_selection()->get_selected();
+	
+	m_serverstore->erase(iter);
+
+	saveServerList();
+}
+
 void PrefsWindow::loadSettings()
 {
 	std::cout << "PrefsWindow: Loading settings...\n";
@@ -96,7 +161,7 @@ void PrefsWindow::loadSettings()
 
 void PrefsWindow::onGConfChanged(const Glib::ustring&, const Gnome::Conf::Value&)
 {
-	loadSettings();
+		loadSettings();
 }
 
 

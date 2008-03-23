@@ -1,11 +1,11 @@
 #include <gtkmm/main.h>
 #include "AppMan.h"
 
-AppMan* app;
+AppMan* g_app;
 
 void cb0(std::string sender, std::string msg)
 {
-	app->m_window->m_msghandler->handleMessage(sender,msg);
+	g_app->m_window->m_msghandler->handleMessage(sender,msg);
 }
 
 void cb1(std::string channel)
@@ -19,7 +19,7 @@ int main (int argc, char *argv[])
 
 	Handler* handler = new Handler(&cb0,&cb1);
 
-	app = new AppMan(handler);
+	g_app = new AppMan(handler);
 
 	kit.run();
 
