@@ -2,7 +2,6 @@
 
 PrefsWindow::PrefsWindow(MainWindow* p_window)
 {
-	m_dontdoshit = false;
 	m_window = p_window;
 
 	set_title("Twug Preferences");
@@ -35,19 +34,31 @@ PrefsWindow::PrefsWindow(MainWindow* p_window)
 	buttonbox->add(m_buttonAdd);
 	buttonbox->add(m_buttonRemove);
 	
+
+	Gtk::HBox* namebox = new Gtk::HBox();
+	Gtk::Label* label2 = new Gtk::Label("Nickname: ");
+	m_nameEntry = new Gtk::Entry();
+	
+	namebox->add(*label2);
+	namebox->add(*m_nameEntry);
+
 	vbox->add(*label); 
 	vbox->add(*m_serverlist);
 	vbox->add(*buttonbox);
 	vbox->add(*m_chkbtn_blinking);
+	vbox->add(*namebox);	
 	vbox->show_all();
 	add(*vbox);
 
-	Gtk::CellRendererText* temp = dynamic_cast<Gtk::CellRendererText*>(m_serverlist->get_column_cell_renderer(0));
-	temp->signal_edited().connect( sigc::mem_fun(*this,
-              &PrefsWindow::on_tree_changed) );
+	Gtk::CellRendererText* temp;
+
+	temp = dynamic_cast<Gtk::CellRendererText*>(m_serverlist->get_column_cell_renderer(0));
+	temp->signal_edited().connect(
+		sigc::mem_fun(*this,&PrefsWindow::on_tree_changed));
+
 	temp = dynamic_cast<Gtk::CellRendererText*>(m_serverlist->get_column_cell_renderer(1));
-	temp->signal_edited().connect( sigc::mem_fun(*this,
-              &PrefsWindow::on_tree_changed) );
+	temp->signal_edited().connect(
+		sigc::mem_fun(*this,&PrefsWindow::on_tree_changed));
 
 
 	m_gconf->signal_value_changed().connect(
@@ -60,6 +71,18 @@ PrefsWindow::PrefsWindow(MainWindow* p_window)
 
 	m_chkbtn_blinking->signal_clicked().connect(
 		sigc::mem_fun(*this,&PrefsWindow::on_button_clicked));	
+
+	m_nameEntry->signal_changed().connect(
+		sigc::mem_fun(*this,&PrefsWindow::on_name_changed));	
+}
+
+
+void PrefsWindow::on_name_changed()
+{
+	std::string name = m_nameEntry->get_text();
+
+	m_gconf->set("/apps/twug/nickname",name);	
+	m_window->m_newname=name;	
 }
 
 void PrefsWindow::on_tree_changed(const Glib::ustring&, const Glib::ustring&)
@@ -79,7 +102,6 @@ std::vector<Glib::ustring> PrefsWindow::getServerList()
 
 	for(int i=0;i<entries.size();i++)
 	{
-		//if (entries.at(i).get_value().get_string() != "")
 		if (entries.at(i).get_value().get_type() != Gnome::Conf::VALUE_INVALID)
 		{
 			servers.push_back(entries.at(i).get_key().substr(19));
@@ -154,6 +176,8 @@ void PrefsWindow::loadSettings()
 	reloadServers();
 
 	m_chkbtn_blinking->set_active( m_gconf->get_bool("/apps/twug/autoopen_enabled") );
+
+	m_nameEntry->set_text( m_gconf->get_string("/apps/twug/nickname") ) ;
 	
 	std::cout << "PrefsWindow: Loaded settings\n";
 }
@@ -161,7 +185,7 @@ void PrefsWindow::loadSettings()
 
 void PrefsWindow::onGConfChanged(const Glib::ustring&, const Gnome::Conf::Value&)
 {
-		loadSettings();
+	loadSettings();
 }
 
 

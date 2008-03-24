@@ -1,8 +1,9 @@
 #include "MessageWindow.h"
 
-MessageWindow::MessageWindow(std::string p_name, Handler* p_handler)
+MessageWindow::MessageWindow(std::string p_name, Handler* p_handler, std::string* p_nameptr)
 {
-	m_myname = "<myself>"; //temp
+	m_nameptr = p_nameptr;
+
 	m_handler = p_handler;
 	m_name = p_name;
 
@@ -59,7 +60,7 @@ void MessageWindow::sendEntry()
 	std::string msg = m_entry->get_text();
 	m_entry->set_text("");
 
-	m_buffer->insert(m_buffer->end(), m_myname+": "+msg+"\n");
+	m_buffer->insert(m_buffer->end(), (*m_nameptr)+": "+msg+"\n");
 	scrollDown();
 
 	m_handler->postMessage(m_name,msg);

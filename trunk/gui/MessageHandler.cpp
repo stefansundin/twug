@@ -1,7 +1,9 @@
 #include "MessageHandler.h"
 
-MessageHandler::MessageHandler(Handler* p_handler)
+MessageHandler::MessageHandler(Handler* p_handler, std::string* p_nameptr)
 {
+	m_nameptr = p_nameptr;
+
 	m_handler = p_handler; 
 
 	std::cout << "MessageHandler: constructed\n";
@@ -44,6 +46,6 @@ void MessageHandler::showWindow(std::string p_name)
 		if (!(*iter)->is_visible())
 			(*iter)->show();	
 	} else {
-		m_windows.push_back( new MessageWindow(p_name,m_handler) );
+		m_windows.push_back( new MessageWindow(p_name,m_handler,m_nameptr) );
 	}
 }
