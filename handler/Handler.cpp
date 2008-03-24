@@ -1,16 +1,17 @@
 #include "Handler.h"
-#include <ctime>
 
 
 Handler::Handler(
 	void (*p_cb0)(std::string,std::string),
-	void (*p_cb1)(std::string)
+	void (*p_cb1)(std::string),
+	void (*p_cb2)(std::string,std::string),
+	void (*p_cb3)(std::string)
 	)
 {
 	m_cb0 = p_cb0;
 	m_cb1 = p_cb1;
-
-	m_connectedTo = "0";
+	m_cb2 = p_cb2;
+	m_cb3 = p_cb3;
 
 	channel kaka;
 	kaka.name = "__lobby__";
@@ -59,37 +60,22 @@ void Handler::joinChannel(std::string channel_name)
 	m_cb1(channel_name);
 }
 
-bool Handler::connectToServer(std::string p_ip)
+void Handler::connectToServer(std::string p_ip, std::string p_name)
 {
-	if(m_connectedTo!=p_ip)
+	std::cout << "Handler: attempting to connect to server \"" << p_ip << "\"\n"; 
+
+	if (p_ip=="192.168.0.1")
 	{
-		if(m_connectedTo!="0")
-			disconnect();
-		
-		if (p_ip=="0")
-			return true;
-
-		std::cout << "Handler: connecting to server \"" << p_ip << "\"\n"; 
-
-		sleep(1);
-		if (p_ip=="192.168.0.1")
-		{
-			std::cout << "Handler: connection failed\n";
-			return false;
-		} else {
-			std::cout << "Handler: connected to server \"" << p_ip << "\"\n";
-			m_connectedTo = p_ip; 
-			return true;
-		}
+		std::cout << "Handler: connection failed\n";
+		m_cb3(p_ip);
 	} else {
-		std::cout << "Handler: already connected to " << p_ip << ", doing nothing\n";
-		return true;
+		std::cout << "Handler: connected to server \"" << p_ip << "\"\n";
+		m_cb2(p_ip,p_name);
 	}
 }
 
 void Handler::disconnect()
 {
-		m_connectedTo = "0";
 		std::cout << "Handler: disconnected\n";
 }
 

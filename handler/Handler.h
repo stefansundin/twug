@@ -15,7 +15,9 @@ class Handler {
 public:
 	Handler(
 	void (*p_cb0)(std::string,std::string),
-	void (*p_cb1)(std::string)
+	void (*p_cb1)(std::string),
+	void (*p_cb2)(std::string,std::string),
+	void (*p_cb3)(std::string)
 	);
 	
 	~Handler();
@@ -28,9 +30,12 @@ public:
 	void joinChannel(std::string channel_name);
 	//försöker joina channeln channel_name
 
-	bool connectToServer(std::string ip);
-	//försöker ansluta till servern "ip", passa NULL så försöker den disconnecta bara.
-	//returnerar true om det lyckas...
+	void connectToServer(std::string ip, std::string nick);
+	//försöker ansluta till servern "ip", som användaren "nick"
+
+	void disconnect();
+	// när funktionen körts klart så ska den vara disconnected
+	// callbacken m_cb3 bör inte användas här
 
 	void iStartTalking();
 	//när du trycker ner push-to-talk knappen så körs denna i början 
@@ -47,13 +52,15 @@ public:
 	void update();
 	// described in above comment	 
 private:
-	void disconnect();
+
 	std::string m_connectedTo;
 	std::vector<channel> m_channels;
 
 	// Callback pointers
 	void (*m_cb0)(std::string,std::string);
 	void (*m_cb1)(std::string);
+	void (*m_cb2)(std::string,std::string);
+	void (*m_cb3)(std::string);
 };
 
 #endif

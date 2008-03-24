@@ -2,6 +2,8 @@
 
 MainWindow::MainWindow(Handler* p_handler)
 {
+	m_nameptr = new std::string();
+
 	set_title("Twug");
 	set_default_icon_from_file("/usr/share/pixmaps/twug.png");
 	//set_border_width(10);
@@ -11,7 +13,7 @@ MainWindow::MainWindow(Handler* p_handler)
 	m_dontdoshit = false;
 	m_autoopen = false;
 
-	m_msghandler = new MessageHandler(m_handler);
+	m_msghandler = new MessageHandler(m_handler,m_nameptr);
 
 	Gtk::VBox* vbox = new Gtk::VBox();
 	m_personmenu = new Gtk::Menu();
@@ -54,7 +56,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::giveServers(std::vector<Glib::ustring> p_servers)
 {
-//todo: reconnect if ip for current server changed(?)
 	m_lastserverlist = p_servers;
 
 	Glib::ustring temp;
@@ -95,19 +96,28 @@ void MainWindow::on_popup_changed()
 	{
 		Glib::ustring text = m_popup.get_active_text();
 
-		if (text != "Not Connected" && text!= "")
+		if (text != "Not Connected")
 		{
-			if (!m_handler->connectToServer( getServerIp(text) ))
-			{
-				m_popup.set_active_text("Not Connected");			
-			} else {
-				reloadChannels();
-			}
+			m_handler->disconnect();
+			m_handler->connectToServer( getServerIp(text), m_newname );
+			
 		} else {
-			m_handler->connectToServer("0");
-			m_treestore->clear();
+			m_handler->disconnect();
 		}
 	}
+}
+
+void MainWindow::connectedAs(std::string p_ip, std::string p_name)
+{
+	*m_nameptr = p_name;
+
+	reloadChannels();
+}
+
+void MainWindow::connectionLost(std::string p_ip)
+{
+	m_popup.set_active_text("Not Connected");
+	m_treestore->clear();
 }
 
 std::string MainWindow::getServerIp(std::string text)

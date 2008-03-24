@@ -21,6 +21,7 @@ private:
 	void scrollDown();
 	
 	Handler* m_handler;
+	std::string* m_nameptr;
 
 	std::string m_name;
 	std::string m_myname;
@@ -31,7 +32,7 @@ private:
 	Gtk::ScrolledWindow* m_scrolled;
 	Glib::RefPtr<Gtk::TextBuffer> m_buffer;
 public:
-	MessageWindow(std::string p_name, Handler* p_handler);
+	MessageWindow(std::string p_name, Handler* p_handler, std::string* p_nameptr);
 	void giveMessage(std::string p_msg);
 	std::string getName();	
 };

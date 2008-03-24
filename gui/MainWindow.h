@@ -45,6 +45,7 @@ protected:
 
 	bool m_dontdoshit;
 	std::vector<Glib::ustring> m_lastserverlist;
+	std::string* m_nameptr;
 
 	
 	Handler* m_handler;
@@ -64,6 +65,11 @@ MessageHandler* m_msghandler;
 	void giveServers(std::vector<Glib::ustring> p_servers);
 
 	bool m_autoopen;
+	std::string m_newname;
+
+	//callbacks
+	void connectedAs(std::string p_ip, std::string p_name); 
+	void connectionLost(std::string p_ip);
 };
 
 #endif
