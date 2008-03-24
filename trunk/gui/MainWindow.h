@@ -34,7 +34,7 @@ protected:
 	virtual void on_button_released();
 	virtual void on_button_pressed();
 	virtual void on_popup_changed();
-	void reloadChannels();
+	
 
 	std::string getServerIp(std::string text);
 	Glib::ustring getSelectionValue();
@@ -70,6 +70,7 @@ MessageHandler* m_msghandler;
 	//callbacks
 	void connectedAs(std::string p_ip, std::string p_name); 
 	void connectionLost(std::string p_ip);
+	void reloadChannels();
 };
 
 #endif

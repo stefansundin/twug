@@ -17,7 +17,8 @@ public:
 	void (*p_cb0)(std::string,std::string),
 	void (*p_cb1)(std::string),
 	void (*p_cb2)(std::string,std::string),
-	void (*p_cb3)(std::string)
+	void (*p_cb3)(std::string),
+	void (*p_cb4)()
 	);
 	
 	~Handler();
@@ -25,7 +26,7 @@ public:
 	//returnerar en std::vector med personerna i den specifierade kanalen
 
 	std::vector<std::string> getChannels();
-	//returnerar alla channels
+	//returnerar alla channels (inkl. __lobby__)
 
 	void joinChannel(std::string channel_name);
 	//försöker joina channeln channel_name
@@ -52,15 +53,17 @@ public:
 	void update();
 	// described in above comment	 
 private:
-
-	std::string m_connectedTo;
 	std::vector<channel> m_channels;
+	
+	std::string m_mynick;
+	std::string m_mychannel;
 
 	// Callback pointers
 	void (*m_cb0)(std::string,std::string);
 	void (*m_cb1)(std::string);
 	void (*m_cb2)(std::string,std::string);
 	void (*m_cb3)(std::string);
+	void (*m_cb4)();
 };
 
 #endif

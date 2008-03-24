@@ -8,9 +8,9 @@ void cb0(std::string sender, std::string msg)
 	g_app->m_window->m_msghandler->handleMessage(sender,msg);
 }
 
-void cb1(std::string channel)
+void cb1(std::string null)
 {
-	std::cout << "New Channel membership: " << channel << std::endl;
+	//empty
 }
 
 void cb2(std::string ip, std::string name)
@@ -23,11 +23,16 @@ void cb3(std::string ip)
 	g_app->m_window->connectionLost(ip);
 }
 
+void cb4()
+{
+	g_app->m_window->reloadChannels();
+}
+
 int main (int argc, char *argv[])
 {
 	Gtk::Main kit(argc, argv);
 
-	Handler* handler = new Handler(&cb0,&cb1,&cb2,&cb3);
+	Handler* handler = new Handler(&cb0,&cb1,&cb2,&cb3,&cb4);
 
 	g_app = new AppMan(handler);
 
