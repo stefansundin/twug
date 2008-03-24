@@ -111,7 +111,7 @@ void MainWindow::connectedAs(std::string p_ip, std::string p_name)
 {
 	*m_nameptr = p_name;
 
-	reloadChannels();
+	m_handler->joinChannel("__lobby__");
 }
 
 void MainWindow::connectionLost(std::string p_ip)
@@ -190,7 +190,21 @@ void MainWindow::toggleVisibility()
 
 void MainWindow::on_channelmenu_join()
 {
-	m_handler->joinChannel( getSelectionValue() );
+	std::vector<std::string> kaka = m_handler->getChannelMembers( getSelectionValue());
+	bool found=0;
+	for (int i=0;i<kaka.size();i++)
+	{
+		if (kaka.at(i) == *m_nameptr)
+		{
+			found=1;
+			break;
+		}
+	}
+
+	if (found)	
+		m_handler->joinChannel ( "__lobby__");
+	else
+		m_handler->joinChannel( getSelectionValue() );
 }
 
 void MainWindow::on_personmenu_message()

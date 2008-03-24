@@ -5,13 +5,15 @@ Handler::Handler(
 	void (*p_cb0)(std::string,std::string),
 	void (*p_cb1)(std::string),
 	void (*p_cb2)(std::string,std::string),
-	void (*p_cb3)(std::string)
+	void (*p_cb3)(std::string),
+	void (*p_cb4)()
 	)
 {
 	m_cb0 = p_cb0;
 	m_cb1 = p_cb1;
 	m_cb2 = p_cb2;
 	m_cb3 = p_cb3;
+	m_cb4 = p_cb4;
 
 	channel kaka;
 	kaka.name = "__lobby__";
@@ -38,7 +40,10 @@ std::vector<std::string> Handler::getChannelMembers(std::string channel_name)
 	{
 		if(m_channels.at(i).name == channel_name)
 		{
-			return m_channels.at(i).members;
+			std::vector<std::string> temp = m_channels.at(i).members;
+			if (m_channels.at(i).name == m_mychannel)
+				temp.push_back(m_mynick);
+			return temp;
 		}
 	}
 }
@@ -57,7 +62,8 @@ void Handler::joinChannel(std::string channel_name)
 {
 	std::cout << "Handler: Trying to join channel \"" << channel_name << "\"\n"; 
 
-	m_cb1(channel_name);
+	m_mychannel = channel_name;
+	m_cb4(); // channel list changed (callback)
 }
 
 void Handler::connectToServer(std::string p_ip, std::string p_name)
@@ -67,10 +73,12 @@ void Handler::connectToServer(std::string p_ip, std::string p_name)
 	if (p_ip=="192.168.0.1")
 	{
 		std::cout << "Handler: connection failed\n";
-		m_cb3(p_ip);
+		m_cb3(p_ip); // connection lost with server p_ip (callback)
+		// perhaps we should have a separate cb for connection attempt failed...
 	} else {
 		std::cout << "Handler: connected to server \"" << p_ip << "\"\n";
-		m_cb2(p_ip,p_name);
+		m_mynick = p_name;
+		m_cb2(p_ip,p_name); // connected to server p_ip as username p_name (callback)
 	}
 }
 
@@ -82,14 +90,12 @@ void Handler::disconnect()
 
 void Handler::iStartTalking()
 {
-	if (m_connectedTo!="0")
-		std::cout << "Handler: Push-to-talk now active\n";
+	std::cout << "Handler: Push-to-talk now active\n";
 }
 
 void Handler::iStopTalking()
 {
-	if (m_connectedTo!="0")
-		std::cout << "Handler: Push-to-talk now inactive\n";
+	std::cout << "Handler: Push-to-talk now inactive\n";
 }
 
 
@@ -97,7 +103,7 @@ void Handler::postMessage(std::string destination, std::string contents)
 {
 	std::cout << "Handler: Message \"" << contents << "\" posted to user named \"" << destination << "\"\n";
 
-	m_cb0(destination,"(Bounce back!) " + contents); 	
+	m_cb0(destination,"(Bounce back!) " + contents); // give message (callback)	
 }
 
 int Handler::getSocket()
