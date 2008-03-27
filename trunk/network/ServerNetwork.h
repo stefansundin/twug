@@ -23,4 +23,5 @@ private:
 	int m_accepting_socket;
 };
 
-#endif /*SERVERNETWORK_H_*/
+#endif //SERVERNETWORK_H_
+

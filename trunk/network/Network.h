@@ -70,5 +70,5 @@ protected:
 	std::map<int, Buffer> m_buffers;		//<socket, its_buffer>
 };
 
-#endif /*NETWORK_H_*/
+#endif //NETWORK_H_
 

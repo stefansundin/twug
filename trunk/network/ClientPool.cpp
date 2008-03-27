@@ -39,6 +39,19 @@ bool ClientPool::addClient(std::string p_name, std::string p_channel_name, int p
 	m_clients.push_back(client(p_name, p_channel_name, p_socket));
 	return true;
 }
+bool ClientPool::removeClient(std::string p_name)
+{
+	std::vector<client>::iterator citr;
+	for(citr = m_clients.begin(); citr != m_clients.end(); citr++)
+	{
+		if(citr->getName() == p_name)
+		{
+			m_clients.erase(citr);
+			return true;
+		}
+	}
+	return false;
+}
 bool ClientPool::removeClient(int p_socket)
 {
 	std::vector<client>::iterator citr;
