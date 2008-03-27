@@ -102,7 +102,7 @@ void Handler::iStopTalking()
 }
 
 
-void Handler::postMessage(std::string destination, std::string contents)
+void Handler::sendText(std::string destination, std::string contents)
 {
 	std::cout << "Handler: Message \"" << contents << "\" posted to user named \"" << destination << "\"\n";
 
