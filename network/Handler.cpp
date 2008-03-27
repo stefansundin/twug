@@ -3,14 +3,14 @@
 
 Handler::Handler(
 	void (*p_cb_got_text_message)(std::string,std::string),
-	void (*p_cb1)(std::string),
+	void (*p_cb_error_connecting)(std::string),
 	void (*p_cb_connected_to_server)(std::string, std::string),
 	void (*p_cb_connection_lost)(std::string),
 	void (*p_cb_channel_list_changed)()
 	)
 {
 	m_cb_got_text_message		=	p_cb_got_text_message;
-	m_cb1 = p_cb1;
+	m_cb_error_connecting 		= 	p_cb_error_connecting;
 	m_cb_connected_to_server	=	p_cb_connected_to_server;
 	m_cb_connection_lost		=	p_cb_connection_lost;
 	m_cb_channel_list_changed	=	p_cb_channel_list_changed;
@@ -52,16 +52,29 @@ void Handler::joinChannel(std::string p_channel_name)
 	m_cb_channel_list_changed(); // channel list changed (callback)
 }
 
-void Handler::connectToServer(std::string p_address, unsigned int p_port, std::string p_username, std::string p_password)
+void Handler::connectToServer(std::string p_address, std::string p_username, std::string p_password)
 {
-	printf("Handler::connectToServer() connecting to %s:%d as %s with password %s\n", p_address.c_str(), p_port, p_username.c_str(), p_password.c_str());
+	std::string parsed_ip;
+	unsigned int parsed_port;	
+	int pos = p_address.find_last_of(':');	
+	if (pos == -1)
+	{
+		parsed_ip = p_address;
+		parsed_port = 6577; // twug standard port
+	}
+	else
+	{		
+		parsed_ip = p_address.substr(0,pos);
+		parsed_port = atoi( p_address.substr(pos+1).c_str());
+	}
 
-	p_client_network.connect(p_address, p_port);
+	printf("Handler::connectToServer() connecting to %s:%d as %s with password %s\n",parsed_ip.c_str(), parsed_port, p_username.c_str(), p_password.c_str());
+
+	p_client_network.connect(parsed_ip, parsed_port);
 	p_client_network.loginRequest(p_username, p_password);
 
 	m_mynick = p_username;
-
-	m_cb_connected_to_server(p_address, p_username);		//add p_port to this maybe?
+	m_cb_connected_to_server(p_address, p_username);
 }
 
 
@@ -93,19 +106,19 @@ void Handler::sendText(std::string p_to_username, std::string p_message)
 
 int Handler::getSocket()
 {
-	return 	m_client_network.getSocket();
+	return m_client_network.getSocket();
 }
 
 void Handler::update()
 {
-	Message incomming_message;
+	Message incoming_message;
 	while(n.processNetworking())
 	{
 //		printf("processed network\n");
-		while(n.getMessage(incomming_message))	//means we have incomming data in incomming_message
+		while(n.getMessage(incoming_message))	//means we have incoming data in incoming_message
 		{
 //			printf("got message\n");
-			handleMessage(incomming_message);
+			handleMessage(incoming_message);
 		}
 	}
 }

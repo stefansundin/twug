@@ -6,7 +6,7 @@
 #include <iostream>
 
 #include "MessageWindow.h"
-#include "../handler/Handler.h"
+#include "HandlerLink.h"
 
 
 class MessageHandler

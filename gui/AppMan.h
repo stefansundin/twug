@@ -4,7 +4,7 @@
 #include "TrayIcon.h"
 #include "MainWindow.h"
 #include "PrefsWindow.h"
-#include "../handler/Handler.h"
+#include "HandlerLink.h"
 
 class AppMan
 {

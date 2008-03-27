@@ -3,27 +3,27 @@
 
 AppMan* g_app;
 
-void cb0(std::string sender, std::string msg)
+void cb_handle_text(std::string sender, std::string msg)
 {
 	g_app->m_window->m_msghandler->handleMessage(sender,msg);
 }
 
-void cb1(std::string null)
+void cb_error_connecting(std::string err)
 {
-	//empty
+	g_app->m_window->connectionError(0,err);
 }
 
-void cb2(std::string ip, std::string name)
+void cb_connected_to_server(std::string ip, std::string name)
 {
 	g_app->m_window->connectedAs(ip,name);
 }
 
-void cb3(std::string ip)
+void cb_connection_lost(std::string err)
 {
-	g_app->m_window->connectionLost(ip);
+	g_app->m_window->connectionError(1,err);
 }
 
-void cb4()
+void cb_channel_list_changed()
 {
 	g_app->m_window->reloadChannels();
 }
@@ -32,7 +32,12 @@ int main (int argc, char *argv[])
 {
 	Gtk::Main kit(argc, argv);
 
-	Handler* handler = new Handler(&cb0,&cb1,&cb2,&cb3,&cb4);
+	Handler* handler = new Handler(
+		&cb_handle_text,
+		&cb_error_connecting,
+		&cb_connected_to_server,
+		&cb_connection_lost,
+		&cb_channel_list_changed   );
 
 	g_app = new AppMan(handler);
 
