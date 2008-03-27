@@ -31,10 +31,12 @@ int ClientNetwork::disconnect()
 }
 
 
-void ClientNetwork::loginRequest(std::string p_user, std::string p_password)
+bool ClientNetwork::loginRequest(std::string p_user, std::string p_password)
 {
-	fill(p_user, 20);
-	fill(p_password, 20);
+	if(!fill(p_user, 20) || !fill(p_password, 20))
+	{
+		return false;
+	}
 	std::string temp = p_user + p_password;
 
 	Data data = Data(CLIENT_LOGIN_REQUEST, temp.c_str(), temp.size());
@@ -42,8 +44,11 @@ void ClientNetwork::loginRequest(std::string p_user, std::string p_password)
 }
 void ClientNetwork::logout()
 {
-	Data data = Data(CLIENT_LOGOUT, "", 0);
-	sendData(m_socket, data);
+	if(m_connected)
+	{
+		Data data = Data(CLIENT_LOGOUT, "", 0);
+		sendData(m_socket, data);
+	}
 }
 void ClientNetwork::changeChannels(std::string p_channel, std::string p_password)
 {

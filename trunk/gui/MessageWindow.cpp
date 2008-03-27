@@ -63,7 +63,7 @@ void MessageWindow::sendEntry()
 	m_buffer->insert(m_buffer->end(), (*m_nameptr)+": "+msg+"\n");
 	scrollDown();
 
-	m_handler->postMessage(m_name,msg);
+	m_handler->sendText(m_name,msg);
 }
 
 void MessageWindow::scrollDown()

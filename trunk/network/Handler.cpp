@@ -1,6 +1,5 @@
 #include "Handler.h"
 
-
 Handler::Handler(
 	void (*p_cb_got_text_message)(std::string,std::string),
 	void (*p_cb_error_connecting)(std::string),
@@ -46,9 +45,9 @@ void Handler::joinChannel(std::string p_channel_name)
 {
 	printf("Handler::joinChannel() trying to join %s\n", p_channel_name.c_str());
 
-	m_client_network.changeChannels(p_channel_name);
+	m_client_network.changeChannels(p_channel_name, "");		//FIXME: this is hack
 
-	m_mychannel = channel_name;
+	m_mychannel = p_channel_name;
 	m_cb_channel_list_changed(); // channel list changed (callback)
 }
 
@@ -70,8 +69,9 @@ void Handler::connectToServer(std::string p_address, std::string p_username, std
 
 	printf("Handler::connectToServer() connecting to %s:%d as %s with password %s\n",parsed_ip.c_str(), parsed_port, p_username.c_str(), p_password.c_str());
 
-	p_client_network.connect(parsed_ip, parsed_port);
-	p_client_network.loginRequest(p_username, p_password);
+	int returned = m_client_network.connect(parsed_ip, parsed_port);
+	printf("returned: \"%d\"\n", returned);
+	m_client_network.loginRequest(p_username, p_password);
 
 	m_mynick = p_username;
 	m_cb_connected_to_server(p_address, p_username);
@@ -83,7 +83,7 @@ void Handler::disconnect()
 	m_client_network.logout();
 	m_client_network.disconnect();
 
-	std::cout << "Handler: disconnected\n";
+	std::cout << "Handler::disconnect() disconnected\n";
 }
 
 
@@ -112,10 +112,10 @@ int Handler::getSocket()
 void Handler::update()
 {
 	Message incoming_message;
-	while(n.processNetworking())
+	while(m_client_network.processNetworking())
 	{
 //		printf("processed network\n");
-		while(n.getMessage(incoming_message))	//means we have incoming data in incoming_message
+		while(m_client_network.getMessage(incoming_message))	//means we have incoming data in incoming_message
 		{
 //			printf("got message\n");
 			handleMessage(incoming_message);
