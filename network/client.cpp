@@ -164,6 +164,7 @@ int main(int argc, char **argv)
 
 	//setup networking
 	ClientNetwork n = ClientNetwork();
+/*
 	if(n.connect(G_SERVER_IP, G_SERVER_PORT) == 0)
 	{
 		printf("connection successful!\n");
@@ -172,11 +173,15 @@ int main(int argc, char **argv)
 	{
 		printf("connection failed :(\n");
 	}
-
+*/
 	g_client_pool = new ClientPool();
 
-	//use argument 1 and 2 for username and password and send
+	n.connect(G_SERVER_IP, G_SERVER_PORT);
 	n.loginRequest(username, password);
+
+
+	//use argument 1 and 2 for username and password and send
+//	n.loginRequest(username, password);
 
 	n.sendText("OMG", "hejsan kanin!");
 

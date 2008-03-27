@@ -103,12 +103,6 @@ void Network::sendData(int p_socket, Data &p_data)
 	h.message_type = p_data.getType();
 	h.message_length = p_data.getLength();
 
-	printf("sending data of type \"%d\"\n", h.message_type);
-	if(h.message_type == SERVER_LOGIN_BAD)
-	{
-		int k = *(int*)NULL;
-	}
-
 	send(p_socket, (void*)&h, sizeof(header), 0);
 	send(p_socket, p_data.getData(), p_data.getLength(), 0);
 }

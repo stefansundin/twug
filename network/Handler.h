@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "ClientNetwork.h"
 #include "ClientPool.h"
 
 class Handler
@@ -55,7 +56,7 @@ private:
 	void handleMessage(Message p_message);
 
 	ClientPool m_client_pool;
-	ClientNetwork p_client_network;
+	ClientNetwork m_client_network;
 	
 	std::string m_mynick;
 	std::string m_mychannel;

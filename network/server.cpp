@@ -209,13 +209,13 @@ void handle_message(Message p_message)
 		}
 		fill(reciever, 20);
 
-		std::string m = reciever + message;
+		std::string sender = "";
+		g_client_pool->socketToName(p_message.getSocket(), &sender);
+		std::string m = sender + message;
 
 		response = Data(SERVER_TEXT_DATA, m.c_str(), m.size()+1);
 		g_network->sendData(recv_socket, response);
 
-		std::string sender;
-		g_client_pool->socketToName(p_message.getSocket(), &sender);
 		strip(reciever);
 		printf("\"%s\" says \"%s\" to \"%s\"\n", sender.c_str(), message.c_str(), reciever.c_str());
 	}
