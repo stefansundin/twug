@@ -66,15 +66,18 @@ void Handler::joinChannel(std::string channel_name)
 	m_cb4(); // channel list changed (callback)
 }
 
-void Handler::connectToServer(std::string p_ip, std::string p_name)
+void Handler::connectToServer(std::string p_ip, std::string p_name, std::string p_password)
 {
 	std::cout << "Handler: attempting to connect to server \"" << p_ip << "\"\n"; 
 
 	if (p_ip=="192.168.0.1")
 	{
 		std::cout << "Handler: connection failed\n";
-		m_cb3(p_ip); // connection lost with server p_ip (callback)
-		// perhaps we should have a separate cb for connection attempt failed...
+		m_cb1(p_ip + ": Connection refused");
+	} else if (p_password == "")
+	{
+		std::cout << "Handler: wrong password\n";
+		m_cb1("ERR_IS_PASSWORD");
 	} else {
 		std::cout << "Handler: connected to server \"" << p_ip << "\"\n";
 		m_mynick = p_name;

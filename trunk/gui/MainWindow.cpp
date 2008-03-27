@@ -99,10 +99,11 @@ void MainWindow::on_popup_changed()
 		if (text != "Not Connected")
 		{
 			m_handler->disconnect();
-			m_handler->connectToServer( getServerIp(text), m_newname );
+			m_handler->connectToServer( getServerIp(text), m_newname, "kaka" );
 			
 		} else {
 			m_handler->disconnect();
+			m_treestore->clear();
 		}
 	}
 }
@@ -114,10 +115,29 @@ void MainWindow::connectedAs(std::string p_ip, std::string p_name)
 	m_handler->joinChannel("__lobby__");
 }
 
-void MainWindow::connectionLost(std::string p_ip)
+void MainWindow::connectionError(bool p_type, std::string p_err)
 {
-	m_popup.set_active_text("Not Connected");
-	m_treestore->clear();
+	if (!p_type) // if error during connection process
+	{
+		//if (p_err == "ERR_IS_PASSWORD")
+		//{
+		//	//triggerPassEntry();
+		//}
+		//else
+		//{
+			spawnErrorDialog("Error connecting", p_err);			
+		//}
+	} else { // if unexpected network connection lost
+		spawnErrorDialog("Connection lost", p_err);
+		
+	}
+	m_popup.set_active_text("Not Connected");	
+}
+
+void MainWindow::spawnErrorDialog(std::string p_titlebar,std::string p_textbody)
+{
+	//temp
+	std::cout << "MainWindow: " << p_titlebar << " " << p_textbody << std::endl;
 }
 
 std::string MainWindow::getServerIp(std::string text)
@@ -149,30 +169,25 @@ void MainWindow::reloadChannels()
 		if(channels.at(i) == "__lobby__")
 		{
 			channelMembers = m_handler->getChannelMembers( channels.at(i) );
-			if(!channelMembers.empty())
+			for(a=0;a<channelMembers.size();a++)
 			{
-				for(a=0;a<channelMembers.size();a++)
-				{
-					iter = m_treestore->append();
-					(*iter)[m_columns->name] = channelMembers.at(a);
-					if (m_autoopen) 
-						m_msghandler->showWindow(channelMembers.at(a));
-				}
+				iter = m_treestore->append();
+				(*iter)[m_columns->name] = channelMembers.at(a);
+				if (m_autoopen) 
+					m_msghandler->showWindow(channelMembers.at(a));
 			}
 		} else {
 			iter = m_treestore->append();
 			(*iter)[m_columns->name] = channels.at(i);
 
 			channelMembers = m_handler->getChannelMembers( channels.at(i) );
-			if(!channelMembers.empty())
+
+			for(a=0;a<channelMembers.size();a++)
 			{
-				for(a=0;a<channelMembers.size();a++)
-				{
 				child_iter = m_treestore->append(iter->children());
 				(*child_iter)[m_columns->name] = channelMembers.at(a);
 				if (m_autoopen) 
 					m_msghandler->showWindow(channelMembers.at(a));
-				}
 			}
 		}
 	}

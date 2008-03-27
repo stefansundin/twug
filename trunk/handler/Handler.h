@@ -31,7 +31,7 @@ public:
 	void joinChannel(std::string channel_name);
 	//försöker joina channeln channel_name
 
-	void connectToServer(std::string ip, std::string nick);
+	void connectToServer(std::string ip, std::string nick, std::string p_password);
 	//försöker ansluta till servern "ip", som användaren "nick"
 
 	void disconnect();

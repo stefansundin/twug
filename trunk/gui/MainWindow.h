@@ -14,7 +14,7 @@
 #include <gtkmm/menu.h>
 #include <gtkmm/comboboxtext.h>
 
-#include "../handler/Handler.h"
+#include "HandlerLink.h"
 #include "MessageHandler.h"
 
 
@@ -34,7 +34,7 @@ protected:
 	virtual void on_button_released();
 	virtual void on_button_pressed();
 	virtual void on_popup_changed();
-	
+	void spawnErrorDialog(std::string p_titlebar,std::string p_textbody);
 
 	std::string getServerIp(std::string text);
 	Glib::ustring getSelectionValue();
@@ -69,7 +69,7 @@ MessageHandler* m_msghandler;
 
 	//callbacks
 	void connectedAs(std::string p_ip, std::string p_name); 
-	void connectionLost(std::string p_ip);
+	void connectionError(bool p_type, std::string p_err);
 	void reloadChannels();
 };
 
