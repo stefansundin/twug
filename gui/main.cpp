@@ -28,6 +28,13 @@ void cb_channel_list_changed()
 	g_app->m_window->reloadChannels();
 }
 
+int cb_read_from_socket(char* buf, unsigned int count)
+{
+	gsize bytes_read;
+	g_app->m_io_channel->read(buf, count, bytes_read);
+	return bytes_read;
+}
+
 int main (int argc, char *argv[])
 {
 	Gtk::Main kit(argc, argv);
@@ -37,8 +44,9 @@ int main (int argc, char *argv[])
 		&cb_error_connecting,
 		&cb_connected_to_server,
 		&cb_connection_lost,
-		&cb_channel_list_changed   );
-
+		&cb_channel_list_changed
+		&cb_read_from_socket);
+	
 	g_app = new AppMan(handler);
 
 	kit.run();

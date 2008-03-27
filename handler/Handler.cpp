@@ -14,6 +14,7 @@ Handler::Handler(
 	m_cb2 = p_cb2;
 	m_cb3 = p_cb3;
 	m_cb4 = p_cb4;
+	
 
 	channel kaka;
 	kaka.name = "__lobby__";
