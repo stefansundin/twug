@@ -1,8 +1,11 @@
-twug: AppMan.o MainWindow.o TrayIcon.o PrefsWindow.o MessageHandler.o MessageWindow.o main.o
-	g++ -g -o build/twug build/AppMan.o build/MainWindow.o build/PrefsWindow.o build/TrayIcon.o build/MessageHandler.o build/MessageWindow.o build/main.o `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags --libs` ../network/build/*.o
+twug: AppMan.o Handler.o MainWindow.o TrayIcon.o PrefsWindow.o MessageHandler.o MessageWindow.o main.o
+	g++ -g -o build/twug build/AppMan.o build/Handler.o build/MainWindow.o build/PrefsWindow.o build/TrayIcon.o build/MessageHandler.o build/MessageWindow.o build/main.o `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags --libs`
 
 AppMan.o: AppMan.cpp AppMan.h
 	g++ -g -c -o build/AppMan.o AppMan.cpp `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags`
+
+Handler.o: ../handler/Handler.cpp ../handler/Handler.h
+	g++ -g -c -o build/Handler.o ../handler/Handler.cpp `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags`
 
 MainWindow.o: MainWindow.cpp MainWindow.h
 	g++ -g -c -o build/MainWindow.o MainWindow.cpp `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags`
