@@ -13,10 +13,10 @@
 #include <gtkmm/treestore.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/comboboxtext.h>
+#include <gtkmm/messagedialog.h>
 
 #include "HandlerLink.h"
 #include "MessageHandler.h"
-
 
 class mwColumns : public Gtk::TreeModelColumnRecord
 {
