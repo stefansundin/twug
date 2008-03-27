@@ -2,26 +2,17 @@
 
 void AppMan::setupSocket()
 {
-//	int fd = m_handler->getSocket();
-
-	int fd = open("kaka.txt", O_RDONLY);
-
+	int fd = m_handler->getSocket();
+	
 	Glib::signal_io().connect(
 		sigc::mem_fun(*this,&AppMan::on_socket_changed),fd,Glib::IO_IN);
-	Glib::IOChannel::create_from_fd(fd);
+
+	m_io_channel = Glib::IOChannel::create_from_fd(fd);
 }
 
 bool AppMan::on_socket_changed(Glib::IOCondition io)
 {
-	if((io & Glib::IO_IN) == 0)
-	{
-		printf("no good\n");
-	}
-	else
-	{
-//		printf("good\n");
-		m_handler->update();
-	}
+	m_handler->update();
 
 	return true;
 }

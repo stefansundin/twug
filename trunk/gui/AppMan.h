@@ -6,6 +6,7 @@
 #include "PrefsWindow.h"
 #include "HandlerLink.h"
 
+
 class AppMan
 {
 protected:
@@ -19,6 +20,7 @@ public:
 
 	AppMan(Handler* p_handler);
 	//~AppMan();
+	Glib::RefPtr<Glib::IOChannel> m_io_channel;
 };
 
 #endif
