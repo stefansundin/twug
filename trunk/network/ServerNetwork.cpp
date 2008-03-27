@@ -66,10 +66,7 @@ void ServerNetwork::processNetworking()
 	{
 		report_error(strerror(errno));
 	}
-	else if(select_returned == 0)	//nothing selected so no point in continuing
-	{
-		return;
-	}
+	printf("selected\n");
 
 	//do something about it
 	int i;

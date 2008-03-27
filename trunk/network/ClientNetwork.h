@@ -18,7 +18,7 @@ public:
 
 	bool processNetworking();
 
-	int getSocket();		//this is usefull when one needs tell GTK to watch the socket
+	int getSocket();		//this is usefull when one need to tell GTK to watch the socket
 
 private:
 	int m_socket;
