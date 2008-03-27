@@ -44,7 +44,7 @@ public:
 	void iStopTalking();
 	//körs när du släpper push-to-talk
 
-	void postMessage(std::string destination, std::string contents);
+	void sendText(std::string destination, std::string contents);
 	//skicka textmeddelande till användaren "destination" med innehållet "contents" 
 
 	int getSocket();
