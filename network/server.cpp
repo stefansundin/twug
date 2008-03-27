@@ -72,17 +72,37 @@ void handle_message(Message p_message)
 		int returned = checkLogin(username, password);
 		if(returned == 0)	//this client babba ok kk
 		{
+			std::string client_name, channel_name;
+			std::vector<std::string> channel_names = g_client_pool->getChannelNames(), client_names;
+			std::string m;
+			int i, j;
+			printf("channel_names.size() = \"%d\"\n", channel_names.size());
+			for(i = 0; i < channel_names.size(); i++)
+			{
+				g_client_pool->getChannelClients(channel_names.at(i), &client_names);
+				for(j = 0; j < client_names.size(); j++)
+				{
+					channel_name = channel_names.at(i);
+					client_name = client_names.at(j);
+					fill(channel_name, 20);
+					fill(client_name, 20);
+					m = client_name + channel_name;
+					response = Data(SERVER_ADD_CLIENT, m.c_str(), m.size()+1);
+					g_network->sendData(p_message.getSocket(), response);
+					printf("PEW PEW\n");
+				}
+			}
+
 			g_client_pool->addClient(username, DEFAULT_CHANNEL, p_message.getSocket());
 			response = Data(SERVER_LOGIN_OK, "", 0);
-			g_network->sendData(p_message.getSocket(), response);
 
-			std::string channel = DEFAULT_CHANNEL;
+			channel_name = DEFAULT_CHANNEL;
 			fill(username, 20);
-			fill(channel, 20);
-			std::string m = username + channel;
+			fill(channel_name, 20);
+			m = username + channel_name;
 			response = Data(SERVER_ADD_CLIENT, m.c_str(), m.size()+1);
-			std::vector<std::string> client_names = g_client_pool->getClientNames();
-			int i, s;
+			client_names = g_client_pool->getClientNames();
+			int s;
 			for(i = 0; i < client_names.size(); i++)
 			{
 				g_client_pool->nameToSocket(client_names.at(i), &s);
@@ -94,21 +114,24 @@ void handle_message(Message p_message)
 		else if(returned == -1)		//bad username
 		{
 			why = 1;
+			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
+			g_network->sendData(p_message.getSocket(), response);
 			printf("bad username\n");
 		}
 		else if(returned == -2)		//bad password
 		{
 			why = 2;
+			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
+			g_network->sendData(p_message.getSocket(), response);
 			printf("bad password\n");
 		}
 		else if(returned == -3)		//username already taken
 		{
 			why = 3;
+			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
+			g_network->sendData(p_message.getSocket(), response);
 			printf("username already taken\n");
 		}
-
-		response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
-		g_network->sendData(p_message.getSocket(), response);
 	}
 	else if(p_message.getData().getType() == CLIENT_LOGOUT)
 	{
@@ -293,7 +316,7 @@ int main()
 	while(true)
 	{
 		g_network->processNetworking();
-		if(g_network->getMessage(incomming_message))	//means we have incomming data in incomming_message
+		while(g_network->getMessage(incomming_message))	//means we have incomming data in incomming_message
 		{
 			handle_message(incomming_message);
 		}

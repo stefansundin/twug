@@ -184,7 +184,8 @@ int main(int argc, char **argv)
 	Message incomming_message;
 	while(n.processNetworking())
 	{
-		if(n.getMessage(incomming_message))		//means we have incomming data in incomming_message
+		printf("processed network\n");
+		while(n.getMessage(incomming_message))	//means we have incomming data in incomming_message
 		{
 			printf("got message\n");
 			handleMessage(incomming_message);

@@ -10,6 +10,7 @@ ClientNetwork::~ClientNetwork()
 	disconnect();
 }
 
+
 int ClientNetwork::connect(std::string p_address, int p_port)
 {
 	struct sockaddr_in addr;
@@ -21,7 +22,6 @@ int ClientNetwork::connect(std::string p_address, int p_port)
 		m_connected = true;
 	return status;
 }
-
 int ClientNetwork::disconnect()
 {
 	int status = shutdown(m_socket, SHUT_RDWR);
@@ -29,6 +29,7 @@ int ClientNetwork::disconnect()
 		m_connected = false;
 	return status;
 }
+
 
 void ClientNetwork::loginRequest(std::string p_user, std::string p_password)
 {
@@ -73,6 +74,7 @@ bool ClientNetwork::processNetworking()
 	{
 		report_error(strerror(errno));
 	}
+	printf("selected\n");
 
 	if(FD_ISSET(m_socket, &readable))
 	{
