@@ -47,6 +47,7 @@ public:
 	std::vector<std::string> getClientNames();
 
 	bool addClient(std::string p_name, std::string p_channel_name, int p_socket);
+	bool removeClient(std::string p_name);
 	bool removeClient(int p_socket);
 
 	bool socketToName(int p_socket, std::string *p_string);

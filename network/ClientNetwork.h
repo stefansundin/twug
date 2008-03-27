@@ -14,6 +14,7 @@ public:
 	int disconnect();
 	void loginRequest(std::string p_user, std::string p_password);
 	void logout();
+	void changeChannels(std::string p_channel, std::string p_password);
 	void sendText(std::string p_to_username, std::string p_message);
 
 	bool processNetworking();
@@ -25,4 +26,5 @@ private:
 	bool m_connected;
 };
 
-#endif /*CLIENTNETWORK_H_*/
+#endif //CLIENTNETWORK_H_
+
