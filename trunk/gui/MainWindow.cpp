@@ -136,9 +136,13 @@ void MainWindow::connectionError(bool p_type, std::string p_err)
 
 void MainWindow::spawnErrorDialog(std::string p_titlebar,std::string p_textbody)
 {
-	//temp
 	std::cout << "MainWindow: " << p_titlebar << " " << p_textbody << std::endl;
+
+	Gtk::MessageDialog kaka(*this,p_titlebar,false,Gtk::MESSAGE_ERROR);
+	kaka.set_secondary_text(p_textbody);
+	kaka.run();
 }
+
 
 std::string MainWindow::getServerIp(std::string text)
 {
