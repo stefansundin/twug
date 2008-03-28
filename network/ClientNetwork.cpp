@@ -80,7 +80,7 @@ bool ClientNetwork::processNetworking()
 	FD_ZERO(&readable);
 	FD_SET(m_socket, &readable);
 
-
+/*
 	tv.tv_sec = 5;
 	tv.tv_usec = 0;
 	int select_returned = select(m_socket+1, &readable, NULL, NULL, &tv);
@@ -88,16 +88,16 @@ bool ClientNetwork::processNetworking()
 	{
 		report_error(strerror(errno));
 	}
-	printf("selected\n");
+*/
 
-	if(FD_ISSET(m_socket, &readable))
-	{
+//	if(FD_ISSET(m_socket, &readable))
+//	{
 //		printf("updating buffer\n");
 		if(!updateBuffer(m_socket))
 		{
 			m_connected = false;
 		}
-	}
+//	}
 
 	return true;
 }
