@@ -19,7 +19,10 @@ int ClientNetwork::connect(std::string p_address, int p_port)
 	addr.sin_port = htons(p_port);
 	int status = ::connect(m_socket, (struct sockaddr*)&addr, sizeof(addr));
 	if(status == 0)
+	{
+		printf("%d\n", m_socket);
 		m_connected = true;
+	}
 	return status;
 }
 int ClientNetwork::disconnect()

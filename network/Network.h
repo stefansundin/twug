@@ -63,9 +63,10 @@ public:
 	bool getMessage(Message &p_msg);
 	void sendData(int p_socket, Data &p_data);
 
-	void setLameRecv(int (*p_lame_recv)(char*, unsigned int))
+	void setLameCallbacks(int (*p_lame_recv)(char*, unsigned int), int (*p_lame_send)(const char*, unsigned int))
 	{
 		m_lame_recv = p_lame_recv;
+		m_lame_send = p_lame_send;
 	}
 
 protected:
@@ -75,6 +76,7 @@ protected:
 	std::map<int, Buffer> m_buffers;		//<socket, its_buffer>
 
 	int (*m_lame_recv)(char*, unsigned int);		//this is lame, totally lame
+	int (*m_lame_send)(const char*, unsigned int);
 };
 
 #endif //NETWORK_H_
