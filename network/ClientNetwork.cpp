@@ -50,6 +50,7 @@ void ClientNetwork::logout()
 		sendData(m_socket, data);
 	}
 }
+
 void ClientNetwork::changeChannels(std::string p_channel, std::string p_password)
 {
 	fill(p_channel, 20);
@@ -59,6 +60,7 @@ void ClientNetwork::changeChannels(std::string p_channel, std::string p_password
 	Data data = Data(CLIENT_CHANNEL_CHANGE, to_send.c_str(), to_send.size()+1);
 	sendData(m_socket, data);
 }
+
 void ClientNetwork::sendText(std::string p_to_username, std::string p_message)
 {
 	fill(p_to_username, 20);
@@ -71,16 +73,18 @@ void ClientNetwork::sendText(std::string p_to_username, std::string p_message)
 
 bool ClientNetwork::processNetworking()
 {
+	got_here();
 	if(!m_connected)
 		return false;
 
+/*
 	fd_set readable;
 	struct timeval tv;
 
 	FD_ZERO(&readable);
 	FD_SET(m_socket, &readable);
 
-/*
+
 	tv.tv_sec = 5;
 	tv.tv_usec = 0;
 	int select_returned = select(m_socket+1, &readable, NULL, NULL, &tv);
@@ -95,6 +99,7 @@ bool ClientNetwork::processNetworking()
 //		printf("updating buffer\n");
 		if(!updateBuffer(m_socket))
 		{
+			got_here();
 			m_connected = false;
 		}
 //	}

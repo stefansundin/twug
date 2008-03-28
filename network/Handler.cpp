@@ -6,7 +6,8 @@ Handler::Handler(
 	void (*p_cb_connected_to_server)(std::string, std::string),
 	void (*p_cb_connection_lost)(std::string),
 	void (*p_cb_channel_list_changed)(),
-	int (*p_cb_read_from_socket)(char*, unsigned int)
+	int (*p_cb_read_from_socket)(char*, unsigned int),
+	int (*p_cb_write_to_socket)(char*, unsigned int)
 	)
 {
 	m_cb_got_text_message		=	p_cb_got_text_message;
@@ -15,7 +16,7 @@ Handler::Handler(
 	m_cb_connection_lost		=	p_cb_connection_lost;
 	m_cb_channel_list_changed	=	p_cb_channel_list_changed;
 	m_cb_read_from_socket		=	p_cb_read_from_socket;
-
+	m_cb_write_to_socket		=	p_cb_write_to_socket;
 /*
 	m_client_pool.addClient("Basse", "__lobby__", 0);
 	m_client_pool.addClient("Loladin", "__lobby__", 0);
@@ -23,6 +24,7 @@ Handler::Handler(
 	m_client_pool.addClient("Recover", "channel 1", 0);
 	m_client_pool.addClient("Toaefge", "channel 1", 0);
 */
+	m_client_network.setLameRecv(m_cb_read_from_socket);
 
 	std::cout << "Handler: constructed" << std::endl;
 }
@@ -113,6 +115,7 @@ int Handler::getSocket()
 
 void Handler::update()
 {
+	got_here();
 	Message incoming_message;
 	while(m_client_network.processNetworking())
 	{
