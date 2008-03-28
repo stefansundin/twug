@@ -4,10 +4,13 @@ void AppMan::setupSocket()
 {
 	int fd = m_handler->getSocket();
 	
+	m_io_channel = Glib::IOChannel::create_from_fd(fd);
+	
+	m_io_channel->set_encoding();
+	m_io_channel->set_buffered(0);
+
 	Glib::signal_io().connect(
 		sigc::mem_fun(*this,&AppMan::on_socket_changed),fd,Glib::IO_IN);
-
-	m_io_channel = Glib::IOChannel::create_from_fd(fd);
 }
 
 bool AppMan::on_socket_changed(Glib::IOCondition io)

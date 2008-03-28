@@ -35,6 +35,13 @@ int cb_read_from_socket(char* buf, unsigned int count)
 	return bytes_read;
 }
 
+int cb_write_to_socket(char* buf, unsigned int count)
+{
+	gsize bytes_written;
+	g_app->m_io_channel->write(buf, count, bytes_written);
+	return bytes_written;
+}
+
 int main (int argc, char *argv[])
 {
 	Gtk::Main kit(argc, argv);
@@ -45,7 +52,8 @@ int main (int argc, char *argv[])
 		&cb_connected_to_server,
 		&cb_connection_lost,
 		&cb_channel_list_changed,
-		&cb_read_from_socket);
+		&cb_read_from_socket,
+		&cb_write_to_socket );
 	
 	g_app = new AppMan(handler);
 
