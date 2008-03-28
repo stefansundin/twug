@@ -7,7 +7,7 @@ Handler::Handler(
 	void (*p_cb_connection_lost)(std::string),
 	void (*p_cb_channel_list_changed)(),
 	int (*p_cb_read_from_socket)(char*, unsigned int),
-	int (*p_cb_write_to_socket)(char*, unsigned int)
+	int (*p_cb_write_to_socket)(const char*, unsigned int)
 	)
 {
 	m_cb_got_text_message		=	p_cb_got_text_message;
@@ -24,7 +24,7 @@ Handler::Handler(
 	m_client_pool.addClient("Recover", "channel 1", 0);
 	m_client_pool.addClient("Toaefge", "channel 1", 0);
 */
-	m_client_network.setLameRecv(m_cb_read_from_socket);
+	m_client_network.setLameCallbacks(m_cb_read_from_socket,m_cb_write_to_socket);
 
 	std::cout << "Handler: constructed" << std::endl;
 }
@@ -72,6 +72,7 @@ void Handler::connectToServer(std::string p_address, std::string p_username, std
 	}
 
 	printf("Handler::connectToServer() connecting to %s:%d as %s with password %s\n",parsed_ip.c_str(), parsed_port, p_username.c_str(), p_password.c_str());
+	fflush(stdout);
 
 	int returned = m_client_network.connect(parsed_ip, parsed_port);
 	printf("returned: \"%d\"\n", returned);

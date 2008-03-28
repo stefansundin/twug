@@ -29,9 +29,9 @@ bool Network::updateBuffer(int p_socket)
 	//recived data
 	char *recv_buffer = new char[2048];
 //#ifdef SERVER
-//	int recv_length = recv(p_socket, (void*)recv_buffer, 2048, 0);
+	int recv_length = recv(p_socket, (void*)recv_buffer, 2048, 0);
 //#else
-	int recv_length = m_lame_recv((char*)recv_buffer, 2048);
+//	int recv_length = m_lame_recv((char*)recv_buffer, 2048);
 //#endif
 	if(recv_length == -1)
 	{
@@ -110,4 +110,6 @@ void Network::sendData(int p_socket, Data &p_data)
 
 	send(p_socket, (void*)&h, sizeof(header), 0);
 	send(p_socket, p_data.getData(), p_data.getLength(), 0);
+	//m_lame_send((char*)&h, sizeof(header) );
+	//m_lame_send((char*)p_data.getData(), p_data.getLength());
 }
