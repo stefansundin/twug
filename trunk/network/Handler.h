@@ -18,7 +18,8 @@ public:
 	void (*p_cb_error_connecting)(std::string),
 	void (*p_cb_connected_to_server)(std::string, std::string),
 	void (*p_cb_connection_lost)(std::string),
-	void (*p_cb_channel_list_changed)()
+	void (*p_cb_channel_list_changed)(),
+	int (*p_cb_read_from_socket)(char*, unsigned int)
 	);
 	
 	~Handler();
@@ -67,6 +68,7 @@ private:
 	void (*m_cb_connected_to_server)(std::string, std::string); // server, username
 	void (*m_cb_connection_lost)(std::string); // connection unexpetedly lost, argument: error message (e.g. Connection refused)
 	void (*m_cb_channel_list_changed)();
+	int (*m_cb_read_from_socket)(char*, unsigned int);
 };
 
 #endif //Handler_h

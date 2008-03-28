@@ -63,11 +63,18 @@ public:
 	bool getMessage(Message &p_msg);
 	void sendData(int p_socket, Data &p_data);
 
+	void setLameRecv(int (*p_lame_recv)(char*, unsigned int))
+	{
+		m_lame_recv = p_lame_recv;
+	}
+
 protected:
 	bool updateBuffer(int p_socket);		//returns false if recv() returned 0, ie the socket is shutdown on the other end
 
 	std::queue<Message> m_messages;		//<sender_socket, message>
 	std::map<int, Buffer> m_buffers;		//<socket, its_buffer>
+
+	int (*m_lame_recv)(char*, unsigned int);		//this is lame, totally lame
 };
 
 #endif //NETWORK_H_

@@ -1,3 +1,6 @@
+//kill me now
+#define SERVER
+
 #include <vector>
 
 #include "ServerNetwork.h"

@@ -66,7 +66,7 @@ void ServerNetwork::processNetworking()
 	{
 		report_error(strerror(errno));
 	}
-	printf("selected\n");
+//	printf("selected\n");
 
 	//do something about it
 	int i;

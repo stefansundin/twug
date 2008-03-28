@@ -5,7 +5,8 @@ Handler::Handler(
 	void (*p_cb_error_connecting)(std::string),
 	void (*p_cb_connected_to_server)(std::string, std::string),
 	void (*p_cb_connection_lost)(std::string),
-	void (*p_cb_channel_list_changed)()
+	void (*p_cb_channel_list_changed)(),
+	int (*p_cb_read_from_socket)(char*, unsigned int)
 	)
 {
 	m_cb_got_text_message		=	p_cb_got_text_message;
@@ -13,6 +14,7 @@ Handler::Handler(
 	m_cb_connected_to_server	=	p_cb_connected_to_server;
 	m_cb_connection_lost		=	p_cb_connection_lost;
 	m_cb_channel_list_changed	=	p_cb_channel_list_changed;
+	m_cb_read_from_socket		=	p_cb_read_from_socket;
 
 /*
 	m_client_pool.addClient("Basse", "__lobby__", 0);

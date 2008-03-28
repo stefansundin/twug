@@ -28,7 +28,11 @@ bool Network::updateBuffer(int p_socket)
 {
 	//recived data
 	char *recv_buffer = new char[2048];
+//#ifdef SERVER
 	int recv_length = recv(p_socket, (void*)recv_buffer, 2048, 0);
+//#else
+//	int recv_length = m_lame_recv((char*)recv_buffer, 2048);
+//#endif
 	if(recv_length == -1)
 	{
 		report_error(strerror(errno));
@@ -36,6 +40,7 @@ bool Network::updateBuffer(int p_socket)
 	}
 	else if(recv_length == 0)
 	{
+		printf("OMGOMGOMGOMGOMGOM\n");
 		log_this("disconnected");
 		return false;
 	}
