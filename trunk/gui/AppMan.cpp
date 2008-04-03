@@ -20,7 +20,7 @@ void AppMan::setupSocket()
 
 bool AppMan::on_socket_changed(Glib::IOCondition io)
 {
-	got_here();
+	//got_here();
 
 	m_handler->update();
 

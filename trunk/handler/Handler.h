@@ -18,7 +18,9 @@ public:
 	void (*p_cb1)(std::string),
 	void (*p_cb2)(std::string,std::string),
 	void (*p_cb3)(std::string),
-	void (*p_cb4)()
+	void (*p_cb4)(),
+	int (*p_cb_read_from_socket)(char*, unsigned int),
+	int (*p_cb_write_to_socket)(const char*, unsigned int)
 	);
 	
 	~Handler();
