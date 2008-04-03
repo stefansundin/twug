@@ -20,7 +20,8 @@ public:
 	void (*p_cb_connection_lost)(std::string),
 	void (*p_cb_channel_list_changed)(),
 	int (*p_cb_read_from_socket)(char*, unsigned int),
-	int (*p_cb_write_to_socket)(const char*, unsigned int)
+	int (*p_cb_write_to_socket)(const char*, unsigned int),
+	void (*p_cb_setupsocket)()
 	);
 	
 	~Handler();
@@ -61,6 +62,7 @@ private:
 	ClientNetwork m_client_network;
 	
 	std::string m_mynick;
+	std::string m_myserver;
 	std::string m_mychannel;
 
 	// Callback pointers
@@ -71,6 +73,7 @@ private:
 	void (*m_cb_channel_list_changed)();
 	int (*m_cb_read_from_socket)(char*, unsigned int);
 	int (*m_cb_write_to_socket)(const char*, unsigned int);
+	void (*m_cb_setupsocket)();
 };
 
 #endif //Handler_h

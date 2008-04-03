@@ -7,7 +7,8 @@ Handler::Handler(
 	void (*p_cb_connection_lost)(std::string),
 	void (*p_cb_channel_list_changed)(),
 	int (*p_cb_read_from_socket)(char*, unsigned int),
-	int (*p_cb_write_to_socket)(const char*, unsigned int)
+	int (*p_cb_write_to_socket)(const char*, unsigned int),
+	void (*p_cb_setupsocket)()
 	)
 {
 	m_cb_got_text_message		=	p_cb_got_text_message;
@@ -17,6 +18,7 @@ Handler::Handler(
 	m_cb_channel_list_changed	=	p_cb_channel_list_changed;
 	m_cb_read_from_socket		=	p_cb_read_from_socket;
 	m_cb_write_to_socket		=	p_cb_write_to_socket;
+	m_cb_setupsocket 		=	p_cb_setupsocket;
 /*
 	m_client_pool.addClient("Basse", "__lobby__", 0);
 	m_client_pool.addClient("Loladin", "__lobby__", 0);
@@ -76,10 +78,13 @@ void Handler::connectToServer(std::string p_address, std::string p_username, std
 
 	int returned = m_client_network.connect(parsed_ip, parsed_port);
 	printf("returned: \"%d\"\n", returned);
+
+	m_cb_setupsocket();
+
 	m_client_network.loginRequest(p_username, p_password);
 
 	m_mynick = p_username;
-	m_cb_connected_to_server(p_address, p_username);
+	m_myserver = p_address;
 }
 
 
@@ -139,6 +144,7 @@ void Handler::handleMessage(Message p_message)
 	if(p_message.getData().getType() == SERVER_LOGIN_OK)
 	{
 			printf("got \"SERVER_LOGIN_OK\"\n");
+			m_cb_connected_to_server(m_myserver, m_mynick);
 	}
 	else if(p_message.getData().getType() == SERVER_LOGIN_BAD)
 	{
