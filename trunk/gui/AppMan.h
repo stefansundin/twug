@@ -10,9 +10,9 @@
 class AppMan
 {
 protected:
-	void setupSocket();
 	bool on_socket_changed(Glib::IOCondition io);
 public:
+	void setupSocket();
 	MainWindow *m_window;
 	PrefsWindow *m_prefswindow;
 	TrayIcon *m_icon;

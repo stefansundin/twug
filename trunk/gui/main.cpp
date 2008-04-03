@@ -42,6 +42,11 @@ int cb_write_to_socket(const char* buf, unsigned int count)
 	return bytes_written;
 }
 
+void cb_setupsocket()
+{
+	g_app->setupSocket();
+}
+
 int main (int argc, char *argv[])
 {
 	Gtk::Main kit(argc, argv);
@@ -53,7 +58,8 @@ int main (int argc, char *argv[])
 		&cb_connection_lost,
 		&cb_channel_list_changed,
 		&cb_read_from_socket,
-		&cb_write_to_socket );
+		&cb_write_to_socket,
+		&cb_setupsocket);
 	
 	g_app = new AppMan(handler);
 

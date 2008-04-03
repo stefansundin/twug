@@ -20,7 +20,7 @@ void AppMan::setupSocket()
 
 bool AppMan::on_socket_changed(Glib::IOCondition io)
 {
-	//got_here();
+	got_here();
 
 	m_handler->update();
 
@@ -35,7 +35,7 @@ AppMan::AppMan(Handler* p_handler)
 	m_prefswindow = new PrefsWindow(m_window);
 	m_icon = new TrayIcon(m_window,m_prefswindow);
 
-	setupSocket();	
+	//setupSocket();	
 	m_prefswindow->loadSettings();
 
 	m_window->show();
