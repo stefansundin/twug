@@ -25,7 +25,7 @@ MainWindow::MainWindow(Handler* p_handler)
 	m_treeview->append_column("Name", m_columns->name);	
 	m_treeview->set_size_request(180,400);
 	m_button.set_border_width(5);
-	m_button.set_label("Talk button");
+	m_button.set_label("Pump Network (debug)");
 
 	vbox->add(m_popup);
 	vbox->add(m_button);
@@ -41,10 +41,12 @@ MainWindow::MainWindow(Handler* p_handler)
 
 	m_popup.signal_changed().connect(
 		sigc::mem_fun(*this,&MainWindow::on_popup_changed) );
-	m_button.signal_pressed().connect(
+	/*m_button.signal_pressed().connect(
 		sigc::mem_fun(*this,&MainWindow::on_button_pressed));
 	m_button.signal_released().connect(
-		sigc::mem_fun(*this,&MainWindow::on_button_released));
+		sigc::mem_fun(*this,&MainWindow::on_button_released));*/
+	m_button.signal_clicked().connect(
+		sigc::mem_fun(*this,&MainWindow::on_button_clicked));
 	m_treeview->signal_button_press_event().connect_notify(
 		sigc::mem_fun(*this,&MainWindow::on_treeview_clicked));
 }
@@ -89,6 +91,13 @@ void MainWindow::on_button_released()
 {
 	m_handler->iStopTalking();
 }
+
+void MainWindow::on_button_clicked()
+{
+	m_handler->update();
+}
+
+
 
 void MainWindow::on_popup_changed()
 {
