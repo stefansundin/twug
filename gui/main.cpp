@@ -44,7 +44,7 @@ int cb_write_to_socket(const char* buf, unsigned int count)
 
 void cb_setupsocket()
 {
-	g_app->setupSocket();
+	//g_app->setupSocket();
 }
 
 int main (int argc, char *argv[])

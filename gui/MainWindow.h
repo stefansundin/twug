@@ -34,6 +34,7 @@ protected:
 	virtual void on_button_released();
 	virtual void on_button_pressed();
 	virtual void on_popup_changed();
+	void on_button_clicked();
 	void spawnErrorDialog(std::string p_titlebar,std::string p_textbody);
 
 	std::string getServerIp(std::string text);
