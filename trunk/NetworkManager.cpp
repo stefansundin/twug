@@ -246,7 +246,9 @@ NetworkManager::NetworkManager(UIEvents *p_events)
 	
 	while(true) // thread main loop
 	{
+		got_here();
 		m_readfd = open(m_events->to_network->getFilePath().c_str(), O_RDONLY);
+		got_here();
 
 		if(m_connectedandorloggedin==0) // if we arent connected only select on readfd
 		{

@@ -75,9 +75,10 @@ class UIEventQueue {
 private:
 	std::queue<UIEvent> m_queue;
 	std::string m_filepath;
+	std::string m_name;
 	void lock()
 	{
-		std::cout << "Locking " << m_filepath << std::endl;
+		//std::cout << "Locking " << m_filepath << std::endl;
 		bool completed=0;
 		while(!completed)
 		{
@@ -90,14 +91,15 @@ private:
 	}
 	void unlock()
 	{
-		std::cout << "Unlocking " << m_filepath << std::endl;
+		//std::cout << "Unlocking " << m_filepath << std::endl;
 		m_lock = false;
 	}
 	bool m_lock;
 public:
-	UIEventQueue(std::string p_path)
+	UIEventQueue(std::string p_name)
 	{
-		m_filepath = p_path;
+		m_name = p_name;
+		m_filepath = p_name + ".temp";
 		m_lock = 0;
 
 	 	if (access(m_filepath.c_str(), F_OK) == -1)
@@ -112,8 +114,13 @@ public:
 	{
 		return m_filepath;
 	}
+	std::string getName() const
+	{
+		return m_name;
+	}	
 	UIEvent popEvent()
 	{
+		//std::cout << "UIEvents: Popping event from queue " << m_name << std::endl;
 		UIEvent event = UIEvent("EMPTY");
 		lock();
 		if(!m_queue.empty())
@@ -122,22 +129,25 @@ public:
 			m_queue.pop();
 		}			
 		unlock();
+		std::cout << "UIEvents: Popped event from queue " << m_name << std::endl;
 		return event;
 	}
 	void pushEvent(UIEvent p_event)
 	{
+		//std::cout << "UIEvents: Pushing event to queue " << m_name << std::endl;
 		lock();
 
 		m_queue.push(p_event);
 
 		// notify destination thread by writing to a pipe(hack)
-		std::cout << "notifying destination thread by writing to a pipe(hack)\n";
+		//std::cout << "notifying destination thread by writing to a pipe(hack)\n";
 
 		FILE* f = fopen(m_filepath.c_str(), "w");
 		fputc('\n', f);
 		fclose(f);
 
 		unlock();
+		std::cout << "UIEvents: Pushed event to queue " << m_name << std::endl;
 	}
 };
 
@@ -145,8 +155,8 @@ class UIEvents {
 public:
 	UIEvents()
 	{
-		to_ui = new UIEventQueue("to_ui.temp");
-		to_network = new UIEventQueue("to_network.temp");
+		to_ui = new UIEventQueue("to_ui");
+		to_network = new UIEventQueue("to_network");
   	}
 	UIEventQueue* to_ui; 
 	UIEventQueue* to_network;
