@@ -7,7 +7,7 @@
 #include "strip.h"
 #include "ClientPool.h"
 
-#define DEFAULT_CHANNEL "lobby"
+#define DEFAULT_CHANNEL "__lobby__"
 
 ServerNetwork *g_network;
 ClientPool *g_client_pool;

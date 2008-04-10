@@ -16,9 +16,6 @@ client : $(COMMON_OBJECTS) $(CLIENT_OBJECTS) debug
 	g++ -c $(CFLAGS) -o build/client.o client.cpp
 	cd build; g++ -o client $(COMMON_OBJECTS) $(CLIENT_OBJECTS) debug.o
 
-test_main: test_main.cpp build/ClientNetwork.o build/Network.o build/Data.o build/strip.o build/fill.o build/ClientPool.o
-	cd build; g++ -g -o build/test_main ../test_main.cpp ClientNetwork.o Network.o Data.o strip.o fill.o ClientPool.o ../Handler.cpp
-
 debug : ../debug.cpp
 	g++ -c $(CFLAGS) -o build/debug.o ../debug.cpp
 

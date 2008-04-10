@@ -15,7 +15,7 @@
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/messagedialog.h>
 
-#include "HandlerLink.h"
+#include "../UIEvents.h"
 #include "MessageHandler.h"
 
 class mwColumns : public Gtk::TreeModelColumnRecord
@@ -45,11 +45,13 @@ protected:
 	void on_channelmenu_join();
 
 	bool m_dontdoshit;
-	std::vector<Glib::ustring> m_lastserverlist;
+	std::vector<std::string> m_lastserverlist;
+	std::vector<std::string> m_lastchannellist;
 	std::string* m_nameptr;
+	std::string m_newname;
 
 	
-	Handler* m_handler;
+	UIEvents* m_events;
 
 	Gtk::Button m_button;
 	Gtk::ComboBoxText m_popup;
@@ -59,19 +61,24 @@ protected:
 	Gtk::TreeView *m_treeview;
 	Glib::RefPtr<Gtk::TreeStore> m_treestore;
 public:
-MessageHandler* m_msghandler;
-	MainWindow(Handler* p_handler);
+	MessageHandler* m_msghandler;
+	MainWindow(UIEvents* p_events);
 	virtual ~MainWindow();
 	void toggleVisibility();
 	void giveServers(std::vector<Glib::ustring> p_servers);
 
 	bool m_autoopen;
-	std::string m_newname;
 
-	//callbacks
-	void connectedAs(std::string p_ip, std::string p_name); 
-	void connectionError(bool p_type, std::string p_err);
-	void reloadChannels();
+	void event_newServerList(std::vector<std::string> p_servers);
+	void event_textMessage( std::string sender, std::string message);
+	void event_newChannelList(std::vector<std::string> channels);
+	void event_connected(std::string p_ip, std::string p_name);
+	void event_errorConnecting(std::string p_err, std::string, std::string);
+	void event_connectionLost(std::string p_address);
+	void event_newNewName (std::string p_name);
+	void event_disconnected ();
+
+
 };
 
 #endif

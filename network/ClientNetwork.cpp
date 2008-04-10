@@ -76,7 +76,7 @@ void ClientNetwork::sendText(std::string p_to_username, std::string p_message)
 
 bool ClientNetwork::processNetworking()
 {
-	got_here();
+	//got_here();
 	if(!m_connected)
 		return false;
 
@@ -102,7 +102,7 @@ bool ClientNetwork::processNetworking()
 //		printf("updating buffer\n");
 		if(!updateBuffer(m_socket))
 		{
-			got_here();
+			//got_here();
 			m_connected = false;
 		}
 //	}

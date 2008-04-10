@@ -12,7 +12,7 @@
 #include <gtkmm/textbuffer.h>
 #include <gtkmm/scrolledwindow.h>
 
-#include "HandlerLink.h"
+#include "../UIEvents.h"
 
 class MessageWindow : public Gtk::Window
 {
@@ -20,7 +20,7 @@ private:
 	void sendEntry();
 	void scrollDown();
 	
-	Handler* m_handler;
+	UIEvents* m_events;
 	std::string* m_nameptr;
 
 	std::string m_name;
@@ -32,7 +32,7 @@ private:
 	Gtk::ScrolledWindow* m_scrolled;
 	Glib::RefPtr<Gtk::TextBuffer> m_buffer;
 public:
-	MessageWindow(std::string p_name, Handler* p_handler, std::string* p_nameptr);
+	MessageWindow(std::string p_name, UIEvents* p_events, std::string* p_nameptr);
 	void giveMessage(std::string p_msg);
 	std::string getName();	
 };

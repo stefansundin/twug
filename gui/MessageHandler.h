@@ -6,17 +6,17 @@
 #include <iostream>
 
 #include "MessageWindow.h"
-#include "HandlerLink.h"
+#include "../UIEvents.h"
 
 
 class MessageHandler
 {
 private:
-	Handler* m_handler;
 	std::string* m_nameptr;
+	UIEvents* m_events;
 	std::vector<MessageWindow*> m_windows;
 public:
-	MessageHandler(Handler* p_handler, std::string* p_nameptr);
+	MessageHandler(UIEvents* p_events, std::string* p_nameptr);
 	void handleMessage(std::string p_sendername, std::string msg);
 	void showWindow(std::string p_name);
 };

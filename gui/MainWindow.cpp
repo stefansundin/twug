@@ -1,19 +1,20 @@
 #include "MainWindow.h"
 
-MainWindow::MainWindow(Handler* p_handler)
+MainWindow::MainWindow(UIEvents* p_events)
 {
+	m_events = p_events;
+
 	m_nameptr = new std::string();
 
 	set_title("Twug");
 	set_default_icon_from_file("/usr/share/pixmaps/twug.png");
 	//set_border_width(10);
 
-	m_handler = p_handler;
 
 	m_dontdoshit = false;
 	m_autoopen = false;
 
-	m_msghandler = new MessageHandler(m_handler,m_nameptr);
+	m_msghandler = new MessageHandler(m_events,m_nameptr);
 
 	Gtk::VBox* vbox = new Gtk::VBox();
 	m_personmenu = new Gtk::Menu();
@@ -25,7 +26,7 @@ MainWindow::MainWindow(Handler* p_handler)
 	m_treeview->append_column("Name", m_columns->name);	
 	m_treeview->set_size_request(180,400);
 	m_button.set_border_width(5);
-	m_button.set_label("Pump Network (debug)");
+	m_button.set_label("Talk button");
 
 	vbox->add(m_popup);
 	vbox->add(m_button);
@@ -41,22 +42,26 @@ MainWindow::MainWindow(Handler* p_handler)
 
 	m_popup.signal_changed().connect(
 		sigc::mem_fun(*this,&MainWindow::on_popup_changed) );
-	/*m_button.signal_pressed().connect(
+	m_button.signal_pressed().connect(
 		sigc::mem_fun(*this,&MainWindow::on_button_pressed));
 	m_button.signal_released().connect(
-		sigc::mem_fun(*this,&MainWindow::on_button_released));*/
-	m_button.signal_clicked().connect(
-		sigc::mem_fun(*this,&MainWindow::on_button_clicked));
+		sigc::mem_fun(*this,&MainWindow::on_button_released));
+
 	m_treeview->signal_button_press_event().connect_notify(
 		sigc::mem_fun(*this,&MainWindow::on_treeview_clicked));
 }
 
 
+void MainWindow::event_newNewName (std::string p_name)
+{
+	m_newname = p_name;
+}
+
 MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::giveServers(std::vector<Glib::ustring> p_servers)
+void MainWindow::event_newServerList(std::vector<std::string> p_servers)
 {
 	m_lastserverlist = p_servers;
 
@@ -82,22 +87,98 @@ void MainWindow::giveServers(std::vector<Glib::ustring> p_servers)
 	m_dontdoshit=false;
 }
 
+
+
+void MainWindow::event_textMessage( std::string sender, std::string message) 
+{
+	m_msghandler->handleMessage(sender, message);
+}
+
+
+void MainWindow::event_newChannelList(std::vector<std::string> channels)
+{
+	std::cout << "MainWindow: recieved new channel list" << std::endl;
+
+	m_lastchannellist = channels;
+
+	m_treestore->clear();
+
+	Gtk::TreeModel::iterator iter;
+	Gtk::TreeModel::iterator child_iter;
+	
+	int i=0;
+
+	for(;i<channels.size();i++)
+	{
+		if(channels.at(i) != "__lobby__")
+		{
+			iter = m_treestore->append();
+			(*iter)[m_columns->name] = channels.at(i);
+		}
+
+		for(;channels.at(i)!="--END--";i++)
+		{
+			if(channels.at(i) == "__lobby__")
+			{
+				iter = m_treestore->append();
+				(*iter)[m_columns->name] = channels.at(i);	
+			} else {
+				child_iter = m_treestore->append(iter->children());
+				(*child_iter)[m_columns->name] = channels.at(i);
+			}
+			if (m_autoopen) 
+				m_msghandler->showWindow(channels.at(i));
+		}
+	}
+	m_treeview->expand_all();
+}
+
+void MainWindow::event_connected(std::string p_ip, std::string p_name)
+{
+	std::cout << "MainWindow: Successfully connected to" << p_ip << " as " << p_name << std::endl;
+
+	*m_nameptr = p_name;
+	//use p_name for menu?
+
+	//m_events->to_network->pushEvent( UIEvent ( "JOINCHANNEL", "__lobby__" ) );
+}
+
+void MainWindow::event_errorConnecting(std::string str0, std::string str1, std::string str2)
+{
+		//if (p_err == "ERR_IS_PASSWORD")
+		//{
+		//	//triggerPassEntry();
+		//}
+		//else
+		//{
+
+	std::string kaka = str0 + str1 + str2;
+
+			spawnErrorDialog("Error connecting", kaka);			
+		//}
+	m_popup.set_active_text("Not Connected");	
+}
+
+void MainWindow::event_connectionLost(std::string p_address)
+{
+	spawnErrorDialog("Connection lost", p_address);
+	m_popup.set_active_text("Not Connected");	
+}
+
+void MainWindow::event_disconnected()
+{
+	m_treestore->clear();
+}
+
 void MainWindow::on_button_pressed()
 {
-	m_handler->iStartTalking();
+	m_events->to_network->pushEvent( UIEvent ( "I_START_TALKING" ) );
 }
 
 void MainWindow::on_button_released()
 {
-	m_handler->iStopTalking();
+	m_events->to_network->pushEvent( UIEvent ( "I_STOP_TALKING" ) );
 }
-
-void MainWindow::on_button_clicked()
-{
-	m_handler->update();
-}
-
-
 
 void MainWindow::on_popup_changed()
 {
@@ -107,40 +188,12 @@ void MainWindow::on_popup_changed()
 
 		if (text != "Not Connected")
 		{
-			m_handler->disconnect();
-			m_handler->connectToServer( getServerIp(text), m_newname, "kaka" );
-			
+			//m_events->to_network->pushEvent( UIEvent ( "DISCONNECT" ) );
+			m_events->to_network->pushEvent( UIEvent ( "CONNECTTOSERVER", getServerIp(text), m_newname, "kaka" ) );
 		} else {
-			m_handler->disconnect();
-			m_treestore->clear();
+			m_events->to_network->pushEvent( UIEvent ( "DISCONNECT" ) );
 		}
 	}
-}
-
-void MainWindow::connectedAs(std::string p_ip, std::string p_name)
-{
-	*m_nameptr = p_name;
-
-	m_handler->joinChannel("__lobby__");
-}
-
-void MainWindow::connectionError(bool p_type, std::string p_err)
-{
-	if (!p_type) // if error during connection process
-	{
-		//if (p_err == "ERR_IS_PASSWORD")
-		//{
-		//	//triggerPassEntry();
-		//}
-		//else
-		//{
-			spawnErrorDialog("Error connecting", p_err);			
-		//}
-	} else { // if unexpected network connection lost
-		spawnErrorDialog("Connection lost", p_err);
-		
-	}
-	m_popup.set_active_text("Not Connected");	
 }
 
 void MainWindow::spawnErrorDialog(std::string p_titlebar,std::string p_textbody)
@@ -165,47 +218,7 @@ std::string MainWindow::getServerIp(std::string text)
 	return text;
 }
 
-void MainWindow::reloadChannels()
-{
-	m_treestore->clear();
 
-	std::vector<std::string> channels = m_handler->getChannels();
-
-	Gtk::TreeModel::iterator iter;
-	Gtk::TreeModel::iterator child_iter;
-
-	std::vector<std::string> channelMembers;
-	int a;
-
-	for(int i=0;i<channels.size();i++)
-	{
-		if(channels.at(i) == "__lobby__")
-		{
-			channelMembers = m_handler->getChannelMembers( channels.at(i) );
-			for(a=0;a<channelMembers.size();a++)
-			{
-				iter = m_treestore->append();
-				(*iter)[m_columns->name] = channelMembers.at(a);
-				if (m_autoopen) 
-					m_msghandler->showWindow(channelMembers.at(a));
-			}
-		} else {
-			iter = m_treestore->append();
-			(*iter)[m_columns->name] = channels.at(i);
-
-			channelMembers = m_handler->getChannelMembers( channels.at(i) );
-
-			for(a=0;a<channelMembers.size();a++)
-			{
-				child_iter = m_treestore->append(iter->children());
-				(*child_iter)[m_columns->name] = channelMembers.at(a);
-				if (m_autoopen) 
-					m_msghandler->showWindow(channelMembers.at(a));
-			}
-		}
-	}
-	m_treeview->expand_all();
-}
 
 void MainWindow::toggleVisibility()
 {
@@ -218,7 +231,7 @@ void MainWindow::toggleVisibility()
 
 void MainWindow::on_channelmenu_join()
 {
-	std::vector<std::string> kaka = m_handler->getChannelMembers( getSelectionValue());
+	/*std::vector<std::string> kaka = ?????->getChannelMembers( getSelectionValue());
 	bool found=0;
 	for (int i=0;i<kaka.size();i++)
 	{
@@ -230,9 +243,10 @@ void MainWindow::on_channelmenu_join()
 	}
 
 	if (found)	
-		m_handler->joinChannel ( "__lobby__");
-	else
-		m_handler->joinChannel( getSelectionValue() );
+		m_events->to_network->pushEvent( UIEvent ( "JOINCHANNEL", "__lobby__" ) );
+
+	else*/
+		m_events->to_network->pushEvent( UIEvent ( "JOINCHANNEL", getSelectionValue() ) );
 }
 
 void MainWindow::on_personmenu_message()
@@ -249,15 +263,19 @@ Glib::ustring MainWindow::getSelectionValue()
 
 bool MainWindow::isChannel(std::string name)
 {
-	std::vector<std::string> channels = m_handler->getChannels();
-	
-	for(int i=0; i<channels.size(); i++)
+	for(int i=0; i<m_lastchannellist.size(); i++)
 	{
-		if (channels.at(i) == name)
+		if (m_lastchannellist.at(i) == name)
 		{
-			return true;
+			if (i==0)
+				return true;
+			else if (m_lastchannellist.at(i-1) == "--END--")
+				return true;
+			else
+				return false;
 		}
-	}	
+	}
+	std::cout << "ERROR: Not a channel or nickname" << std::endl;	
 	return false;
 }
 
