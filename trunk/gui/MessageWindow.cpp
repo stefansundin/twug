@@ -1,10 +1,10 @@
 #include "MessageWindow.h"
 
-MessageWindow::MessageWindow(std::string p_name, Handler* p_handler, std::string* p_nameptr)
+MessageWindow::MessageWindow(std::string p_name, UIEvents* p_events, std::string* p_nameptr)
 {
 	m_nameptr = p_nameptr;
 
-	m_handler = p_handler;
+	m_events = p_events;
 	m_name = p_name;
 
 	set_border_width(10);
@@ -63,7 +63,7 @@ void MessageWindow::sendEntry()
 	m_buffer->insert(m_buffer->end(), (*m_nameptr)+": "+msg+"\n");
 	scrollDown();
 
-	m_handler->sendText(m_name,msg);
+	m_events->to_network->pushEvent( UIEvent ( "SEND_TEXT", m_name, msg ) );
 }
 
 void MessageWindow::scrollDown()

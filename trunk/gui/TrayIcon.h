@@ -6,9 +6,7 @@
 #include <gtkmm.h>
 #include <gtkmm/aboutdialog.h>
 
-#include "MainWindow.h"
-#include "PrefsWindow.h"
-
+#include "../UIEvents.h"
 
 class AboutTwug : public Gtk::AboutDialog
 {
@@ -35,18 +33,17 @@ public:
 class TrayIcon : public Gtk::StatusIcon
 {
 public:
-  TrayIcon(MainWindow* p_window, PrefsWindow* p_prefswindow);
+  TrayIcon(UIEvents* p_events);
  ~TrayIcon();
 protected:
-	AboutTwug* m_about;
-	MainWindow* m_window;
-	PrefsWindow* m_prefswindow;
+	UIEvents* m_events;
 	virtual void on_clicked();
 	virtual void on_popup(const unsigned int&, const unsigned int&);
 	void on_action_quit();
 	void on_action_prefs();
 	void on_action_about();
 	Gtk::Menu* m_menu;
+	AboutTwug* m_about;
 	bool m_restoreprefs;
 };
 

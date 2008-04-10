@@ -46,8 +46,8 @@ void cb_setupsocket()
 		{
 			struct timeval tv;
 
-			fd_set write;
-			FD_ZERO(&write);
+			fd_set read;
+			FD_ZERO(&read);
 			FD_SET(g_socket, &read);
 
 			tv.tv_sec = 5;
@@ -60,7 +60,7 @@ void cb_setupsocket()
 
 			if(FD_ISSET(g_socket, &read))
 			{
-				handler->update();
+				g_handler->update();
 			}
 		}
 	}
@@ -80,7 +80,7 @@ int main()
 		&cb_write_to_socket,
 		&cb_setupsocket);
 
-	g_handler->connectToServer("127.0.0.1:6789", "average_joe", "");
+	g_handler->connectToServer("127.0.0.1:6789", "average_joe", "kaka");
 
 	return 0;
 }

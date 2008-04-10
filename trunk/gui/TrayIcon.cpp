@@ -1,14 +1,13 @@
 #include "TrayIcon.h"
 
 
-TrayIcon::TrayIcon(MainWindow* p_window, PrefsWindow* p_prefswindow)
+TrayIcon::TrayIcon(UIEvents* p_events)
 {
 	set_from_file("/usr/share/pixmaps/twug.png");
 
 	m_restoreprefs = false;
 
-	m_window = p_window;
-	m_prefswindow = p_prefswindow;
+	m_events = p_events;
 
 	m_about = new AboutTwug();
 	m_menu = new Gtk::Menu();
@@ -33,23 +32,7 @@ TrayIcon::~TrayIcon()
 
 void TrayIcon::on_clicked()
 {
-	if (m_window->is_visible())
-	{
-		if(m_prefswindow->is_visible())
-			{
-				m_prefswindow->toggleVisibility();
-				m_restoreprefs = true;
-			}
-	} else {
-		if(m_restoreprefs)
-		{
-			m_prefswindow->show();
-			m_restoreprefs=false;
-		}
-	}
-
-
-	m_window->toggleVisibility();
+	m_events->to_ui->pushEvent( UIEvent ( "TOGGLE_TWUG_VISIBILITY" ) );
 }
 
 void TrayIcon::on_popup(const unsigned int& btn, const unsigned int& time)
@@ -59,8 +42,8 @@ void TrayIcon::on_popup(const unsigned int& btn, const unsigned int& time)
 
 
 void TrayIcon::on_action_prefs()
-{
-	m_prefswindow->show();
+{	
+	m_events->to_ui->pushEvent( UIEvent ( "SHOW_PREFSWINDOW" ) );
 }
 
 void TrayIcon::on_action_quit()

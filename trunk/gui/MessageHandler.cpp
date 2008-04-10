@@ -1,10 +1,9 @@
 #include "MessageHandler.h"
 
-MessageHandler::MessageHandler(Handler* p_handler, std::string* p_nameptr)
+MessageHandler::MessageHandler(UIEvents* p_events, std::string* p_nameptr)
 {
 	m_nameptr = p_nameptr;
-
-	m_handler = p_handler; 
+	m_events = p_events; 
 
 	std::cout << "MessageHandler: constructed\n";
 }
@@ -46,6 +45,6 @@ void MessageHandler::showWindow(std::string p_name)
 		if (!(*iter)->is_visible())
 			(*iter)->show();	
 	} else {
-		m_windows.push_back( new MessageWindow(p_name,m_handler,m_nameptr) );
+		m_windows.push_back( new MessageWindow(p_name,m_events,m_nameptr) );
 	}
 }

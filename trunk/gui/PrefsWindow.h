@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 
 #include <gtkmm/window.h>
 #include <gtkmm/checkbutton.h>
@@ -16,7 +17,7 @@
 #include <glibmm/slisthandle.h>
 #include <gconfmm-2.6/gconfmm.h>
 
-#include "MainWindow.h"
+#include "../UIEvents.h"
 
 class Columns : public Gtk::TreeModelColumnRecord
 {
@@ -33,14 +34,14 @@ public:
 class PrefsWindow : public Gtk::Window
 {
 public:
-	PrefsWindow(MainWindow* p_window);
+	PrefsWindow(UIEvents* p_events);
 	virtual ~PrefsWindow();
 	Gtk::CheckButton *m_chkbtn_blinking;
 	virtual void loadSettings();
 	std::vector<Glib::ustring> getServerList();
 	void toggleVisibility();
 protected:
-	MainWindow* m_window;	
+	UIEvents* m_events;
 
 	void reloadServers();
 	void saveServerList();
