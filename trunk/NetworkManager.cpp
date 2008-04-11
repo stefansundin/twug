@@ -16,7 +16,7 @@ void NetworkManager::processNetworkEvents()
 }
 void NetworkManager::processUIEvents()
 {
-	std::cout << "process events to_network" << std::endl;
+	std::cout << "NetworkManager: Processing events from UI" << std::endl;
 
 	bool kaka=true;
 	while(kaka)
@@ -24,13 +24,11 @@ void NetworkManager::processUIEvents()
 		UIEvent event = m_events->to_network->popEvent();
 
 		if (event.getType() == "EMPTY") {
-			std::cout << "Got empty event\n";
 			kaka=false;
 		} else if (event.getType() == "JOINCHANNEL") {
-			std::cout << "Joining channel\n";
 				joinChannel(event.pop());
 		} else if (event.getType() == "HACK") {
-			std::cout << "Hack\n";
+			std::cout << "Hack\n"; //needed to start twug
 			m_events->to_ui->pushEvent(UIEvent ("EMPTY"));
 		} else if (event.getType() == "CONNECTTOSERVER") {
 				got_here();
@@ -243,11 +241,12 @@ NetworkManager::NetworkManager(UIEvents *p_events)
 	m_talkbutton = 0;
 
 	m_socket = m_client_network.getSocket();
-	
+	got_here();
+
+
 	while(true) // thread main loop
 	{
-		got_here();
-		m_readfd = open(m_events->to_network->getFilePath().c_str(), O_RDONLY);
+	m_readfd = open(m_events->to_network->getFilePath().c_str(), O_RDONLY);
 		got_here();
 
 		if(m_connectedandorloggedin==0) // if we arent connected only select on readfd
@@ -260,16 +259,22 @@ NetworkManager::NetworkManager(UIEvents *p_events)
 
 			tv.tv_sec = 5;
 			tv.tv_usec = 0;
+				
+			std::cout << "NetworkManager:: selecting on readfd" << std::endl;
 			int select_returned = select(m_readfd+1, &read, NULL, NULL, &tv);
+			std::cout << "NetworkManager:: selected on readfd" << std::endl;
+
 			if(select_returned == -1)
 			{
-				//report_error(strerror(errno));
+				report_error(strerror(errno));
 			}
 
 			if(FD_ISSET(m_readfd, &read))
 			{
+				got_here();
 				char buf[100];
 				::read(m_readfd, buf, 100);
+				got_here();
 				std::cout << "woke up from UI event (only watching those)" << std::endl;
 				processUIEvents();
 			}	
@@ -289,27 +294,33 @@ NetworkManager::NetworkManager(UIEvents *p_events)
 
 			tv.tv_sec = 5;
 			tv.tv_usec = 0;
+			std::cout << "NetworkManager:: selecting on both fds" << std::endl;
 			int select_returned = select(bigone, &read, NULL, NULL, &tv);
+			got_here();
 			if(select_returned == -1)
 			{
-				//report_error(strerror(errno));
+				report_error(strerror(errno));
 			}
+
+			std::cout << "woke up from network or UI event" << std::endl;
 
 			if(FD_ISSET(m_socket, &read))
 			{
-				std::cout << "woke up from network event" << std::endl;
 				processNetworkEvents();
 			
 			}
 
 		 	if(FD_ISSET(m_readfd, &read))
 			{
-				std::cout << "woke up from UI event" << std::endl;
+				got_here();
+				got_here();
 				char buf[100];
 				::read(m_readfd, buf, 100);
 				processUIEvents();
 			}
 		}
-		::close(m_readfd);
+	::close(m_readfd);
+
 	}
+
 }
