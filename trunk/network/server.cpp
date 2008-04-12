@@ -80,6 +80,13 @@ void handle_message(Message p_message)
 			std::string m;
 			int i, j;
 			printf("channel_names.size() = \"%d\"\n", channel_names.size());
+
+			//respond that the login successful
+			g_client_pool->addClient(username, DEFAULT_CHANNEL, p_message.getSocket());
+			response = Data(SERVER_LOGIN_OK, "", 0);
+			g_network->sendData(p_message.getSocket(), response);
+
+			//tell the newly connected client of all the previously connected clients
 			for(i = 0; i < channel_names.size(); i++)
 			{
 				g_client_pool->getChannelClients(channel_names.at(i), &client_names);
@@ -95,9 +102,6 @@ void handle_message(Message p_message)
 					printf("PEW PEW\n");
 				}
 			}
-
-			g_client_pool->addClient(username, DEFAULT_CHANNEL, p_message.getSocket());
-			response = Data(SERVER_LOGIN_OK, "", 0);
 
 			channel_name = DEFAULT_CHANNEL;
 			fill(username, 20);
@@ -148,6 +152,10 @@ void handle_message(Message p_message)
 
 		response = Data(SERVER_REMOVE_CLIENT, remove_name.c_str(), remove_name.size()+1);
 		g_network->sendData(p_message.getSocket(), response);
+
+		std::string to;
+		g_client_pool->socketToName(p_message.getSocket(), &to);
+		printf("sent: type=SERVER_REMOVE_CLIENT to (%s)\n", to.c_str());
 	}
 	else if(p_message.getData().getType() == CLIENT_AUDIO_DATA)
 	{
@@ -188,6 +196,10 @@ void handle_message(Message p_message)
 			}
 			response = Data(SERVER_AUDIO_DATA, data, length);
 			g_network->sendData(s, response);
+
+			std::string to;
+			g_client_pool->socketToName(s, &to);
+			printf("sent: type=SERVER_AUDIO_DATA to (%s)\n", to.c_str());
 		}
 	}
 	else if(p_message.getData().getType() == CLIENT_TEXT_DATA)
@@ -289,9 +301,12 @@ void handle_message(Message p_message)
 		{
 			g_client_pool->nameToSocket(client_names.at(i), &s);
 			g_network->sendData(s, response);
+
+			std::string to;
+			g_client_pool->socketToName(s, &to);
+			printf("sent: type=SERVER_REMOVE_CLIENT to (%s)\n", to.c_str());
 		}
 	}
-
 }
 
 int main()

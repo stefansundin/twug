@@ -10,6 +10,7 @@
 #include <string>
 #include <cstdlib>
 
+#include "debug.h"
 #include "network/ClientNetwork.h"
 #include "network/ClientPool.h"
 

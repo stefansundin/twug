@@ -76,6 +76,8 @@ void ClientNetwork::sendText(std::string p_to_username, std::string p_message)
 
 bool ClientNetwork::processNetworking()
 {
+	print_me("start of function");
+
 	//got_here();
 	if(!m_connected)
 		return false;

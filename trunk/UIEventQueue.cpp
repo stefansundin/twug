@@ -3,7 +3,7 @@
 
 void UIEventQueue::lock()
 {
-	//std::cout << "Locking " << m_filepath << std::endl;
+	print_me("###LOCKING "+m_filepath);
 	/*bool completed=0;
 	while(!completed)
 	{
@@ -14,12 +14,14 @@ void UIEventQueue::lock()
 		}
 	}*/
 	pthread_mutex_lock(&m_mutex);
+	print_me("###GOT LOCK!");
 }
 void UIEventQueue::unlock()
 {
-	//std::cout << "Unlocking " << m_filepath << std::endl;
+	print_me("###UNLOCKING "+m_filepath);
 	//m_lock = false;
 	pthread_mutex_unlock(&m_mutex);
+	print_me("###UNLOCKED");
 }
 
 UIEventQueue::UIEventQueue(std::string p_name)
@@ -34,7 +36,7 @@ UIEventQueue::UIEventQueue(std::string p_name)
 	{
 		if (mkfifo(m_filepath.c_str(), 0666) != 0)
 		{
-			std::cout << "error creating fifo" << std::endl;
+			print_me("error creating fifo");
 		}
 	}
 }
@@ -48,7 +50,7 @@ std::string UIEventQueue::getName() const
 }	
 UIEvent UIEventQueue::popEvent()
 {
-	std::cout << "UIEventQueue(" << m_name << "): Popping event" << std::endl;
+	print_me("UIEventQueue("+m_name+"): Popping event");
 	UIEvent event = UIEvent("EMPTY");
 	lock();
 	if(!m_queue.empty())
@@ -57,16 +59,16 @@ UIEvent UIEventQueue::popEvent()
 		m_queue.pop();
 	}			
 	unlock();
-	std::cout << "UIEventQueue(" << m_name << "): Popped event" << std::endl;
+	print_me("UIEventQueue("+m_name+"): Popped event");
 	return event;
 }
 void UIEventQueue::pushEvent(UIEvent p_event)
 {
-	std::cout << "UIEventQueue(" << m_name << "): Pushing event" << std::endl;
+	print_me("UIEventQueue("+m_name+"): Pushing event");
 	lock();
 
 	m_queue.push(p_event);
 
 	unlock();
-	std::cout << "UIEventQueue(" << m_name << "): Pushed event" << std::endl;
+	print_me("UIEventQueue("+m_name+"): Pushed event");
 }

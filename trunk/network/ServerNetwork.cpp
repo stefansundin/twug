@@ -36,6 +36,14 @@ bool ServerNetwork::initSocket(std::string p_bind_address, unsigned int p_bind_p
 		report_error(strerror(errno));
 		return false;
 	}
+
+	int yes=1;
+	if(setsockopt(m_accepting_socket,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int)) == -1)
+	{
+		perror("setsockopt");
+		return false;
+	}
+
 	return true;
 }
 
