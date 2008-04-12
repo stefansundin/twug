@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <cstdio>
 #include <iostream>
-#include "UIEvents.h"
+#include "UIEventsNetwork.h"
 
 #include <vector>
 #include <string>
@@ -17,7 +17,7 @@ class NetworkManager{
 private:
 	int m_readfd;
 	int m_socket;
-	UIEvents* m_events;
+	UIEventsNetwork* m_events;
 	bool m_connectedandorloggedin;
 	bool m_talkbutton;
 
@@ -35,7 +35,7 @@ private:
 	ClientPool m_client_pool;
 	ClientNetwork m_client_network;
 public:
-	NetworkManager(UIEvents *p_events);
+	NetworkManager(UIEventsNetwork *p_events);
 
 	void processUIEvents();
 	void processNetworkEvents();

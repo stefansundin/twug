@@ -7,9 +7,7 @@ UIManager::UIManager(UIEvents* p_events)
 	std::cout << "UIManager: constructing" << std::endl;
 
 	m_events = p_events;
-	got_here();
 	m_restoreprefswindow=0;
-	got_here();
 
 	/*int readfd = open(m_events->to_ui->getFilePath().c_str(), O_RDONLY);
 	got_here();
@@ -19,24 +17,17 @@ UIManager::UIManager(UIEvents* p_events)
 	got_here();*/
 
 	m_events->to_network->pushEvent( UIEvent ("HACK" ));
-
+got_here();
 	m_iochannel = Glib::IOChannel::create_from_file(m_events->to_ui->getFilePath() , "r" );
 	got_here();
  	Glib::signal_io().connect(sigc::mem_fun(*this,&UIManager::on_fd_readable), m_iochannel, Glib::IO_IN);
 
-	got_here();
-
 
 	m_window = new MainWindow(m_events);
-	got_here();
 	m_prefswindow = new PrefsWindow(m_events);
-	got_here();
 	m_icon = new TrayIcon(m_events);
-	got_here();
 	m_prefswindow->loadSettings();
-	got_here();
 	m_window->show();
-	got_here();
 	std::cout << "UIManager: constructed" << std::endl;
 }
 

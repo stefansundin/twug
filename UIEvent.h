@@ -1,6 +1,10 @@
 #ifndef UIEvent_h
 #define UIEvent_h
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 
 class UIEvent {
 private:
