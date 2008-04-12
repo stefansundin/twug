@@ -8,7 +8,7 @@ void *network_code(void *ptr)
 {
 	std::cout << "Network thread started" << std::endl;
 	
-	UIEvents* events = (UIEventsNetwork*) ptr;
+	UIEventsNetwork* events = (UIEventsNetwork*) ptr;
 	NetworkManager* network = new NetworkManager(events);
 }
 
@@ -19,7 +19,7 @@ int main (int argc, char *argv[])
 	UIEventQueue* to_network = new UIEventQueue("to_network");
 
 	//initialize network
-	UIEventsNetwork* networkevents = new UIEventsNetwork(to_ui);
+	UIEventsNetwork* networkevents = new UIEventsNetwork(to_ui, to_network);
 	pthread_t thread;
 	pthread_create( &thread, NULL, network_code, (void*)networkevents);
 	

@@ -107,19 +107,24 @@ void MainWindow::event_newChannelList(std::vector<std::string> channels)
 	Gtk::TreeModel::iterator child_iter;
 	
 	int i=0;
+	std::string channame;
 
 	for(;i<channels.size();i++)
 	{
-		if(channels.at(i) != "__lobby__")
+		channame = channels.at(i);
+
+		if(channame != "__lobby__")
 		{
 			iter = m_treestore->append();
 			(*iter)[m_columns->name] = channels.at(i);
 		}
 
+		i++;
+
 		for(;channels.at(i)!="--END--";i++)
 		{
-			if(channels.at(i) == "__lobby__")
-			{
+			if(channame == "__lobby__")
+			{	
 				iter = m_treestore->append();
 				(*iter)[m_columns->name] = channels.at(i);	
 			} else {

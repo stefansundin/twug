@@ -1,6 +1,8 @@
 #ifndef UIEventQueue_h
 #define UIEventQueue_h
-
+#include "UIEvent.h"
+#include <queue>
+#include <fcntl.h>
 
 class UIEventQueue {
 private:

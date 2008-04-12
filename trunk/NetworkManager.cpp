@@ -233,7 +233,7 @@ void NetworkManager::disconnect()
 	m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "DISCONNECTED" ) );
 }
 
-NetworkManager::NetworkManager(UIEvents *p_events)
+NetworkManager::NetworkManager(UIEventsNetwork *p_events)
 {
 	m_events = p_events;
 	m_connectedandorloggedin = 0;
@@ -243,13 +243,13 @@ NetworkManager::NetworkManager(UIEvents *p_events)
 	m_socket = m_client_network.getSocket();
 	got_here();
 
-
+	m_readfd = open(m_events->to_network->getFilePath().c_str(), O_RDONLY);
+	got_here();
+	
 	while(true) // thread main loop
 	{
-	m_readfd = open(m_events->to_network->getFilePath().c_str(), O_RDONLY);
-		got_here();
-
 		if(m_connectedandorloggedin==0) // if we arent connected only select on readfd
+		//if(false)
 		{
 			struct timeval tv;
 
@@ -271,11 +271,11 @@ NetworkManager::NetworkManager(UIEvents *p_events)
 
 			if(FD_ISSET(m_readfd, &read))
 			{
+				std::cout << "woke up from UI event (only watching those)" << std::endl;
 				got_here();
 				char buf[100];
 				::read(m_readfd, buf, 100);
 				got_here();
-				std::cout << "woke up from UI event (only watching those)" << std::endl;
 				processUIEvents();
 			}	
 		} else { // else select on both fds
@@ -313,14 +313,13 @@ NetworkManager::NetworkManager(UIEvents *p_events)
 		 	if(FD_ISSET(m_readfd, &read))
 			{
 				got_here();
-				got_here();
 				char buf[100];
 				::read(m_readfd, buf, 100);
 				processUIEvents();
 			}
 		}
-	::close(m_readfd);
+	
 
 	}
-
+	::close(m_readfd);
 }
