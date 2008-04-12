@@ -33,7 +33,7 @@ bool UIManager::on_fd_readable(Glib::IOCondition condition)
 		Glib::ustring buf;
 		got_here();
 		m_iochannel->read_line(buf);
-		//std::cout << "buf: " << buf << std::endl;
+		std::cout << "UIManager: read this line from fd: " << buf << std::endl;
 		processEvents();
   	}
 	

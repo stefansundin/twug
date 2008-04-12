@@ -1,6 +1,7 @@
 #include "UIEvents.h"
 #include "UIManager.h"
 #include "NetworkManager.h"
+#include <pthread.h>
 
 //UIEventsNetwork* g_events;
 
