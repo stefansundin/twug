@@ -106,6 +106,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	{
 		print_me("got \"SERVER_TEXT_DATA\"");
 		std::string str = data;
+		print_me("got message: ("+str+")");
 		std::string sender = str.substr(0, 20);
 		strip(sender);
 		std::string message = str.substr(20);

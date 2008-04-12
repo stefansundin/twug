@@ -29,7 +29,9 @@ bool Network::updateBuffer(int p_socket)
 	//recived data
 	char *recv_buffer = new char[2048];
 //#ifdef SERVER
+	print_me("before recv");
 	int recv_length = recv(p_socket, (void*)recv_buffer, 2048, 0);
+	print_me("after recv");
 //#else
 //	int recv_length = m_lame_recv((char*)recv_buffer, 2048);
 //#endif
@@ -58,7 +60,7 @@ bool Network::updateBuffer(int p_socket)
 
 	if(m_buffers[p_socket].getLength() >= sizeof(header))
 	{
-//		printf("got part of a message\n");
+		print_me("got a complete header but not a whole message\n");
 
 		header temp_header;
 		memcpy(&temp_header, m_buffers[p_socket].getBuffer(), sizeof(header));
@@ -73,7 +75,7 @@ bool Network::updateBuffer(int p_socket)
 
 		if(m_buffers[p_socket].getLength()-sizeof(header) >= temp_header.message_length)
 		{
-//			printf("got a complete message\n");
+			print_me("got a complete message\n");
 
 			//get the message
 			char *message = new char[temp_header.message_length];	//dont include the header now
