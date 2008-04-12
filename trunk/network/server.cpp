@@ -79,13 +79,13 @@ void handle_message(Message p_message)
 			std::vector<std::string> channel_names = g_client_pool->getChannelNames(), client_names;
 			std::string m;
 			int i, j;
-			printf("channel_names.size() = \"%d\"\n", channel_names.size());
 
 			//respond that the login successful
 			g_client_pool->addClient(username, DEFAULT_CHANNEL, p_message.getSocket());
 			response = Data(SERVER_LOGIN_OK, "", 0);
 			g_network->sendData(p_message.getSocket(), response);
 
+			printf("channel_names.size() = \"%d\"\n", channel_names.size());
 			//tell the newly connected client of all the previously connected clients
 			for(i = 0; i < channel_names.size(); i++)
 			{
@@ -99,7 +99,10 @@ void handle_message(Message p_message)
 					m = client_name + channel_name;
 					response = Data(SERVER_ADD_CLIENT, m.c_str(), m.size()+1);
 					g_network->sendData(p_message.getSocket(), response);
-					printf("PEW PEW\n");
+
+					std::string to;
+					g_client_pool->socketToName(p_message.getSocket(), &to);
+					print_me("sent SERVER_ADD_CLIENT ("+m+") to "+to);
 				}
 			}
 
@@ -114,6 +117,10 @@ void handle_message(Message p_message)
 			{
 				g_client_pool->nameToSocket(client_names.at(i), &s);
 				g_network->sendData(s, response);
+
+				std::string to2;
+				g_client_pool->socketToName(s, &to2);
+				print_me("sent SERVER_ADD_CLIENT ("+username+") to "+to2);
 			}
 
 			printClientPool(g_client_pool);

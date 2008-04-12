@@ -78,36 +78,41 @@ bool ClientNetwork::processNetworking()
 {
 	print_me("start of function");
 
-	//got_here();
 	if(!m_connected)
 		return false;
 
-/*
+
 	fd_set readable;
 	struct timeval tv;
 
 	FD_ZERO(&readable);
 	FD_SET(m_socket, &readable);
 
-
-	tv.tv_sec = 5;
+	tv.tv_sec = 0;
 	tv.tv_usec = 0;
+	print_me("before select");
 	int select_returned = select(m_socket+1, &readable, NULL, NULL, &tv);
+	print_me("after select");
 	if(select_returned == -1)
 	{
 		report_error(strerror(errno));
 	}
-*/
 
-//	if(FD_ISSET(m_socket, &readable))
-//	{
-//		printf("updating buffer\n");
+	if(FD_ISSET(m_socket, &readable))
+	{
+		print_me("data on m_socket");
 		if(!updateBuffer(m_socket))
 		{
-			//got_here();
 			m_connected = false;
 		}
-//	}
+	}
+	else
+	{
+		print_me("no data on m_socket");
+		return false;
+	}
+
+	print_me("end of function");
 
 	return true;
 }
