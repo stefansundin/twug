@@ -1,5 +1,8 @@
 #ifndef UIEventQueue_h
 #define UIEventQueue_h
+
+#include "debug.h"
+
 #include "UIEvent.h"
 #include <queue>
 #include <fcntl.h>

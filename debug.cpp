@@ -13,3 +13,4 @@ void log_this(char *p_string)
 	printf("%s\n", p_string);
 	fflush(stdout);
 }
+

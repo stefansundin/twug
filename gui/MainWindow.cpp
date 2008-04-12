@@ -140,7 +140,7 @@ void MainWindow::event_newChannelList(std::vector<std::string> channels)
 
 void MainWindow::event_connected(std::string p_ip, std::string p_name)
 {
-	std::cout << "MainWindow: Successfully connected to" << p_ip << " as " << p_name << std::endl;
+	print_me("MainWindow: Successfully connected to "+p_ip+" as "+p_name);
 
 	*m_nameptr = p_name;
 	//use p_name for menu?

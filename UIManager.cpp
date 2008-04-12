@@ -2,17 +2,11 @@
 
 UIManager::UIManager(UIEvents* p_events)	
 {
-	got_here();
-
-	std::cout << "UIManager: constructing" << std::endl;
-
 	m_events = p_events;
 	m_restoreprefswindow=0;
 
 	m_events->to_network->pushEvent( UIEvent ("HACK" ));
-got_here();
 	m_iochannel = Glib::IOChannel::create_from_file(m_events->to_ui->getFilePath() , "r" );
-	got_here();
  	Glib::signal_io().connect(sigc::mem_fun(*this,&UIManager::on_fd_readable), m_iochannel, Glib::IO_IN);
 
 
@@ -31,7 +25,6 @@ bool UIManager::on_fd_readable(Glib::IOCondition condition)
 		std::cout << "Error" << std::endl;
 	} else {
 		Glib::ustring buf;
-		got_here();
 		m_iochannel->read_line(buf);
 		std::cout << "UIManager: read this line from fd: " << buf << std::endl;
 		processEvents();
@@ -47,6 +40,8 @@ void UIManager::processEvents()
 	bool kaka=true;
 	while(kaka)
 	{
+		print_me("start of while(kaka)");
+
 		UIEvent event = m_events->to_ui->popEvent();
 		std::cout << "event type: " << event.getType() << std::endl;
 		if (event.getType() == "EMPTY") {
@@ -56,7 +51,11 @@ void UIManager::processEvents()
 			if (s == "CONNECTION_LOST")
 				m_window->event_connectionLost(event.pop_first() );
 			else if (s == "CONNECTED")
-				m_window->event_connected(event.pop_first(), event.pop_first() );
+			{
+				std::string ip = event.pop_first();
+				std::string name = event.pop_first();
+				m_window->event_connected(ip, name);
+			}
 			else if (s == "CONNECTING")
 
 				//m_window->event_connecting(event.pop(), event.pop() );

@@ -15,6 +15,7 @@
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/messagedialog.h>
 
+#include "../debug.h"
 #include "../UIEvents.h"
 #include "MessageHandler.h"
 
