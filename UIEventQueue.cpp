@@ -4,7 +4,7 @@
 void UIEventQueue::lock()
 {
 	//std::cout << "Locking " << m_filepath << std::endl;
-	bool completed=0;
+	/*bool completed=0;
 	while(!completed)
 	{
 		if(!m_lock)
@@ -12,19 +12,23 @@ void UIEventQueue::lock()
 			m_lock = true;
 			completed = true;
 		}
-	}
+	}*/
+	pthread_mutex_lock(&m_mutex);
 }
 void UIEventQueue::unlock()
 {
 	//std::cout << "Unlocking " << m_filepath << std::endl;
-	m_lock = false;
+	//m_lock = false;
+	pthread_mutex_unlock(&m_mutex);
 }
 
 UIEventQueue::UIEventQueue(std::string p_name)
 {
+	pthread_mutex_init (&m_mutex, NULL);
+
 	m_name = p_name;
 	m_filepath = p_name + ".temp";
-	m_lock = 0;
+	//m_lock = 0;
 
  	if (access(m_filepath.c_str(), F_OK) == -1)
 	{
