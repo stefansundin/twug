@@ -213,10 +213,12 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 
 	int returned = m_client_network.connect(parsed_ip, parsed_port);
 	printf("returned: \"%d\"\n", returned);
-
-
-	m_client_network.loginRequest(m_lastrequestednick, p_password);
 	m_connectedandorloggedin=1;
+
+	std::cout << "Sending login request" << std::endl;
+	m_client_network.loginRequest(m_lastrequestednick, p_password);
+	std::cout << "Sent login request" << std::endl;
+
 	got_here();
 }
 

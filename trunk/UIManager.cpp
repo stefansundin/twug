@@ -9,13 +9,6 @@ UIManager::UIManager(UIEvents* p_events)
 	m_events = p_events;
 	m_restoreprefswindow=0;
 
-	/*int readfd = open(m_events->to_ui->getFilePath().c_str(), O_RDONLY);
-	got_here();
- 	Glib::signal_io().connect(sigc::mem_fun(*this,&UIManager::on_fd_readable), readfd, Glib::IO_IN);
-	got_here();
-	m_iochannel = Glib::IOChannel::create_from_fd(readfd);
-	got_here();*/
-
 	m_events->to_network->pushEvent( UIEvent ("HACK" ));
 got_here();
 	m_iochannel = Glib::IOChannel::create_from_file(m_events->to_ui->getFilePath() , "r" );
@@ -38,6 +31,7 @@ bool UIManager::on_fd_readable(Glib::IOCondition condition)
 		std::cout << "Error" << std::endl;
 	} else {
 		Glib::ustring buf;
+		got_here();
 		m_iochannel->read_line(buf);
 		//std::cout << "buf: " << buf << std::endl;
 		processEvents();
