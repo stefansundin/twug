@@ -2,25 +2,31 @@
 #include "UIManager.h"
 #include "NetworkManager.h"
 
-UIEvents* g_events;
+//UIEventsNetwork* g_events;
+
 void *network_code(void *ptr)
 {
 	std::cout << "Network thread started" << std::endl;
 	
-	//UIEvents* events = (UIEvents*) ptr;
-	NetworkManager* network = new NetworkManager(g_events);
+	UIEvents* events = (UIEventsNetwork*) ptr;
+	NetworkManager* network = new NetworkManager(events);
 }
 
 int main (int argc, char *argv[])
 {
-	//UIEvents* events = new UIEvents();
-	g_events = new UIEvents();
+	//set up event queues
+	UIEventQueue* to_ui = new UIEventQueue("to_ui");
+	UIEventQueue* to_network = new UIEventQueue("to_network");
 
+	//initialize network
+	UIEventsNetwork* networkevents = new UIEventsNetwork(to_ui);
 	pthread_t thread;
-	pthread_create( &thread, NULL, network_code, (void*)g_events);
+	pthread_create( &thread, NULL, network_code, (void*)networkevents);
 	
+	//initialize gui
+	UIEvents* events = new UIEvents(to_ui, to_network);
 	Gtk::Main kit(argc, argv);
-	UIManager ui = UIManager(g_events);
+	UIManager ui = UIManager(events);
 	kit.run();
 
 	return 0;
