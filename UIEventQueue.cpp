@@ -3,7 +3,7 @@
 
 void UIEventQueue::lock()
 {
-	print_me("###LOCKING "+m_filepath);
+	print_me("###LOCKING "+m_name);
 	/*bool completed=0;
 	while(!completed)
 	{
@@ -18,7 +18,7 @@ void UIEventQueue::lock()
 }
 void UIEventQueue::unlock()
 {
-	print_me("###UNLOCKING "+m_filepath);
+	print_me("###UNLOCKING "+m_name);
 	//m_lock = false;
 	pthread_mutex_unlock(&m_mutex);
 	print_me("###UNLOCKED");
