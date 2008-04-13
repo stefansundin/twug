@@ -229,16 +229,15 @@ void handle_message(Message p_message)
 			printf("no client named \"%s\" found\n", reciever.c_str());
 			return;
 		}
-		fill(reciever, 20);
 
 		std::string sender = "";
 		g_client_pool->socketToName(p_message.getSocket(), &sender);
+		fill(sender, 20);
 		std::string m = sender + message;
 
 		response = Data(SERVER_TEXT_DATA, m.c_str(), m.size()+1);
 		g_network->sendData(recv_socket, response);
 
-		strip(reciever);
 		printf("\"%s\" says \"%s\" to \"%s\"\n", sender.c_str(), message.c_str(), reciever.c_str());
 	}
 	else if(p_message.getData().getType() == CLIENT_CHANNEL_CHANGE)
