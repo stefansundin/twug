@@ -24,7 +24,7 @@ void NetworkManager::processUIEvents()
 	bool kaka=true;
 	while(kaka)
 	{
-		UIEvent event = m_events->to_network->popEvent();
+		UIEvent event = m_to_network->popEvent();
 
 		if (event.getType() == "EMPTY") {
 			kaka=false;
@@ -236,17 +236,23 @@ void NetworkManager::disconnect()
 	m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "DISCONNECTED" ) );
 }
 
-NetworkManager::NetworkManager(UIEventsNetwork *p_events)
+NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network)
 {
-	m_events = p_events;
+	m_to_network = p_to_network;
+
+	m_readfd = open(p_to_network->getFilePath().c_str(), O_RDONLY);
+
+	m_events = new UIEventsNetwork(p_to_ui); // opens to_ui for writing
+
 	m_connectedandorloggedin = 0;
 
 	m_talkbutton = 0;
 
 	m_socket = m_client_network.getSocket();
 
-	m_readfd = open(m_events->to_network->getFilePath().c_str(), O_RDONLY);
-	
+	m_events->to_ui->setup();
+
+
 	while(true) // thread main loop
 	{
 

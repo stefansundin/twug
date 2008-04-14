@@ -23,6 +23,7 @@ public:
 
 	bool on_fd_readable(Glib::IOCondition condition);
 	void processEvents();
+void trigger();
 private:
 	Glib::RefPtr<Glib::IOChannel> m_iochannel;
 	UIEvents* m_events;
