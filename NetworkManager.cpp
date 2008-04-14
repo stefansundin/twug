@@ -14,7 +14,7 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 
 	m_socket = m_client_network.getSocket();
 
-	m_events->to_ui->setup();
+	//m_events->to_ui->setup();
 
 
 	while(true) // thread main loop

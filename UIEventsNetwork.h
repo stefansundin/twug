@@ -13,20 +13,13 @@ public:
 		got_here();
 		m_f = fopen(m_eventqueue->getFilePath().c_str(), "w");
 	}
-
-	void setup()
-	{
-		got_here();
-
-		got_here();	
-	}
 	
 	void pushEvent(UIEvent p_event)
 	{
 		m_eventqueue->pushEvent(p_event);
 		
 		fputc('\n', m_f);
-		//fclose(f);
+		fflush(m_f);
 	}
 	UIEvent popEvent()
 	{
