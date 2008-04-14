@@ -1,8 +1,107 @@
 #include "NetworkManager.h"
 
+NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network)
+{
+	m_to_network = p_to_network;
+
+	m_readfd = open(p_to_network->getFilePath().c_str(), O_RDONLY);
+
+	m_events = new UIEventsNetwork(p_to_ui); // opens to_ui for writing
+
+	m_connectedandorloggedin = 0;
+
+	m_talkbutton = 0;
+
+	m_socket = m_client_network.getSocket();
+
+	m_events->to_ui->setup();
+
+
+	while(true) // thread main loop
+	{
+
+		print_me("start of network thread loop");
+
+		if(m_connectedandorloggedin==0) // if we arent connected only select on readfd
+		//if(false)
+		{
+			struct timeval tv;
+
+			fd_set read;
+			FD_ZERO(&read);
+			FD_SET(m_readfd, &read);
+
+			tv.tv_sec = 5;
+			tv.tv_usec = 0;
+				
+			print_me("NetworkManager:: selecting on readfd");
+			int select_returned = select(m_readfd+1, &read, NULL, NULL, &tv);
+			print_me("NetworkManager:: selected on readfd");
+
+			if(select_returned == -1)
+			{
+				report_error(strerror(errno));
+			}
+
+			if(FD_ISSET(m_readfd, &read))
+			{
+				print_me("woke up from UI event (only watching those)");
+				char buf[100];
+				::read(m_readfd, buf, 100);
+				got_here();
+				processUIEvents();
+			}	
+		} else { // else select on both fds
+			struct timeval tv;
+
+			fd_set read;
+			FD_ZERO(&read);
+			FD_SET(m_readfd, &read);
+			FD_SET(m_socket, &read);
+
+			int bigone;
+			if (m_socket>m_readfd)
+				bigone=m_socket+1;
+			else
+				bigone=m_readfd+1; 
+
+			tv.tv_sec = 5;
+			tv.tv_usec = 0;
+			print_me("selecting on both fds");
+			int select_returned = select(bigone, &read, NULL, NULL, &tv);
+			if(select_returned == -1)
+			{
+				report_error(strerror(errno));
+			}
+
+			print_me("selected on both fds");
+
+			if(FD_ISSET(m_socket, &read))
+			{
+				print_me("got network data");
+				processNetworkEvents();
+				print_me("processed network data");
+			}
+
+		 	if(FD_ISSET(m_readfd, &read))
+			{
+				print_me("got fifo data");
+				char buf[100];
+				::read(m_readfd, buf, 100);
+				processUIEvents();
+				print_me("processed UI events");
+			}
+		}
+	
+
+	}
+	::close(m_readfd);
+}
+
+
 void NetworkManager::processNetworkEvents()
 {
-	//got_here();
+	print_me("start of processNetworkEvents()");
 	Message incoming_message;
 	while(m_client_network.processNetworking())
 	{
@@ -236,100 +335,3 @@ void NetworkManager::disconnect()
 	m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "DISCONNECTED" ) );
 }
 
-NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network)
-{
-	m_to_network = p_to_network;
-
-	m_readfd = open(p_to_network->getFilePath().c_str(), O_RDONLY);
-
-	m_events = new UIEventsNetwork(p_to_ui); // opens to_ui for writing
-
-	m_connectedandorloggedin = 0;
-
-	m_talkbutton = 0;
-
-	m_socket = m_client_network.getSocket();
-
-	m_events->to_ui->setup();
-
-
-	while(true) // thread main loop
-	{
-
-		print_me("start of network thread loop");
-
-		if(m_connectedandorloggedin==0) // if we arent connected only select on readfd
-		//if(false)
-		{
-			struct timeval tv;
-
-			fd_set read;
-			FD_ZERO(&read);
-			FD_SET(m_readfd, &read);
-
-			tv.tv_sec = 5;
-			tv.tv_usec = 0;
-				
-			print_me("NetworkManager:: selecting on readfd");
-			int select_returned = select(m_readfd+1, &read, NULL, NULL, &tv);
-			print_me("NetworkManager:: selected on readfd");
-
-			if(select_returned == -1)
-			{
-				report_error(strerror(errno));
-			}
-
-			if(FD_ISSET(m_readfd, &read))
-			{
-				print_me("woke up from UI event (only watching those)");
-				char buf[100];
-				::read(m_readfd, buf, 100);
-				got_here();
-				processUIEvents();
-			}	
-		} else { // else select on both fds
-			struct timeval tv;
-
-			fd_set read;
-			FD_ZERO(&read);
-			FD_SET(m_readfd, &read);
-			FD_SET(m_socket, &read);
-
-			int bigone;
-			if (m_socket>m_readfd)
-				bigone=m_socket+1;
-			else
-				bigone=m_readfd+1; 
-
-			tv.tv_sec = 5;
-			tv.tv_usec = 0;
-			print_me("selecting on both fds");
-			int select_returned = select(bigone, &read, NULL, NULL, &tv);
-			if(select_returned == -1)
-			{
-				report_error(strerror(errno));
-			}
-
-			print_me("selected on both fds");
-
-			if(FD_ISSET(m_socket, &read))
-			{
-				print_me("got network data");
-				processNetworkEvents();
-				print_me("processed network data");
-			}
-
-		 	if(FD_ISSET(m_readfd, &read))
-			{
-				print_me("got fifo data");
-				char buf[100];
-				::read(m_readfd, buf, 100);
-				processUIEvents();
-				print_me("processed UI events");
-			}
-		}
-	
-
-	}
-	::close(m_readfd);
-}

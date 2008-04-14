@@ -14,7 +14,14 @@
 #include "network/ClientNetwork.h"
 #include "network/ClientPool.h"
 
-class NetworkManager{
+class NetworkManager
+{
+public:
+	NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network);
+
+	void processUIEvents();
+	void processNetworkEvents();
+
 private:
 	int m_readfd;
 	int m_socket;
@@ -36,9 +43,4 @@ private:
 
 	ClientPool m_client_pool;
 	ClientNetwork m_client_network;
-public:
-	NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network);
-
-	void processUIEvents();
-	void processNetworkEvents();
 };

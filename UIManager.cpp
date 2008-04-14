@@ -115,3 +115,4 @@ void UIManager::event_toggleTwugVisibility()
 
 	m_window->toggleVisibility();
 }
+
