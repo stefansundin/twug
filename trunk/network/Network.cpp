@@ -47,7 +47,7 @@ bool Network::updateBuffer(int p_socket)
 		return false;
 	}
 
-	printf("recv() got: \"%s\" (%d bytes)\n", recv_buffer, recv_length);
+	printf("HELLO!!!!! recv() got: \"%s\" (%d bytes)\n", recv_buffer, recv_length);
 
 	//create a temp variable big enough to contain the new and old data
 	char *new_buffer = new char[m_buffers[p_socket].getLength()+recv_length];
@@ -109,6 +109,8 @@ void Network::sendData(int p_socket, Data &p_data)
 	h.version = NETWORK_VERSION;
 	h.message_type = p_data.getType();
 	h.message_length = p_data.getLength();
+
+	print_me("sending: ("+std::string((char*)p_data.getData())+")");
 
 	send(p_socket, (void*)&h, sizeof(header), 0);
 	send(p_socket, p_data.getData(), p_data.getLength(), 0);

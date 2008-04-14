@@ -120,10 +120,17 @@ void handle_message(Message p_message)
 
 				std::string to2;
 				g_client_pool->socketToName(s, &to2);
-				print_me("sent SERVER_ADD_CLIENT ("+username+") to "+to2);
+				print_me("sent SERVER_ADD_CLIENT ("+m+") to "+to2);
 			}
 
 			printClientPool(g_client_pool);
+
+			m = "server00000000000000spam!";
+			response = Data(SERVER_TEXT_DATA, m.c_str(), m.size()+1);
+			for(i = 0; i < 100; i++)
+			{
+				g_network->sendData(p_message.getSocket(), response);
+			}
 		}
 		else if(returned == -1)		//bad username
 		{

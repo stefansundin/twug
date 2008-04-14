@@ -3,8 +3,7 @@
 
 void UIEventQueue::lock()
 {
-	print_me("###LOCKING "+m_name);
-	/*bool completed=0;
+	/*bool completed=false;
 	while(!completed)
 	{
 		if(!m_lock)
@@ -14,14 +13,11 @@ void UIEventQueue::lock()
 		}
 	}*/
 	pthread_mutex_lock(&m_mutex);
-	print_me("###GOT LOCK!");
 }
 void UIEventQueue::unlock()
 {
-	print_me("###UNLOCKING "+m_name);
 	//m_lock = false;
 	pthread_mutex_unlock(&m_mutex);
-	print_me("###UNLOCKED");
 }
 
 UIEventQueue::UIEventQueue(std::string p_name)
@@ -72,3 +68,4 @@ void UIEventQueue::pushEvent(UIEvent p_event)
 	unlock();
 	print_me("UIEventQueue("+m_name+"): Pushed event");
 }
+
