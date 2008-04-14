@@ -42,7 +42,6 @@ bool Network::updateBuffer(int p_socket)
 	}
 	else if(recv_length == 0)
 	{
-		printf("OMGOMGOMGOMGOMGOM\n");
 		log_this("disconnected");
 		return false;
 	}
