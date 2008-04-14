@@ -8,7 +8,6 @@
 class DataKeeper {
 private:
 	pthread_mutex_t m_mutex;
-	// keep data here
 public:
 	DataKeeper()
 	{

@@ -20,6 +20,9 @@ class NetworkManager
 {
 public:
 	NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network, DataKeeper* p_data);
+	~NetworkManager();
+
+	void run(); //main loop
 
 	void processUIEvents();
 	void processNetworkEvents();
