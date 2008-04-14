@@ -2,20 +2,28 @@
 
 UIManager::UIManager(UIEvents* p_events)	
 {
+	got_here();
 	m_events = p_events;
 	m_restoreprefswindow=0;
 
-	m_events->to_network->pushEvent( UIEvent ("HACK" ));
+	got_here();	
+	//m_events->to_network->pushEvent( UIEvent ("HACK" ));
+	got_here();
 	m_iochannel = Glib::IOChannel::create_from_file(m_events->to_ui->getFilePath() , "r" );
  	Glib::signal_io().connect(sigc::mem_fun(*this,&UIManager::on_fd_readable), m_iochannel, Glib::IO_IN);
 
 
+	std::cout << "UIManager: constructed" << std::endl;
+}
+
+void UIManager::trigger()
+{
 	m_window = new MainWindow(m_events);
 	m_prefswindow = new PrefsWindow(m_events);
 	m_icon = new TrayIcon(m_events);
+
 	m_prefswindow->loadSettings();
 	m_window->show();
-	std::cout << "UIManager: constructed" << std::endl;
 }
 
 bool UIManager::on_fd_readable(Glib::IOCondition condition)
@@ -24,6 +32,7 @@ bool UIManager::on_fd_readable(Glib::IOCondition condition)
 	{
 		std::cout << "Error" << std::endl;
 	} else {
+		std::cout << "UIManager: reading from fd" << std::endl;
 		Glib::ustring buf;
 		m_iochannel->read_line(buf);
 		std::cout << "UIManager: read this line from fd: " << buf << std::endl;

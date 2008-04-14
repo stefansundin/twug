@@ -21,6 +21,7 @@ private:
 	UIEventsNetwork* m_events;
 	bool m_connectedandorloggedin;
 	bool m_talkbutton;
+	UIEventQueue* m_to_network;
 
 	std::string m_connectedTo;
 	std::string m_lastrequestednick;
@@ -36,7 +37,7 @@ private:
 	ClientPool m_client_pool;
 	ClientNetwork m_client_network;
 public:
-	NetworkManager(UIEventsNetwork *p_events);
+	NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network);
 
 	void processUIEvents();
 	void processNetworkEvents();

@@ -2,20 +2,31 @@
 #define UIEventsNetwork_h
 #include "UIEventQueue.h"
 
-class UIEventQueueHolder_other
+class UIEventQueueHolder_NetworktoUI
 {
 public:
-	UIEventQueueHolder_other(UIEventQueue* p_eventqueue)
+	UIEventQueueHolder_NetworktoUI(UIEventQueue* p_eventqueue)
 	{
+		got_here();
 		m_eventqueue = p_eventqueue;
+
+		got_here();
+		m_f = fopen(m_eventqueue->getFilePath().c_str(), "w");
 	}
+
+	void setup()
+	{
+		got_here();
+
+		got_here();	
+	}
+	
 	void pushEvent(UIEvent p_event)
 	{
 		m_eventqueue->pushEvent(p_event);
 		
-		FILE* f = fopen(m_eventqueue->getFilePath().c_str(), "w");
-		fputc('\n', f);
-		fclose(f);
+		fputc('\n', m_f);
+		//fclose(f);
 	}
 	UIEvent popEvent()
 	{
@@ -26,18 +37,19 @@ public:
 		return m_eventqueue->getFilePath();
 	}
 private:
+	FILE* m_f;
 	UIEventQueue* m_eventqueue;	
 };
 
 class UIEventsNetwork {
 public:
-	UIEventsNetwork(UIEventQueue* p_eventqueue_0, UIEventQueue* p_eventqueue_1)
+	UIEventsNetwork(UIEventQueue* p_eventqueue_0)
 	{
-		to_ui = new UIEventQueueHolder_other(p_eventqueue_0);
-		to_network = p_eventqueue_1;
+		got_here();
+		to_ui = new UIEventQueueHolder_NetworktoUI(p_eventqueue_0);
+		got_here();
   	}
-	UIEventQueueHolder_other* to_ui; 
-	UIEventQueue* to_network;
+	UIEventQueueHolder_NetworktoUI* to_ui; 
 };
 
 #endif
