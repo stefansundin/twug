@@ -14,10 +14,12 @@
 #include "network/ClientNetwork.h"
 #include "network/ClientPool.h"
 
+#include "DataKeeper.h"
+
 class NetworkManager
 {
 public:
-	NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network);
+	NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network, DataKeeper* p_data);
 
 	void processUIEvents();
 	void processNetworkEvents();
@@ -43,4 +45,6 @@ private:
 
 	ClientPool m_client_pool;
 	ClientNetwork m_client_network;
+
+	DataKeeper* m_data;
 };
