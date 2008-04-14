@@ -1,8 +1,10 @@
 #include "NetworkManager.h"
 
-NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network)
+NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network, DataKeeper* p_data)
 {
 	m_to_network = p_to_network;
+
+	m_data = p_data;
 
 	m_readfd = open(p_to_network->getFilePath().c_str(), O_RDONLY);
 
@@ -129,9 +131,6 @@ void NetworkManager::processUIEvents()
 			kaka=false;
 		} else if (event.getType() == "JOINCHANNEL") {
 				joinChannel(event.pop());
-		} else if (event.getType() == "HACK") {
-			std::cout << "Hack\n"; //needed to start twug
-			m_events->to_ui->pushEvent(UIEvent ("EMPTY"));
 		} else if (event.getType() == "CONNECTTOSERVER") {
 				got_here();
 				connectToServer( event.pop(), event.pop(), event.pop() );
