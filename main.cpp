@@ -30,6 +30,7 @@ void *network_code(void *ptr)
 	std::cout << "Network thread started" << std::endl;
 	
 	NetworkManager* network = new NetworkManager(g_to_ui, g_to_network, g_data); // opens to_network for reading, then to_ui for writing
+	network->run();
 }
 
 int main (int argc, char *argv[])

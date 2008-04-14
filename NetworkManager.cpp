@@ -15,17 +15,22 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 	m_talkbutton = 0;
 
 	m_socket = m_client_network.getSocket();
+}
 
-	//m_events->to_ui->setup();
+NetworkManager::~NetworkManager ()
+{
+	::close(m_readfd);
+}
 
 
+void NetworkManager::run()
+{
 	while(true) // thread main loop
 	{
 
 		print_me("start of network thread loop");
 
-		if(m_connectedandorloggedin==0) // if we arent connected only select on readfd
-		//if(false)
+		if(!m_connectedandorloggedin) // if we arent connected only select on readfd
 		{
 			struct timeval tv;
 
@@ -97,9 +102,7 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 	
 
 	}
-	::close(m_readfd);
 }
-
 
 void NetworkManager::processNetworkEvents()
 {
