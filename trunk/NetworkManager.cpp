@@ -150,7 +150,7 @@ void NetworkManager::processUIEvents()
 				std::string destination = event.pop_first();
 				std::string msg = event.pop_first();
 	
-				print_me("NetworkManager::sendText() sending \""+destination+"\" to \""+msg+"\"");
+				print_me("NetworkManager::sendText() sending \""+msg+"\" to \""+destination+"\"");
 
 				m_client_network.sendText(destination, msg);
 		} else {
@@ -163,6 +163,8 @@ void NetworkManager::processUIEvents()
 
 void NetworkManager::handleNetworkMessage(Message p_message)
 {
+	print_me("hej");
+
 	char *data = (char*)p_message.getData().getData();
 	int length = p_message.getData().getLength();
 	std::string data_str = data;
@@ -212,7 +214,8 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		strip(sender);
 		std::string message = str.substr(20);
 
-		m_events->to_ui->pushEvent( UIEvent ("TEXT_MESSAGE", sender, message) );
+		if (sender != "server") //stupid hack
+			m_events->to_ui->pushEvent( UIEvent ("TEXT_MESSAGE", sender, message) );
 
 		print_me(sender+": "+message);
 	}
