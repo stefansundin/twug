@@ -39,6 +39,8 @@ MessageWindow::MessageWindow(std::string p_name, UIEvents* p_events, std::string
 
 	//m_button->set_size_request(m_button->get_width(), m_button->get_height() );
 	
+	set_focus(*m_entry);
+
 	std::cout << "MessageWindow(" << m_name << "): constructed\n";
 }
 
@@ -58,12 +60,15 @@ std::string MessageWindow::getName()
 void MessageWindow::sendEntry()
 {
 	std::string msg = m_entry->get_text();
-	m_entry->set_text("");
+	if (msg != "")
+	{
+		m_entry->set_text("");
 
-	m_buffer->insert(m_buffer->end(), (*m_nameptr)+": "+msg+"\n");
-	scrollDown();
+		m_buffer->insert(m_buffer->end(), (*m_nameptr)+": "+msg+"\n");
+		scrollDown();
 
-	m_events->to_network->pushEvent( UIEvent ( "SEND_TEXT", m_name, msg ) );
+		m_events->to_network->pushEvent( UIEvent ( "SEND_TEXT", m_name, msg ) );
+	}
 }
 
 void MessageWindow::scrollDown()
