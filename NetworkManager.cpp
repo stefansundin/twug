@@ -30,6 +30,7 @@ void NetworkManager::run()
 		print_me("start of network thread loop");
 
 		if(!m_connectedandorloggedin) // if we arent connected only select on readfd
+		//if(false)
 		{
 			struct timeval tv;
 

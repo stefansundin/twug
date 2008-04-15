@@ -19,6 +19,7 @@
 #include "fill.h"
 #include "strip.h"
 #include "Data.h"
+#include <fcntl.h>
 
 #define NETWORK_VERSION 0
 
