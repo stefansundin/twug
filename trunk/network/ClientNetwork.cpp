@@ -3,6 +3,7 @@
 ClientNetwork::ClientNetwork()
 {
 	m_socket = socket(AF_INET, SOCK_STREAM, 0);
+
 	m_connected = false;
 }
 ClientNetwork::~ClientNetwork()
@@ -22,6 +23,7 @@ int ClientNetwork::connect(std::string p_address, int p_port)
 	{
 		printf("%d\n", m_socket);
 		m_connected = true;
+		//fcntl(m_socket, F_SETFL, O_NONBLOCK);
 	}
 	return status;
 }
@@ -82,7 +84,7 @@ bool ClientNetwork::processNetworking()
 		return false;
 
 
-	/*fd_set readable;
+	fd_set readable;
 	struct timeval tv;
 
 	FD_ZERO(&readable);
@@ -99,18 +101,18 @@ bool ClientNetwork::processNetworking()
 	}
 
 	if(FD_ISSET(m_socket, &readable))
-	{*/
+	{
 		print_me("data on m_socket");
 		if(!updateBuffer(m_socket))
 		{
 			m_connected = false;
 		}
-	/*}
+	}
 	else
 	{
 		print_me("no data on m_socket");
 		return false;
-	}*/
+	}
 
 	print_me("end of function");
 
