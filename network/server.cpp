@@ -125,12 +125,12 @@ void handle_message(Message p_message)
 
 			printClientPool(g_client_pool);
 
-			m = "server00000000000000spam!";
+			/*m = "server00000000000000spam!";
 			response = Data(SERVER_TEXT_DATA, m.c_str(), m.size()+1);
-			for(i = 0; i < 100; i++)
+			for(i = 0; i < 10; i++)
 			{
 				g_network->sendData(p_message.getSocket(), response);
-			}
+			}*/
 		}
 		else if(returned == -1)		//bad username
 		{

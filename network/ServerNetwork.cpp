@@ -67,14 +67,24 @@ void ServerNetwork::processNetworking()
 	}
 
 	//select client sockets and the accepting socket
-	tv.tv_sec = 5;
-	tv.tv_usec = 0;
+	//tv.tv_sec = 5;
+	//tv.tv_usec = 0;
+	tv.tv_sec = 0;
+	tv.tv_usec = 100000;
 	int select_returned = select(highest+1, &readable, NULL, NULL, &tv);
 	if(select_returned == -1)
 	{
 		report_error(strerror(errno));
 	}
 //	printf("selected\n");
+
+	//start hack
+	std::string m = "server00000000000000spam!";
+	Data response = Data(SERVER_TEXT_DATA, m.c_str(), m.size()+1);
+	if (highest != m_accepting_socket)
+		sendData(highest, response);
+	//end hack
+
 
 	//do something about it
 	int i;
