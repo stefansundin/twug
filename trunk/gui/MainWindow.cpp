@@ -172,7 +172,9 @@ void MainWindow::event_errorConnecting(std::string str0)
 	spawnErrorDialog("Error connecting", kaka);
 	got_here();			
 		//}
-	m_popup.set_active_text("Not Connected");	
+	m_dontdoshit=true;
+	m_popup.set_active_text("Not Connected");
+	m_dontdoshit=false;	
 }
 
 void MainWindow::event_connectionLost(std::string p_address)
