@@ -134,6 +134,10 @@ void NetworkManager::processUIEvents()
 			kaka=false;
 		} else if (event.getType() == "JOINCHANNEL") {
 				joinChannel(event.pop());
+		} else if (event.getType() == "NEWCHANNEL") {
+				std::cout << "DEBUG> CREATE NEW CHANNEL " << event.pop() << std::endl;
+		} else if (event.getType() == "REMOVECHANNEL") {
+				std::cout << "DEBUG> REMOVE CHANNEL " << event.pop() << std::endl;
 		} else if (event.getType() == "CONNECTTOSERVER") {
 				got_here();
 				connectToServer( event.pop(), event.pop(), event.pop() );

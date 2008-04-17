@@ -44,12 +44,15 @@ protected:
 	void on_treeview_clicked(GdkEventButton* evb);
 	void on_personmenu_message();
 	void on_channelmenu_join();
+	void on_channelmenu_removeChannel();
+	void on_backgroundmenu_newChannel();
 
 	bool m_dontdoshit;
 	std::vector<std::string> m_lastserverlist;
 	std::vector<std::string> m_lastchannellist;
 	std::string* m_nameptr;
 	std::string m_newname;
+	std::string m_mychannel;
 
 	
 	UIEvents* m_events;
@@ -58,6 +61,7 @@ protected:
 	Gtk::ComboBoxText m_popup;
 	Gtk::Menu* m_personmenu;
 	Gtk::Menu* m_channelmenu;
+	Gtk::Menu* m_backgroundmenu;
 	mwColumns *m_columns;
 	Gtk::TreeView *m_treeview;
 	Glib::RefPtr<Gtk::TreeStore> m_treestore;
@@ -66,7 +70,6 @@ public:
 	MainWindow(UIEvents* p_events);
 	virtual ~MainWindow();
 	void toggleVisibility();
-	void giveServers(std::vector<Glib::ustring> p_servers);
 
 	bool m_autoopen;
 
