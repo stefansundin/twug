@@ -57,8 +57,10 @@ void UIManager::processEvents()
 			} else if (s == "CONNECTING") {
 				//m_window->event_connecting(event.pop(), event.pop() );
 				std::cout << "event_connecting" << std::endl;
-			} else if (s == "ERROR_CONNECTING") {
+			} else if (s == "ERROR_CONNECTING") {	
+				got_here();
 				m_window->event_errorConnecting(event.pop_first() );
+				got_here();
 			} else if (s == "DISCONNECTED") {
 				print_me(event.getFirst());
 				m_window->event_disconnected();

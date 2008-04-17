@@ -159,6 +159,7 @@ void MainWindow::event_connected(std::string p_ip, std::string p_name)
 
 void MainWindow::event_errorConnecting(std::string str0)
 {
+	got_here();
 		//if (p_err == "ERR_IS_PASSWORD")
 		//{
 		//	//triggerPassEntry();
@@ -168,7 +169,8 @@ void MainWindow::event_errorConnecting(std::string str0)
 
 	std::string kaka = str0;
 
-			spawnErrorDialog("Error connecting", kaka);			
+	spawnErrorDialog("Error connecting", kaka);
+	got_here();			
 		//}
 	m_popup.set_active_text("Not Connected");	
 }
