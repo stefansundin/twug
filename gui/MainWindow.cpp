@@ -19,6 +19,7 @@ MainWindow::MainWindow(UIEvents* p_events)
 	Gtk::VBox* vbox = new Gtk::VBox();
 	m_personmenu = new Gtk::Menu();
 	m_channelmenu = new Gtk::Menu();
+	m_backgroundmenu = new Gtk::Menu();
 	m_columns = new mwColumns();
 	m_treestore = Gtk::TreeStore::create(*m_columns);
 	m_treeview = new Gtk::TreeView(m_treestore);
@@ -39,6 +40,12 @@ MainWindow::MainWindow(UIEvents* p_events)
 
 	m_channelmenu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Join Channel",
 		sigc::mem_fun(*this,&MainWindow::on_channelmenu_join) ));
+	m_channelmenu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Remove Channel",
+		sigc::mem_fun(*this,&MainWindow::on_channelmenu_removeChannel) ));
+
+	m_personmenu->items().push_back(Gtk::Menu_Helpers::MenuElem("_New channel",
+		sigc::mem_fun(*this,&MainWindow::on_backgroundmenu_newChannel) ));
+
 
 	m_popup.signal_changed().connect(
 		sigc::mem_fun(*this,&MainWindow::on_popup_changed) );
@@ -133,6 +140,8 @@ void MainWindow::event_newChannelList(std::vector<std::string> channels)
 			}
 			if (m_autoopen) 
 				m_msghandler->showWindow(channels.at(i));
+			if ((*m_nameptr) == channels.at(i))
+				m_mychannel = channame;		
 		}
 	}
 	m_treeview->expand_all();
@@ -236,21 +245,9 @@ void MainWindow::toggleVisibility()
 
 void MainWindow::on_channelmenu_join()
 {
-	/*std::vector<std::string> kaka = ?????->getChannelMembers( getSelectionValue());
-	bool found=0;
-	for (int i=0;i<kaka.size();i++)
-	{
-		if (kaka.at(i) == *m_nameptr)
-		{
-			found=1;
-			break;
-		}
-	}
-
-	if (found)	
+	if (getSelectionValue() == m_mychannel)	
 		m_events->to_network->pushEvent( UIEvent ( "JOINCHANNEL", "__lobby__" ) );
-
-	else*/
+	else
 		m_events->to_network->pushEvent( UIEvent ( "JOINCHANNEL", getSelectionValue() ) );
 }
 
@@ -263,6 +260,7 @@ Glib::ustring MainWindow::getSelectionValue()
 {
 	Gtk::TreeModel::iterator iter = m_treeview->get_selection()->get_selected();
 	Glib::ustring temp = (*iter)[m_columns->name];
+	print_me("got selection value " + temp);
 	return temp; 
 }
 
@@ -289,7 +287,11 @@ void MainWindow::on_treeview_clicked(GdkEventButton* evb)
 	if (evb->type == GDK_BUTTON_PRESS)	
 		if( (evb->button == 3) )
 		{
-			if ( isChannel( getSelectionValue() ) )
+			if (getSelectionValue()=="")
+			{
+				m_backgroundmenu->popup(evb->button,evb->time);
+			}
+			else if ( isChannel( getSelectionValue() ) )
 			{
 				m_channelmenu->popup(evb->button,evb->time);
 			} else {
@@ -297,3 +299,17 @@ void MainWindow::on_treeview_clicked(GdkEventButton* evb)
 			}
 		}	
 }
+
+
+void MainWindow::on_channelmenu_removeChannel()
+{
+		m_events->to_network->pushEvent( UIEvent ( "REMOVECHANNEL", getSelectionValue() ) );
+}
+
+void MainWindow::on_backgroundmenu_newChannel()
+{
+	
+		m_events->to_network->pushEvent( UIEvent ( "NEWCHANNEL", "kakachannel" ));
+}
+
+
