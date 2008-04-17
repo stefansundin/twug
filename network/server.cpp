@@ -245,6 +245,7 @@ void handle_message(Message p_message)
 		response = Data(SERVER_TEXT_DATA, m.c_str(), m.size()+1);
 		g_network->sendData(recv_socket, response);
 
+		strip(sender);
 		printf("\"%s\" says \"%s\" to \"%s\"\n", sender.c_str(), message.c_str(), reciever.c_str());
 	}
 	else if(p_message.getData().getType() == CLIENT_CHANNEL_CHANGE)
