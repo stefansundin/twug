@@ -19,7 +19,8 @@ public:
 
 	bool processNetworking();
 
-	int getSocket();		//this is usefull when one need to tell GTK to watch the socket
+	int getSocket() const;		//this is usefull when one need to tell GTK to watch the socket
+	bool getConnectionStatus() const;
 
 private:
 	int m_socket;

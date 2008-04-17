@@ -36,5 +36,5 @@ private:
 	bool m_restore_prefs_window;
 };
 
-#endif
+#endif //UIManager_h
 
