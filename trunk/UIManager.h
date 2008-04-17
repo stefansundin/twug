@@ -19,21 +19,21 @@
 class UIManager
 {
 public:
-	UIManager(UIEvents* p_events);	
+	UIManager(UIEvents* p_events);
 
 	bool on_fd_readable(Glib::IOCondition condition);
 	void processEvents();
-void trigger();
+	void trigger();
+
 private:
+	void event_toggleTwugVisibility();
+
 	Glib::RefPtr<Glib::IOChannel> m_iochannel;
 	UIEvents* m_events;
 	TrayIcon* m_icon;
 	MainWindow* m_window;
-	PrefsWindow* m_prefswindow;
-	void event_toggleTwugVisibility();
-
-
-	bool m_restoreprefswindow;
+	PrefsWindow* m_prefs_window;
+	bool m_restore_prefs_window;
 };
 
 #endif
