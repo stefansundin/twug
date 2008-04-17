@@ -157,7 +157,7 @@ void MainWindow::event_connected(std::string p_ip, std::string p_name)
 	//m_events->to_network->pushEvent( UIEvent ( "JOINCHANNEL", "__lobby__" ) );
 }
 
-void MainWindow::event_errorConnecting(std::string str0, std::string str1, std::string str2)
+void MainWindow::event_errorConnecting(std::string str0)
 {
 		//if (p_err == "ERR_IS_PASSWORD")
 		//{
@@ -166,7 +166,7 @@ void MainWindow::event_errorConnecting(std::string str0, std::string str1, std::
 		//else
 		//{
 
-	std::string kaka = str0 + str1 + str2;
+	std::string kaka = str0;
 
 			spawnErrorDialog("Error connecting", kaka);			
 		//}

@@ -77,7 +77,7 @@ public:
 	void event_textMessage( std::string sender, std::string message);
 	void event_newChannelList(std::vector<std::string> channels);
 	void event_connected(std::string p_ip, std::string p_name);
-	void event_errorConnecting(std::string p_err, std::string, std::string);
+	void event_errorConnecting(std::string p_err);
 	void event_connectionLost(std::string p_address);
 	void event_newNewName (std::string p_name);
 	void event_disconnected ();
