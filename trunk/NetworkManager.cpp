@@ -9,11 +9,11 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 
 	m_events = new UIEventsNetwork(p_to_ui); // opens to_ui for writing
 
-	m_connectedandorloggedin = 0;
+	m_connectedandorloggedin = false; // means we dont have a connection
 
-	m_talkbutton = 0;
+	m_talkbutton = false; // means we will not send audio data
 
-	m_socket = m_client_network.getSocket();
+	m_socket = m_client_network.getSocket(); // socket file descriptor 
 }
 
 NetworkManager::~NetworkManager ()
@@ -128,7 +128,7 @@ void NetworkManager::processUIEvents()
 	bool kaka=true;
 	while(kaka)
 	{
-		UIEvent event = m_to_network->popEvent();
+		UIEvent event = m_to_network->popEvent(); // pop an event
 
 		if (event.getType() == "EMPTY") {
 			kaka=false;
@@ -324,11 +324,16 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 	int returned = m_client_network.connect(parsed_ip, parsed_port);
 	print_me("returned:");
 	printf("%d\n", returned);
-	m_connectedandorloggedin=1;
+	if (returned == 0)
+	{
+		m_connectedandorloggedin=1;
 
-	print_me("Sending login request");
-	m_client_network.loginRequest(m_lastrequestednick, p_password);
-	print_me("Sent login request");
+		print_me("Sending login request");
+		m_client_network.loginRequest(m_lastrequestednick, p_password);
+		print_me("Sent login request");
+	} else {
+		m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", m_lastrequestedserver) );
+	}
 }
 
 
