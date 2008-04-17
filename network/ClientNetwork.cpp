@@ -119,8 +119,12 @@ bool ClientNetwork::processNetworking()
 	return true;
 }
 
-int ClientNetwork::getSocket()
+int ClientNetwork::getSocket() const
 {
 	return m_socket;
+}
+bool ClientNetwork::getConnectionStatus() const
+{
+	return m_connected;
 }
 

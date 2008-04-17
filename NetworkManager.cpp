@@ -9,9 +9,7 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 
 	m_events = new UIEventsNetwork(p_to_ui); // opens to_ui for writing
 
-	m_connectedandorloggedin = false; // means we dont have a connection
-
-	m_talkbutton = false; // means we will not send audio data
+	m_talk_button = false; // means we will not send audio data
 
 	m_socket = m_client_network.getSocket(); // socket file descriptor 
 }
@@ -26,11 +24,9 @@ void NetworkManager::run()
 {
 	while(true) // thread main loop
 	{
-
 		print_me("start of network thread loop");
 
-		if(!m_connectedandorloggedin) // if we arent connected only select on readfd
-		//if(false)
+		if(!m_client_network.getConnectionStatus()) // if we arent connected only select on readfd
 		{
 			struct timeval tv;
 
@@ -40,10 +36,10 @@ void NetworkManager::run()
 
 			tv.tv_sec = 5;
 			tv.tv_usec = 0;
-				
-			print_me("NetworkManager:: selecting on readfd");
+
+			print_me("selecting on readfd");
 			int select_returned = select(m_readfd+1, &read, NULL, NULL, &tv);
-			print_me("NetworkManager:: selected on readfd");
+			print_me("selected on readfd");
 
 			if(select_returned == -1)
 			{
@@ -55,10 +51,9 @@ void NetworkManager::run()
 				print_me("woke up from UI event (only watching those)");
 				char buf[100];
 				::read(m_readfd, buf, 100);
-				got_here();
 				processUIEvents();
 			}	
-		} else { // else select on both fds
+		} else { //selecting on both fds
 			struct timeval tv;
 
 			fd_set read;
@@ -67,10 +62,11 @@ void NetworkManager::run()
 			FD_SET(m_socket, &read);
 
 			int bigone;
-			if (m_socket>m_readfd)
-				bigone=m_socket+1;
-			else
-				bigone=m_readfd+1; 
+			if (m_socket>m_readfd) {
+				bigone = m_socket+1;
+			} else {
+				bigone = m_readfd+1;
+			}
 
 			tv.tv_sec = 5;
 			tv.tv_usec = 0;
@@ -125,13 +121,13 @@ void NetworkManager::processUIEvents()
 {
 	print_me("NetworkManager: Processing events from UI");
 
-	bool kaka=true;
-	while(kaka)
+	bool process = true;
+	while(process)
 	{
 		UIEvent event = m_to_network->popEvent(); // pop an event
 
 		if (event.getType() == "EMPTY") {
-			kaka=false;
+			process = false;
 		} else if (event.getType() == "JOINCHANNEL") {
 				joinChannel(event.pop());
 		} else if (event.getType() == "NEWCHANNEL") {
@@ -139,17 +135,13 @@ void NetworkManager::processUIEvents()
 		} else if (event.getType() == "REMOVECHANNEL") {
 				std::cout << "DEBUG> REMOVE CHANNEL " << event.pop() << std::endl;
 		} else if (event.getType() == "CONNECTTOSERVER") {
-				got_here();
 				connectToServer( event.pop(), event.pop(), event.pop() );
 		} else if (event.getType() == "DISCONNECT") {
-				got_here();
 				disconnect();
 		} else if (event.getType() == "I_START_TALKING") {
-				got_here();
-				m_talkbutton=true;
+				m_talk_button = true;
 		} else if (event.getType() == "I_STOP_TALKING") {
-				got_here();
-				m_talkbutton=false;
+				m_talk_button = false;
 		} else if (event.getType() == "SEND_TEXT") {
 				std::string destination = event.pop_first();
 				std::string msg = event.pop_first();
@@ -158,7 +150,6 @@ void NetworkManager::processUIEvents()
 
 				m_client_network.sendText(destination, msg);
 		} else {
-				got_here();
 				print_me("NetworkManager: Got invalid event");
 		}
 		
@@ -167,8 +158,6 @@ void NetworkManager::processUIEvents()
 
 void NetworkManager::handleNetworkMessage(Message p_message)
 {
-	print_me("hej");
-
 	char *data = (char*)p_message.getData().getData();
 	int length = p_message.getData().getLength();
 	std::string data_str = data;
@@ -178,15 +167,15 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	{
 			print_me("got \"SERVER_LOGIN_OK\"");
 
-			m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTED", m_lastrequestedserver, m_lastrequestednick ) );
+			m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTED", m_last_requested_server, m_last_requested_nick ) );
 			channelListChanged();
 			
 	}
 	else if(p_message.getData().getType() == SERVER_LOGIN_BAD)
 	{
-		int why = *((int*)data);
-
 		printf("got \"SERVER_LOGIN_BAD\"\n");
+
+		int why = *((int*)data);
 		if(why == 1)
 		{
 			print_me("bad username");
@@ -202,8 +191,12 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	else if(p_message.getData().getType() == SERVER_DISCONNECT)
 	{
 		print_me("got \"SERVER_DISCONNECT\"");
-		m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTION_LOST", m_connectedTo ) );
-		m_connectedandorloggedin=0;
+		m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTION_LOST", m_connected_to ) );
+
+		if(m_client_network.disconnect() != 0)
+		{
+			print_me("Disconnection failed!");
+		}
 	}
 	else if(p_message.getData().getType() == SERVER_AUDIO_DATA)
 	{
@@ -218,10 +211,13 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		strip(sender);
 		std::string message = str.substr(20);
 
-		if (sender != "server") //stupid hack
-			m_events->to_ui->pushEvent( UIEvent ("TEXT_MESSAGE", sender, message) );
-
-		print_me(sender+": "+message);
+		//remove this later, this is only for the dirty hack "pumping"
+		if (sender != "server") {
+			m_events->to_ui->pushEvent(UIEvent("TEXT_MESSAGE", sender, message));
+			print_me(sender+": "+message);
+		} else {
+			print_me("server pump");
+		}
 	}
 	else if(p_message.getData().getType() == SERVER_CHANNEL_CHANGE_RESPONSE)
 	{
@@ -316,23 +312,20 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 
 	print_me("NetworkManager::connectToServer() connecting to "+parsed_ip+":"+p_address.substr(pos+1).c_str()+" as "+p_username+" with password "+p_password);
 
-	m_lastrequestednick = p_username;
-	m_lastrequestedserver = p_address;
+	m_last_requested_nick = p_username;
+	m_last_requested_server = p_address;
 
-	m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTING", m_lastrequestedserver, m_lastrequestednick ) );
+	m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTING", m_last_requested_server, m_last_requested_nick ) );
 
 	int returned = m_client_network.connect(parsed_ip, parsed_port);
 	print_me("returned:");
 	printf("%d\n", returned);
-	if (returned == 0)
-	{
-		m_connectedandorloggedin=1;
-
+	if (returned == 0) {
 		print_me("Sending login request");
-		m_client_network.loginRequest(m_lastrequestednick, p_password);
+		m_client_network.loginRequest(m_last_requested_nick, p_password);
 		print_me("Sent login request");
 	} else {
-		m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", m_lastrequestedserver) );
+		m_events->to_ui->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", m_last_requested_server));
 	}
 }
 
@@ -340,12 +333,15 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 void NetworkManager::disconnect()
 {
 	m_client_network.logout();
-	m_connectedandorloggedin=0;
-	m_client_network.disconnect();
+
+	if(m_client_network.disconnect() != 0)
+	{
+		print_me("Disconnection failed!");
+	}
 
 
-	print_me("NetworkManager::disconnect() disconnected");
+	print_me("Disconnected");
 
-	m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "DISCONNECTED" ) );
+	m_events->to_ui->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "DISCONNECTED"));
 }
 
