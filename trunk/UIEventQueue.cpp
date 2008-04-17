@@ -46,7 +46,7 @@ std::string UIEventQueue::getName() const
 }	
 UIEvent UIEventQueue::popEvent()
 {
-	print_me("UIEventQueue("+m_name+"): Popping event");
+	//print_me("UIEventQueue("+m_name+"): Popping event");
 	UIEvent event = UIEvent("EMPTY");
 	lock();
 	if(!m_queue.empty())
@@ -55,17 +55,17 @@ UIEvent UIEventQueue::popEvent()
 		m_queue.pop();
 	}			
 	unlock();
-	print_me("UIEventQueue("+m_name+"): Popped event");
+	//print_me("UIEventQueue("+m_name+"): Popped event");
 	return event;
 }
 void UIEventQueue::pushEvent(UIEvent p_event)
 {
-	print_me("UIEventQueue("+m_name+"): Pushing event");
+	//print_me("UIEventQueue("+m_name+"): Pushing event");
 	lock();
 
 	m_queue.push(p_event);
 
 	unlock();
-	print_me("UIEventQueue("+m_name+"): Pushed event");
+	//print_me("UIEventQueue("+m_name+"): Pushed event");
 }
 
