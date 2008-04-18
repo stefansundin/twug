@@ -1,7 +1,8 @@
-#ifndef DATA_H_
-#define DATA_H_
+#ifndef Data_h
+#define Data_h
 
 #include <string>
+#include <cstring>
 
 class Data
 {
@@ -11,14 +12,14 @@ public:
 	Data(int p_type, const void *data, unsigned int p_length);
 	~Data();
 
-	int getType();
-	const void* getData();
+	const void* getData() const;
+	unsigned int getLength() const;
+	int getType() const;
 
-	unsigned int getLength();
 private:
 	int m_type;
-	const void *m_data;
+	char *m_data;
 	unsigned int m_length;
 };
 
-#endif /*DATA_H_*/
+#endif //Data_h

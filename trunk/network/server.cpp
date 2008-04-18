@@ -71,6 +71,11 @@ void handle_message(Message p_message)
 		if(data_str.size() != 40)
 		{
 			print_me("Message not of proper length");
+			printf("data_str.size(): (%d)\n", data_str.size());
+			std::cout << "data_str: (" << data_str << ")" << std::endl;
+
+			printf("lengt: (%d)\n", length);
+			printf("printf: data: (%s)\n", data);
 			return;
 		}
 
@@ -229,9 +234,14 @@ void handle_message(Message p_message)
 		printf("got \"CLIENT_TEXT_DATA\"\n");
 
 		//check that the message is of proper length
-		if(data_str.size() != 40)
+		if(data_str.size() < 20)
 		{
 			print_me("Message not of proper length");
+			printf("data_str.size(): (%d)\n", data_str.size());
+			std::cout << "data_str: (" << data_str << ")" << std::endl;
+
+			printf("lengt: (%d)\n", length);
+			printf("printf: data: (%s)\n", data);
 			return;
 		}
 
@@ -242,7 +252,7 @@ void handle_message(Message p_message)
 		}
 
 		std::string reciever = data_str.substr(0,20);
-		std::string message = data_str.substr(20,20);
+		std::string message = data_str.substr(20);
 
 		strip(reciever);
 		int recv_socket;
