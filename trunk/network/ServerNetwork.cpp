@@ -17,7 +17,7 @@ ServerNetwork::~ServerNetwork()
 bool ServerNetwork::initSocket(std::string p_bind_address, unsigned int p_bind_port)
 {
 	struct sockaddr_in addr;
-	if( p_bind_address == "" )
+	if(p_bind_address == "")
 	{
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	}
@@ -26,6 +26,14 @@ bool ServerNetwork::initSocket(std::string p_bind_address, unsigned int p_bind_p
 		inet_pton(AF_INET, p_bind_address.c_str(), &addr.sin_addr);
 	}
 	addr.sin_port = htons(p_bind_port);
+
+	int yes=1;
+	if(setsockopt(m_accepting_socket,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int)) == -1)
+	{
+		perror("setsockopt");
+		return false;
+	}
+
 	if(bind(m_accepting_socket, (struct sockaddr*)&addr, sizeof(addr)) == -1)
 	{
 		report_error(strerror(errno));
@@ -34,13 +42,6 @@ bool ServerNetwork::initSocket(std::string p_bind_address, unsigned int p_bind_p
 	if(listen(m_accepting_socket, 5) == -1)
 	{
 		report_error(strerror(errno));
-		return false;
-	}
-
-	int yes=1;
-	if(setsockopt(m_accepting_socket,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int)) == -1)
-	{
-		perror("setsockopt");
 		return false;
 	}
 
