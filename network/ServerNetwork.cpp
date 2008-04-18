@@ -79,7 +79,7 @@ void ServerNetwork::processNetworking()
 //	printf("selected\n");
 
 	//start hack
-	std::string m = "server00000000000000spam!";
+	std::string m = "server00000000000000NETWORK_PUMP";
 	Data response = Data(SERVER_TEXT_DATA, m.c_str(), m.size()+1);
 	if (highest != m_accepting_socket)
 		sendData(highest, response);
@@ -120,11 +120,10 @@ void ServerNetwork::disconnectClient(int p_socket)
 {
 	Message m;
 	m.setSocket(p_socket);
-	m.setData(new Data(SOCKET_DISCONNECTED, "", 0));
+	m.setData(Data(SOCKET_DISCONNECTED, "", 0));
 	m_messages.push(m);
 
 	int removed = m_buffers.erase(p_socket);			//remove the client from the list of sockets
-//	printf("removed socket %d\n", removed);
 	shutdown(p_socket, SHUT_RDWR);		//we dont care if this fails since (AFAIK) it only does if the socket is already disconnect (or if it's not a socket, which it should be :P)
 }
 
