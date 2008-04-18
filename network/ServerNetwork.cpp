@@ -63,7 +63,18 @@ void ServerNetwork::processNetworking()
 	{
 		FD_SET(mitr->first, &readable);
 		if(mitr->first > highest)
+		{
 			highest = mitr->first;
+		}
+
+		//start hack
+		std::string pump_message = "server00000000000000NETWORK_PUMP";
+		Data pump = Data(SERVER_TEXT_DATA, pump_message);
+		if(mitr->first != m_accepting_socket)
+		{
+			sendData(mitr->first, pump);
+		}
+		//end hack
 	}
 
 	//select client sockets and the accepting socket
@@ -77,14 +88,6 @@ void ServerNetwork::processNetworking()
 		report_error(strerror(errno));
 	}
 //	printf("selected\n");
-
-	//start hack
-	std::string m = "server00000000000000NETWORK_PUMP";
-	Data response = Data(SERVER_TEXT_DATA, m.c_str(), m.size()+1);
-	if (highest != m_accepting_socket)
-		sendData(highest, response);
-	//end hack
-
 
 	//do something about it
 	int i;
@@ -106,14 +109,17 @@ void ServerNetwork::processNetworking()
 			}
 			else	//this is a client sending us data, update its buffer
 			{
-				printf("updating buffer\n");
+				print_me("updating buffer");
 				if(!updateBuffer(i))
 				{
 					disconnectClient(i);
 				}
+				print_me("updated buffer");
 			}
 		}
 	}
+
+	print_me("END OF FUNCTION");
 }
 
 void ServerNetwork::disconnectClient(int p_socket)

@@ -98,6 +98,8 @@ bool Network::updateBuffer(int p_socket)
 			m_messages.push(m);
 		}
 	}
+
+	print_me("END OF FUNCTION");
 	return true;
 }
 
