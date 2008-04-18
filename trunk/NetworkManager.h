@@ -59,7 +59,6 @@ private:
 	int m_readfd;
 	int m_socket;
 	EventsToUI* m_events;
-	bool m_talk_button;
 	UIEventQueue* m_to_network;
 
 	std::string m_connected_to;
