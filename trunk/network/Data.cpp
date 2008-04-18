@@ -28,7 +28,7 @@ Data::~Data()
 {
 	if(m_data != 0)
 	{
-		delete [] m_data;
+//		delete [] m_data;		//why does this line cause a crash?
 	}
 }
 

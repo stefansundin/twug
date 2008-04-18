@@ -7,6 +7,7 @@
 #include <sys/select.h>
 #endif
 
+#include "../debug.h"
 #include "Network.h"
 
 class ServerNetwork : public Network
