@@ -323,6 +323,7 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 	int returned = m_client_network.connect(parsed_ip, parsed_port);
 
 	if (returned == 0) {
+		m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "LOGGING_IN", m_last_requested_server, m_last_requested_nick ) );
 		print_me("Sending login request");
 		m_client_network.loginRequest(m_last_requested_nick, p_password);
 		print_me("Sent login request");

@@ -139,6 +139,19 @@ void MainWindow::event_errorConnecting(std::string str0)
 	m_channellist->notifyDisconnected();
 }
 
+void MainWindow::event_connecting(std::string p_server)
+{
+	//m_channellist->putMessage("Connecting to " + p_server + "...");
+	m_channellist->putMessage("Connecting...");
+}
+
+void MainWindow::event_loggingIn(std::string p_server)
+{
+	//m_channellist->putMessage("Connecting to " + p_server + "...");
+	m_channellist->putMessage("Logging in...");
+}
+
+
 void MainWindow::event_connectionLost(std::string p_address)
 {
 	spawnErrorDialog("Connection lost", p_address);
