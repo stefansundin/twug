@@ -6,7 +6,7 @@ CLIENT_OBJECTS = ClientNetwork.o client.o
 
 CFLAGS = -g -O0
 
-all : server client_objects
+all : client_objects server
 
 server : $(COMMON_OBJECTS) $(SERVER_OBJECTS) debug
 	g++ $(CFLAGS) -o server $(COMMON_OBJECTS) $(SERVER_OBJECTS) debug.o
@@ -23,5 +23,6 @@ debug : ../debug.cpp
 	gcc $(CFLAGS) -c -o $@ $<
 
 clean :
+	@echo "#\n# Cleaning network\n#"
 	-rm $(OBJECTS) $(SERVER_OBJECTS) $(CLIENT_OBJECTS) debug.o client server
 
