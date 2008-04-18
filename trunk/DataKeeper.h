@@ -9,17 +9,9 @@ class DataKeeper {
 private:
 	Lock m_lock;
 public:
-	DataKeeper()
-	{
-	}
-	void lock()
-	{
-		m_lock.lock();
-	}
-	void unlock()
-	{
-		m_lock.unlock();
-	}
+	DataKeeper();
+	void lock();
+	void unlock();
 };
 
 #endif
