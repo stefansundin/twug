@@ -22,11 +22,19 @@ NetworkManager::~NetworkManager ()
 
 void NetworkManager::run()
 {
+	bool last_connected_status = false;
 	while(true) // thread main loop
 	{
+		bool new_connection_status = m_client_network.getConnectionStatus();
+
+		if (last_connected_status && !new_connection_status) //means if we where connected last time and not this time
+		{
+			m_events->to_ui->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "CONNECTION_LOST", m_connected_to));
+		}
+
 		print_me("start of network thread loop");
 
-		if(!m_client_network.getConnectionStatus()) // if we arent connected only select on readfd
+		if(!new_connection_status) // if we arent connected only select on readfd
 		{
 			struct timeval tv;
 
@@ -95,8 +103,7 @@ void NetworkManager::run()
 				print_me("processed UI events");
 			}
 		}
-	
-
+		last_connected_status = new_connection_status;	
 	}
 }
 
@@ -166,7 +173,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	if(p_message.getData().getType() == SERVER_LOGIN_OK)
 	{
 			print_me("got \"SERVER_LOGIN_OK\"");
-
+			m_connected_to = m_last_requested_server;
 			m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTED", m_last_requested_server, m_last_requested_nick ) );
 			channelListChanged();
 			

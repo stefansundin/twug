@@ -175,12 +175,16 @@ void MainWindow::event_errorConnecting(std::string str0)
 	m_dontdoshit=true;
 	m_popup.set_active_text("Not Connected");
 	m_dontdoshit=false;	
+	m_treestore->clear();
 }
 
 void MainWindow::event_connectionLost(std::string p_address)
 {
 	spawnErrorDialog("Connection lost", p_address);
+	m_dontdoshit=true;
 	m_popup.set_active_text("Not Connected");	
+	m_dontdoshit=false;
+	m_treestore->clear();
 }
 
 void MainWindow::event_disconnected()
