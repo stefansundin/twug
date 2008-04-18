@@ -10,9 +10,8 @@ MainWindow::MainWindow(UIEvents* p_events)
 	set_default_icon_from_file("/usr/share/pixmaps/twug.png");
 	//set_border_width(10);
 
-
-	m_dontdoshit = false;
-	m_autoopen = false;
+	m_dont_do_shit = false;
+	m_auto_open = false;
 
 	m_msghandler = new MessageHandler(m_events,m_nameptr);
 
@@ -78,7 +77,7 @@ void MainWindow::event_newServerList(std::vector<std::string> p_servers)
 	else
 		temp = "Not Connected";
 
-	m_dontdoshit=true;
+	m_dont_do_shit=true;
 		m_popup.clear_items();
 		m_popup.append_text("Not Connected");
 
@@ -91,7 +90,7 @@ void MainWindow::event_newServerList(std::vector<std::string> p_servers)
 		std::cout << std::endl;
 
 		m_popup.set_active_text(temp);
-	m_dontdoshit=false;
+	m_dont_do_shit=false;
 }
 
 
@@ -104,7 +103,7 @@ void MainWindow::event_textMessage( std::string sender, std::string message)
 
 void MainWindow::event_newChannelList(std::vector<std::string> channels)
 {
-	std::cout << "MainWindow: recieved new channel list" << std::endl;
+	print_me("Recieved new channel list");
 
 	m_lastchannellist = channels;
 
@@ -138,7 +137,7 @@ void MainWindow::event_newChannelList(std::vector<std::string> channels)
 				child_iter = m_treestore->append(iter->children());
 				(*child_iter)[m_columns->name] = channels.at(i);
 			}
-			if (m_autoopen) 
+			if (m_auto_open) 
 				m_msghandler->showWindow(channels.at(i));
 			if ((*m_nameptr) == channels.at(i))
 				m_mychannel = channame;		
@@ -170,20 +169,20 @@ void MainWindow::event_errorConnecting(std::string str0)
 	std::string kaka = str0;
 
 	spawnErrorDialog("Error connecting", kaka);
-	got_here();			
+	got_here();	
 		//}
-	m_dontdoshit=true;
+	m_dont_do_shit=true;
 	m_popup.set_active_text("Not Connected");
-	m_dontdoshit=false;	
+	m_dont_do_shit=false;	
 	m_treestore->clear();
 }
 
 void MainWindow::event_connectionLost(std::string p_address)
 {
 	spawnErrorDialog("Connection lost", p_address);
-	m_dontdoshit=true;
+	m_dont_do_shit=true;
 	m_popup.set_active_text("Not Connected");	
-	m_dontdoshit=false;
+	m_dont_do_shit=false;
 	m_treestore->clear();
 }
 
@@ -204,7 +203,7 @@ void MainWindow::on_button_released()
 
 void MainWindow::on_popup_changed()
 {
-	if(!m_dontdoshit)
+	if(!m_dont_do_shit)
 	{
 		Glib::ustring text = m_popup.get_active_text();
 
@@ -319,5 +318,4 @@ void MainWindow::on_backgroundmenu_newChannel()
 	
 		m_events->to_network->pushEvent( UIEvent ( "NEWCHANNEL", "kakachannel" ));
 }
-
 

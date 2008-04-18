@@ -339,16 +339,12 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 
 void NetworkManager::disconnect()
 {
-	got_here();
-
 	m_client_network.logout();
 
 	if(m_client_network.disconnect() != 0)
 	{
 		print_me("Disconnection failed!");
 	}
-
-
 	print_me("Disconnected");
 
 	m_events->to_ui->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "DISCONNECTED"));

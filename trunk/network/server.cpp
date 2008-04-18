@@ -56,7 +56,7 @@ int checkLogin(std::string p_username, std::string p_password)
 
 void handle_message(Message p_message)
 {
-	printf("handle_message called\n");
+	print_me("Handling messages");
 
 	char *data = (char*)p_message.getData().getData();
 	int length = p_message.getData().getLength();
