@@ -67,13 +67,13 @@ void NetworkManager::run()
 
 			if (m_talk_button) // means we need to wake up more often in order to send audio data
 			{
-				tv.tv_sec = 5;
-				tv.tv_usec = 0;
+				tv.tv_sec = 0;
+				tv.tv_usec = 10000;
 
 				// need to send audio data here, too
 			} else {
-				tv.tv_sec = 0;
-				tv.tv_usec = 10000;
+				tv.tv_sec = 5;
+				tv.tv_usec = 0;
 			}		
 
 			int bigone;

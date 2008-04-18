@@ -1,4 +1,4 @@
-LOCAL_OBJECTS = UIEventQueue.o UIManager.o AudioManager.o NetworkManager.o main.o
+LOCAL_OBJECTS = UIEventQueue.o UIEvent.o Lock.o DataKeeper.o UIManager.o AudioManager.o NetworkManager.o main.o
 
 CFLAGS = -g
 

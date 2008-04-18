@@ -2,7 +2,6 @@
 #include "UIManager.h"
 #include "NetworkManager.h"
 #include "AudioManager.h"
-#include <pthread.h>
 
 #include "debug.h"
 
@@ -31,9 +30,7 @@ void *network_code(void *ptr)
 {
 	print_me("Network thread started");
 
-	//opens to_network for reading, then to_ui for writing
 	NetworkManager* network = new NetworkManager(g_to_ui, g_to_network, g_data);
-	//run the network loop
 	network->run();
 }
 
@@ -66,10 +63,10 @@ int main (int argc, char *argv[])
 	pthread_create( &networkthread, NULL, network_code, NULL );
 
 	//initialize gui
-	UIEvents* events = new UIEvents(g_to_ui, g_to_network, &update_UItoUI); //opens to_network for writing
+	UIEvents* events = new UIEvents(g_to_ui, g_to_network, &update_UItoUI);
 
 	Gtk::Main kit(argc, argv);
-	g_ui = new UIManager(events); //opens to_ui for reading
+	g_ui = new UIManager(events);
 
 	g_ui->trigger();
 
