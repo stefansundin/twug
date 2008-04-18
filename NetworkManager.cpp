@@ -40,7 +40,7 @@ void NetworkManager::run()
 
 		if(!new_connection_status) // if we arent connected only select on readfd
 		{
-			tv.tv_sec = 5;
+			tv.tv_sec = 60;
 			tv.tv_usec = 0;
 
 			print_me("selecting on readfd");
@@ -55,14 +55,14 @@ void NetworkManager::run()
 
 			FD_SET(m_socket, &read);
 
-			if ( m_data->getSending() ) // means we need to wake up more often in order to send audio data
+			if ( m_data->getSending() ) // means we need to wake up more often and send audio data
 			{
 				tv.tv_sec = 0;
 				tv.tv_usec = 10000;
 
 				// need to send audio data here, too
 			} else {
-				tv.tv_sec = 5;
+				tv.tv_sec = 60;
 				tv.tv_usec = 0;
 			}		
 
@@ -313,7 +313,7 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 		parsed_port = atoi( p_address.substr(pos+1).c_str());
 	}
 
-	print_me("NetworkManager::connectToServer() connecting to "+parsed_ip+":"+p_address.substr(pos+1).c_str()+" as "+p_username+" with password "+p_password);
+	std::cout << "NetworkManager::connectToServer() connecting to " << parsed_ip << ":" << parsed_port << " as " << p_username << " with password " << p_password << std::endl;
 
 	m_last_requested_nick = p_username;
 	m_last_requested_server = p_address;
@@ -321,8 +321,7 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 	m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTING", m_last_requested_server, m_last_requested_nick ) );
 
 	int returned = m_client_network.connect(parsed_ip, parsed_port);
-	print_me("returned:");
-	printf("%d\n", returned);
+
 	if (returned == 0) {
 		print_me("Sending login request");
 		m_client_network.loginRequest(m_last_requested_nick, p_password);
