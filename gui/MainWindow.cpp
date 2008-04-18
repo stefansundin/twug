@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 
+
 MainWindow::MainWindow(UIEvents* p_events)
 {
 	m_events = p_events;
@@ -11,39 +12,29 @@ MainWindow::MainWindow(UIEvents* p_events)
 	//set_border_width(10);
 
 	m_dont_do_shit = false;
-	m_auto_open = false;
 
 	m_msghandler = new MessageHandler(m_events,m_nameptr);
 
 	Gtk::VBox* vbox = new Gtk::VBox();
-	m_personmenu = new Gtk::Menu();
-	m_channelmenu = new Gtk::Menu();
-	m_backgroundmenu = new Gtk::Menu();
-	m_columns = new mwColumns();
-	m_treestore = Gtk::TreeStore::create(*m_columns);
-	m_treeview = new Gtk::TreeView(m_treestore);
 
-	m_treeview->append_column("Name", m_columns->name);	
-	m_treeview->set_size_request(180,400);
+
+	Gtk::TreeModelColumn<Glib::ustring>* namecolumn = new Gtk::TreeModelColumn<Glib::ustring>();
+	Gtk::TreeModelColumnRecord* columns = new Gtk::TreeModelColumnRecord();
+	columns->add(*namecolumn);
+        Glib::RefPtr<Gtk::TreeStore> treestore = Gtk::TreeStore::create(*columns);
+        m_channellist = new ChannelList(treestore,namecolumn,m_events,m_nameptr);
+
+
+	
 	m_button.set_border_width(5);
 	m_button.set_label("Talk button");
 
 	vbox->add(m_popup);
 	vbox->add(m_button);
-	vbox->add(*m_treeview);
+	vbox->add(*m_channellist);
 	add(*vbox);
 	show_all();
 
-	m_personmenu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Message",
-		sigc::mem_fun(*this,&MainWindow::on_personmenu_message) ));
-
-	m_channelmenu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Join Channel",
-		sigc::mem_fun(*this,&MainWindow::on_channelmenu_join) ));
-	m_channelmenu->items().push_back(Gtk::Menu_Helpers::MenuElem("_Remove Channel",
-		sigc::mem_fun(*this,&MainWindow::on_channelmenu_removeChannel) ));
-
-	m_personmenu->items().push_back(Gtk::Menu_Helpers::MenuElem("_New channel",
-		sigc::mem_fun(*this,&MainWindow::on_backgroundmenu_newChannel) ));
 
 
 	m_popup.signal_changed().connect(
@@ -52,9 +43,6 @@ MainWindow::MainWindow(UIEvents* p_events)
 		sigc::mem_fun(*this,&MainWindow::on_button_pressed));
 	m_button.signal_released().connect(
 		sigc::mem_fun(*this,&MainWindow::on_button_released));
-
-	m_treeview->signal_button_press_event().connect_notify(
-		sigc::mem_fun(*this,&MainWindow::on_treeview_clicked));
 }
 
 
@@ -65,6 +53,11 @@ void MainWindow::event_newNewName (std::string p_name)
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::event_showMsgWindow (std::string p_name)
+{
+	m_msghandler->showWindow( p_name );
 }
 
 void MainWindow::event_newServerList(std::vector<std::string> p_servers)
@@ -101,49 +94,11 @@ void MainWindow::event_textMessage( std::string sender, std::string message)
 }
 
 
-void MainWindow::event_newChannelList(std::vector<std::string> channels)
+void MainWindow::event_newChannelList(std::vector<std::string> p_channels)
 {
 	print_me("Recieved new channel list");
 
-	m_lastchannellist = channels;
-
-	m_treestore->clear();
-
-	Gtk::TreeModel::iterator iter;
-	Gtk::TreeModel::iterator child_iter;
-	
-	int i=0;
-	std::string channame;
-
-	for(;i<channels.size();i++)
-	{
-		channame = channels.at(i);
-
-		if(channame != "__lobby__")
-		{
-			iter = m_treestore->append();
-			(*iter)[m_columns->name] = channels.at(i);
-		}
-
-		i++;
-
-		for(;channels.at(i)!="--END--";i++)
-		{
-			if(channame == "__lobby__")
-			{	
-				iter = m_treestore->append();
-				(*iter)[m_columns->name] = channels.at(i);	
-			} else {
-				child_iter = m_treestore->append(iter->children());
-				(*child_iter)[m_columns->name] = channels.at(i);
-			}
-			if (m_auto_open) 
-				m_msghandler->showWindow(channels.at(i));
-			if ((*m_nameptr) == channels.at(i))
-				m_mychannel = channame;		
-		}
-	}
-	m_treeview->expand_all();
+	m_channellist->giveChannelList(p_channels);
 }
 
 void MainWindow::event_connected(std::string p_ip, std::string p_name)
@@ -174,7 +129,7 @@ void MainWindow::event_errorConnecting(std::string str0)
 	m_dont_do_shit=true;
 	m_popup.set_active_text("Not Connected");
 	m_dont_do_shit=false;	
-	m_treestore->clear();
+	m_channellist->notifyDisconnected();
 }
 
 void MainWindow::event_connectionLost(std::string p_address)
@@ -183,12 +138,12 @@ void MainWindow::event_connectionLost(std::string p_address)
 	m_dont_do_shit=true;
 	m_popup.set_active_text("Not Connected");	
 	m_dont_do_shit=false;
-	m_treestore->clear();
+	m_channellist->notifyDisconnected();
 }
 
 void MainWindow::event_disconnected()
 {
-	m_treestore->clear();
+	m_channellist->notifyDisconnected();
 }
 
 void MainWindow::on_button_pressed()
@@ -250,72 +205,4 @@ void MainWindow::toggleVisibility()
 }
 
 
-void MainWindow::on_channelmenu_join()
-{
-	if (getSelectionValue() == m_mychannel)	
-		m_events->to_network->pushEvent( UIEvent ( "JOINCHANNEL", "__lobby__" ) );
-	else
-		m_events->to_network->pushEvent( UIEvent ( "JOINCHANNEL", getSelectionValue() ) );
-}
-
-void MainWindow::on_personmenu_message()
-{
-	m_msghandler->showWindow( getSelectionValue() );	
-}
-
-Glib::ustring MainWindow::getSelectionValue()
-{
-	Gtk::TreeModel::iterator iter = m_treeview->get_selection()->get_selected();
-	Glib::ustring temp = (*iter)[m_columns->name];
-	print_me("got selection value " + temp);
-	return temp; 
-}
-
-bool MainWindow::isChannel(std::string name)
-{
-	for(int i=0; i<m_lastchannellist.size(); i++)
-	{
-		if (m_lastchannellist.at(i) == name)
-		{
-			if (i==0)
-				return true;
-			else if (m_lastchannellist.at(i-1) == "--END--")
-				return true;
-			else
-				return false;
-		}
-	}
-	std::cout << "ERROR: Not a channel or nickname" << std::endl;	
-	return false;
-}
-
-void MainWindow::on_treeview_clicked(GdkEventButton* evb)
-{
-	if (evb->type == GDK_BUTTON_PRESS)	
-		if( (evb->button == 3) )
-		{
-			if (getSelectionValue()=="")
-			{
-				m_backgroundmenu->popup(evb->button,evb->time);
-			}
-			else if ( isChannel( getSelectionValue() ) )
-			{
-				m_channelmenu->popup(evb->button,evb->time);
-			} else {
-				m_personmenu->popup(evb->button,evb->time);
-			}
-		}	
-}
-
-
-void MainWindow::on_channelmenu_removeChannel()
-{
-		m_events->to_network->pushEvent( UIEvent ( "REMOVECHANNEL", getSelectionValue() ) );
-}
-
-void MainWindow::on_backgroundmenu_newChannel()
-{
-	
-		m_events->to_network->pushEvent( UIEvent ( "NEWCHANNEL", "kakachannel" ));
-}
 

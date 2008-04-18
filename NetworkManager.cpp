@@ -299,6 +299,9 @@ void NetworkManager::joinChannel(std::string p_channel_name)
 
 void NetworkManager::connectToServer(std::string p_address, std::string p_username, std::string p_password)
 {
+	m_last_requested_nick = p_username;
+	m_last_requested_server = p_address;
+
 	std::string parsed_ip;
 	unsigned int parsed_port;	
 	int pos = p_address.find_last_of(':');	
@@ -314,9 +317,6 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 	}
 
 	std::cout << "NetworkManager::connectToServer() connecting to " << parsed_ip << ":" << parsed_port << " as " << p_username << " with password " << p_password << std::endl;
-
-	m_last_requested_nick = p_username;
-	m_last_requested_server = p_address;
 
 	m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTING", m_last_requested_server, m_last_requested_nick ) );
 

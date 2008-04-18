@@ -77,6 +77,8 @@ void UIManager::processEvents()
 				event_toggleTwugVisibility();
 		} else if (event.getType() == "SHOW_PREFSWINDOW") {
 				m_prefs_window->show();
+		} else if (event.getType() == "SHOW_MSG_WINDOW") {
+				m_window->event_showMsgWindow(event.pop() );
 		} else {
 				print_me("UIManager: Got invalid event");
 		}
