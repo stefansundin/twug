@@ -4,6 +4,24 @@ CFLAGS = -g
 
 all: client server
 
+install: install_server install_client
+
+install_client:
+	cp twug /usr/bin
+	cp gui/twug.png /usr/share/pixmaps
+
+install_server:
+	cp server /usr/bin/twug-server
+
+uninstall: uninstall_server uninstall_client
+
+uninstall_client:
+	rm -f /usr/bin/twug
+	rm -f /usr/share/pixmaps/twug.png
+
+uninstall_server:
+	rm -f /usr/bin/twug-server
+
 make_network:
 	cd network/; make
 
