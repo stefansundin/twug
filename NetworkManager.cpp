@@ -25,6 +25,8 @@ void NetworkManager::run()
 	bool last_connected_status = false;
 	while(true) // thread main loop
 	{
+		print_me("start of network thread loop");
+
 		bool new_connection_status = m_client_network.getConnectionStatus();
 
 		if (last_connected_status && !new_connection_status) //means if we where connected last time and not this time
@@ -32,16 +34,14 @@ void NetworkManager::run()
 			m_events->to_ui->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "CONNECTION_LOST", m_connected_to));
 		}
 
-		print_me("start of network thread loop");
+		struct timeval tv;
+		fd_set read;
+		FD_ZERO(&read);
+
+		FD_SET(m_readfd, &read);
 
 		if(!new_connection_status) // if we arent connected only select on readfd
 		{
-			struct timeval tv;
-
-			fd_set read;
-			FD_ZERO(&read);
-			FD_SET(m_readfd, &read);
-
 			tv.tv_sec = 5;
 			tv.tv_usec = 0;
 
@@ -62,12 +62,19 @@ void NetworkManager::run()
 				processUIEvents();
 			}	
 		} else { //selecting on both fds
-			struct timeval tv;
 
-			fd_set read;
-			FD_ZERO(&read);
-			FD_SET(m_readfd, &read);
 			FD_SET(m_socket, &read);
+
+			if (m_talk_button) // means we need to wake up more often in order to send audio data
+			{
+				tv.tv_sec = 5;
+				tv.tv_usec = 0;
+
+				// need to send audio data here, too
+			} else {
+				tv.tv_sec = 0;
+				tv.tv_usec = 10000;
+			}		
 
 			int bigone;
 			if (m_socket>m_readfd) {
@@ -75,9 +82,7 @@ void NetworkManager::run()
 			} else {
 				bigone = m_readfd+1;
 			}
-
-			tv.tv_sec = 5;
-			tv.tv_usec = 0;
+			
 			print_me("selecting on both fds");
 			int select_returned = select(bigone, &read, NULL, NULL, &tv);
 			if(select_returned == -1)
