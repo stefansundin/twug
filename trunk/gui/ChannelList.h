@@ -22,7 +22,7 @@ protected:
 	std::string* m_nameptr;
 
 
-	bool isChannel(std::string name);
+	int whatIsThis(std::string name);
 	void on_personmenu_message();
 	void on_channelmenu_join();
 	void on_channelmenu_removeChannel();

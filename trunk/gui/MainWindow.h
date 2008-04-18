@@ -55,6 +55,7 @@ protected:
 	Gtk::ComboBoxText m_popup;
 
 	ChannelList *m_channellist;
+	void setup_channelList(); 
 };
 
 #endif //MainWindow_h
