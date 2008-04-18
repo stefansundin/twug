@@ -1,4 +1,8 @@
-all: MainWindow TrayIcon PrefsWindow MessageHandler MessageWindow
+OBJECTS = MainWindow.o MessageHandler.o MessageWindow.o TrayIcon.o PrefsWindow.o MessageWindow.o
+
+CFLAGS = -g `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags`
+
+all: $(OBJECTS)
 
 MainWindow: MainWindow.cpp MainWindow.h MessageHandler.cpp MessageHandler.h MessageWindow.h MessageWindow.cpp
 	g++ -g -c -o build/MainWindow.o MainWindow.cpp `pkg-config gtkmm-2.4 --cflags`
@@ -14,3 +18,9 @@ MessageWindow: MessageWindow.cpp MessageWindow.h
 
 MessageHandler: MessageHandler.cpp MessageHandler.h MessageWindow.h MessageWindow.cpp
 	g++ -g -c -o build/MessageHandler.o MessageHandler.cpp `pkg-config gtkmm-2.4 --cflags`
+
+.cpp.o :
+	gcc $(CFLAGS) -c -fPIC -o $@ $<
+
+clean :
+	-rm *.o

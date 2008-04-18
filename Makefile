@@ -1,3 +1,7 @@
+LOCAL_OBJECTS = UIEventQueue.o UIManager.o AudioManager.o NetworkManager.o main.o
+
+CFLAGS = -g
+
 all: client server
 
 make_network:
@@ -9,8 +13,9 @@ make_gui:
 server: make_network
 	cp network/build/server .
 
-client: make_gui make_network
-	g++ -g -o twug `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags --libs` network/build/ClientPool.o network/build/ClientNetwork.o  network/build/Network.o network/build/Data.o network/build/debug.o network/build/strip.o network/build/fill.o gui/build/MainWindow.o  gui/build/TrayIcon.o gui/build/PrefsWindow.o gui/build/MessageHandler.o gui/build/MessageWindow.o UIEventQueue.cpp UIManager.cpp AudioManager.cpp NetworkManager.cpp main.cpp
+client: make_gui make_network $(LOCAL_OBJECTS)
+	g++ $(CFLAGS) -o twug `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags --libs` network/ClientPool.o network/ClientNetwork.o  network/Network.o network/Data.o network/debug.o network/strip.o network/fill.o gui/build/MainWindow.o  gui/build/TrayIcon.o gui/build/PrefsWindow.o gui/build/MessageHandler.o gui/build/MessageWindow.o $(LOCAL_OBJECTS)
 
-
+.cpp.o :
+	gcc $(CFLAGS) -c -o $@ $<
 

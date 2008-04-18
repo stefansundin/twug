@@ -6,22 +6,22 @@ CLIENT_OBJECTS = ClientNetwork.o client.o
 
 CFLAGS = -g -O0
 
-all : client server
+all : server client_objects
 
 server : $(COMMON_OBJECTS) $(SERVER_OBJECTS) debug
-	g++ -c $(CFLAGS) -o build/server.o server.cpp
-	cd build; g++ -o server $(COMMON_OBJECTS) $(SERVER_OBJECTS) debug.o
+	g++ $(CFLAGS) -o server $(COMMON_OBJECTS) $(SERVER_OBJECTS) debug.o
+
+client_objects : $(COMMON_OBJECTS) ClientNetwork.o
 
 client : $(COMMON_OBJECTS) $(CLIENT_OBJECTS) debug
-	g++ -c $(CFLAGS) -o build/client.o client.cpp
-	cd build; g++ -o client $(COMMON_OBJECTS) $(CLIENT_OBJECTS) debug.o
+	g++ $(CFLAGS) -o client $(COMMON_OBJECTS) $(CLIENT_OBJECTS) debug.o
 
 debug : ../debug.cpp
-	g++ -c $(CFLAGS) -o build/debug.o ../debug.cpp
+	g++ -c $(CFLAGS) -o debug.o ../debug.cpp
 
-$(COMMON_OBJECTS) $(SERVER_OBJECTS) $(CLIENT_OBJECTS) :
-	g++ -c $(CFLAGS) -o build/$@ $(@:.o=.cpp)
+.cpp.o :
+	gcc $(CFLAGS) -c -o $@ $<
 
 clean :
-	-cd build; rm $(OBJECTS) $(SERVER_OBJECTS) $(CLIENT_OBJECTS) debug.o client server
+	-rm $(OBJECTS) $(SERVER_OBJECTS) $(CLIENT_OBJECTS) debug.o client server
 
