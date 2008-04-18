@@ -7,11 +7,14 @@
 
 class DataKeeper {
 private:
+	bool m_sending; // whether we are should record/send audio data
 	Lock m_lock;
 public:
 	DataKeeper();
 	void lock();
 	void unlock();
+	bool getSending();
+	void setSending(bool p_sending);
 };
 
 #endif

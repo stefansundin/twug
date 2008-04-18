@@ -9,8 +9,6 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 
 	m_events = new EventsToUI(p_to_ui);
 
-	m_talk_button = false; // means we will not send audio data
-
 	m_socket = m_client_network.getSocket(); // socket file descriptor 
 }
 
@@ -52,20 +50,12 @@ void NetworkManager::run()
 			if(select_returned == -1)
 			{
 				report_error(strerror(errno));
-			}
-
-			if(FD_ISSET(m_readfd, &read))
-			{
-				print_me("woke up from UI event (only watching those)");
-				char buf[100];
-				::read(m_readfd, buf, 100);
-				processUIEvents();
 			}	
 		} else { //selecting on both fds
 
 			FD_SET(m_socket, &read);
 
-			if (m_talk_button) // means we need to wake up more often in order to send audio data
+			if ( m_data->getSending() ) // means we need to wake up more often in order to send audio data
 			{
 				tv.tv_sec = 0;
 				tv.tv_usec = 10000;
@@ -98,16 +88,17 @@ void NetworkManager::run()
 				processNetworkEvents();
 				print_me("processed network data");
 			}
-
-		 	if(FD_ISSET(m_readfd, &read))
-			{
-				print_me("got fifo data");
-				char buf[100];
-				::read(m_readfd, buf, 100);
-				processUIEvents();
-				print_me("processed UI events");
-			}
 		}
+
+		if(FD_ISSET(m_readfd, &read))
+		{
+			print_me("got pipe data");
+			char buf[100];
+			::read(m_readfd, buf, 100);
+			processUIEvents();
+			print_me("processed UI events");
+		}
+
 		last_connected_status = new_connection_status;	
 	}
 }
@@ -151,9 +142,9 @@ void NetworkManager::processUIEvents()
 		} else if (event.getType() == "DISCONNECT") {
 				disconnect();
 		} else if (event.getType() == "I_START_TALKING") {
-				m_talk_button = true;
+				m_data->setSending(true);
 		} else if (event.getType() == "I_STOP_TALKING") {
-				m_talk_button = false;
+				m_data->setSending(false);
 		} else if (event.getType() == "SEND_TEXT") {
 				std::string destination = event.pop_first();
 				std::string msg = event.pop_first();
