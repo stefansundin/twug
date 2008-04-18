@@ -20,7 +20,7 @@ public:
 	
 		got_here();
 
-		m_iochannel = Glib::IOChannel::create_from_file(m_eventqueue->getFilePath() , "w" );		
+		m_iochannel = Glib::IOChannel::create_from_fd(m_eventqueue->getWriteFd());		
 		m_iochannel->set_encoding();
 		m_iochannel->set_buffered(0);
 	}
@@ -34,10 +34,6 @@ public:
 	UIEvent popEvent()
 	{
 		return m_eventqueue->popEvent();
-	}
-	std::string getFilePath() const
-	{
-		return m_eventqueue->getFilePath();
 	}
 private:
 	Glib::RefPtr<Glib::IOChannel> m_iochannel;
@@ -64,10 +60,10 @@ public:
 	{
 		return m_eventqueue->popEvent();
 	}
-	std::string getFilePath() const
+	int getReadFd() const
 	{
-		return m_eventqueue->getFilePath();
-	}
+		return m_eventqueue->getReadFd();
+	}	
 private:
 	void (*m_funptr)();
 	UIEventQueue* m_eventqueue;

@@ -42,8 +42,20 @@ int main (int argc, char *argv[])
 	g_data = new DataKeeper(); // keeps audio data
 
 	//set up event queues
-	g_to_ui = new UIEventQueue("to_ui");
- 	g_to_network = new UIEventQueue("to_network");
+	int to_network_pipes[2];
+	int to_ui_pipes[2];
+	if ( pipe( to_network_pipes ) != 0 )
+	{
+		print_me("Error");
+		return 0;
+	}
+	if ( pipe( to_ui_pipes ) != 0 )
+	{
+		print_me("Error");
+		return 0;
+	}
+	g_to_ui = new UIEventQueue("to_ui", to_ui_pipes[0], to_ui_pipes[1]);
+ 	g_to_network = new UIEventQueue("to_network", to_network_pipes[0], to_network_pipes[1]);
 
 	//initialize audio thread
 	pthread_t audiothread;
