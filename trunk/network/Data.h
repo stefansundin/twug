@@ -7,6 +7,7 @@ class Data
 {
 public:
 	Data();
+	Data(int p_type, std::string p_str_data);
 	Data(int p_type, const void *data, unsigned int p_length);
 	~Data();
 
