@@ -6,7 +6,7 @@ UIManager::UIManager(UIEvents* p_events)
 	m_restore_prefs_window=0;
 
 	//m_events->to_network->pushEvent( UIEvent ("HACK" ));
-	m_iochannel = Glib::IOChannel::create_from_file(m_events->to_ui->getFilePath() , "r" );
+	m_iochannel = Glib::IOChannel::create_from_fd(m_events->to_ui->getReadFd());
  	Glib::signal_io().connect(sigc::mem_fun(*this,&UIManager::on_fd_readable), m_iochannel, Glib::IO_IN);
 }
 

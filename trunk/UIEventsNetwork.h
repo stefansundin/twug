@@ -11,26 +11,23 @@ public:
 		m_eventqueue = p_eventqueue;
 
 		got_here();
-		m_f = fopen(m_eventqueue->getFilePath().c_str(), "w");
+		m_f = m_eventqueue->getWriteFd();
 	}
 	
 	void pushEvent(UIEvent p_event)
 	{
 		m_eventqueue->pushEvent(p_event);
 		
-		fputc('\n', m_f);
-		fflush(m_f);
+		char kaka = '\n';
+		write(m_f, (void*)&kaka, 1);
+		//fflush(m_f);
 	}
 	UIEvent popEvent()
 	{
 		return m_eventqueue->popEvent();
 	}
-	std::string getFilePath() const
-	{
-		return m_eventqueue->getFilePath();
-	}
 private:
-	FILE* m_f;
+	int m_f;
 	UIEventQueue* m_eventqueue;	
 };
 

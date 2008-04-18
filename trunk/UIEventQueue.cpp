@@ -20,24 +20,23 @@ void UIEventQueue::unlock()
 	m_lock.unlock();
 }
 
-UIEventQueue::UIEventQueue(std::string p_name)
+UIEventQueue::UIEventQueue(std::string p_name, int p_readfd, int p_writefd)
 {
 	m_name = p_name;
-	m_filepath = p_name + ".temp";
-	//m_lock = 0;
+	m_readfd = p_readfd;
+	m_writefd = p_writefd;
+}
 
- 	if (access(m_filepath.c_str(), F_OK) == -1)
-	{
-		if (mkfifo(m_filepath.c_str(), 0666) != 0)
-		{
-			print_me("error creating fifo");
-		}
-	}
-}
-std::string UIEventQueue::getFilePath() const
+int UIEventQueue::getReadFd() const 
 {
-	return m_filepath;
+	return m_readfd;
 }
+	
+int UIEventQueue::getWriteFd() const 
+{
+	return m_writefd;
+}
+
 std::string UIEventQueue::getName() const
 {
 	return m_name;

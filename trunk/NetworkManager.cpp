@@ -5,7 +5,7 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 	m_to_network = p_to_network;
 	m_data = p_data;
 
-	m_readfd = open(p_to_network->getFilePath().c_str(), O_RDONLY); //opens to_network for reading
+	m_readfd = p_to_network->getReadFd(); //opens to_network for reading
 
 	m_events = new UIEventsNetwork(p_to_ui); // opens to_ui for writing
 

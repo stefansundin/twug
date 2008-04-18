@@ -11,14 +11,17 @@
 class UIEventQueue {
 private:
 	std::queue<UIEvent> m_queue;
-	std::string m_filepath;
 	std::string m_name;
+	int m_readfd;
+	int m_writefd;
+	Lock m_lock;
+
 	void lock();
 	void unlock();
-	Lock m_lock;
 public:
-	UIEventQueue(std::string p_name);
-	std::string getFilePath() const;
+	UIEventQueue(std::string p_name, int p_readfd, int p_writefd);
+	int getReadFd() const;
+	int getWriteFd() const;
 	std::string getName() const;
 	UIEvent popEvent();
 	void pushEvent(UIEvent p_event);
