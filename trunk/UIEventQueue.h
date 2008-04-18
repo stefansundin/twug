@@ -6,7 +6,7 @@
 #include "UIEvent.h"
 #include <queue>
 #include <fcntl.h>
-#include <pthread.h>
+#include "Lock.h"
 
 class UIEventQueue {
 private:
@@ -15,8 +15,7 @@ private:
 	std::string m_name;
 	void lock();
 	void unlock();
-	//bool m_lock;
-	pthread_mutex_t m_mutex;
+	Lock m_lock;
 public:
 	UIEventQueue(std::string p_name);
 	std::string getFilePath() const;
