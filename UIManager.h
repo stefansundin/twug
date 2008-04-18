@@ -10,7 +10,7 @@
 
 #include <gtkmm/main.h>
 
-#include "UIEvents.h"
+#include "gui/UIEvents.h"
 #include "debug.h"
 #include "gui/TrayIcon.h"
 #include "gui/MainWindow.h"
@@ -19,7 +19,7 @@
 class UIManager
 {
 public:
-	UIManager(UIEvents* p_events);
+	UIManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network, void (*p_funptr)());
 
 	bool on_fd_readable(Glib::IOCondition condition);
 	void processEvents();

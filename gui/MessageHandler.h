@@ -6,7 +6,7 @@
 #include <iostream>
 
 #include "MessageWindow.h"
-#include "../UIEvents.h"
+#include "UIEvents.h"
 
 
 class MessageHandler

@@ -17,7 +17,7 @@
 #include <glibmm/slisthandle.h>
 #include <gconfmm-2.6/gconfmm.h>
 
-#include "../UIEvents.h"
+#include "UIEvents.h"
 
 class Columns : public Gtk::TreeModelColumnRecord
 {

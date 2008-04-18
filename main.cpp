@@ -1,4 +1,3 @@
-#include "UIEvents.h"
 #include "UIManager.h"
 #include "NetworkManager.h"
 #include "AudioManager.h"
@@ -36,6 +35,8 @@ void *network_code(void *ptr)
 
 int main (int argc, char *argv[])
 {
+	Gtk::Main kit(argc, argv);
+
 	g_data = new DataKeeper(); // keeps audio data
 
 	//set up event queues
@@ -63,14 +64,11 @@ int main (int argc, char *argv[])
 	pthread_create( &networkthread, NULL, network_code, NULL );
 
 	//initialize gui
-	UIEvents* events = new UIEvents(g_to_ui, g_to_network, &update_UItoUI);
-
-	Gtk::Main kit(argc, argv);
-	g_ui = new UIManager(events);
-
+	g_ui = new UIManager(g_to_ui, g_to_network, &update_UItoUI);
 	g_ui->trigger();
 
 	kit.run();
+
 	return 0;
 }
 

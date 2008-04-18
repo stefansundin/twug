@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <cstdio>
 #include <iostream>
-#include "UIEventsNetwork.h"
+#include "UIEventQueueHolder.h"
 
 #include <vector>
 #include <string>
@@ -18,6 +18,24 @@
 #include "network/ClientPool.h"
 
 #include "DataKeeper.h"
+
+class EventsToUI : public UIEventQueueHolder
+{
+public:
+	EventsToUI(UIEventQueue* p_eventqueue) : UIEventQueueHolder(p_eventqueue)
+	{
+		m_fd = m_eventqueue->getWriteFd();
+	}
+	void pushEvent(UIEvent p_event)
+	{
+		m_eventqueue->pushEvent(p_event);
+		
+		char kaka = '\n';
+		write(m_fd, (void*)&kaka, 1);
+	}
+private:
+	int m_fd;
+};
 
 class NetworkManager
 {
@@ -40,7 +58,7 @@ private:
 
 	int m_readfd;
 	int m_socket;
-	UIEventsNetwork* m_events;
+	EventsToUI* m_events;
 	bool m_talk_button;
 	UIEventQueue* m_to_network;
 

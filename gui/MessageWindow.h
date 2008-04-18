@@ -12,7 +12,7 @@
 #include <gtkmm/textbuffer.h>
 #include <gtkmm/scrolledwindow.h>
 
-#include "../UIEvents.h"
+#include "UIEvents.h"
 
 class MessageWindow : public Gtk::Window
 {

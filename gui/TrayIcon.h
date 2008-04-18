@@ -6,7 +6,7 @@
 #include <gtkmm.h>
 #include <gtkmm/aboutdialog.h>
 
-#include "../UIEvents.h"
+#include "UIEvents.h"
 
 class AboutTwug : public Gtk::AboutDialog
 {
