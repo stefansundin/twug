@@ -27,13 +27,14 @@ protected:
 	void on_channelmenu_join();
 	void on_channelmenu_removeChannel();
 	void on_backgroundmenu_newChannel();
-	void createChannelListMenu(std::string p_entry, GdkEventButton* p_evb, unsigned int p_type);
+	void createChannelListMenu(std::string p_entry);
 
 	virtual bool on_button_press_event(GdkEventButton* p_evb);
 public:
 	ChannelList(Glib::RefPtr<Gtk::TreeStore> p_store, Gtk::TreeModelColumn<Glib::ustring>* p_column, UIEvents* p_events,std::string* p_nameptr);
 	void giveChannelList(std::vector<std::string> p_channels);
 	void notifyDisconnected();
+	void putMessage(std::string p_msg);
 };
 
 

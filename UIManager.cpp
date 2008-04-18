@@ -55,8 +55,9 @@ void UIManager::processEvents()
 				std::string name = event.pop_first();
 				m_window->event_connected(ip, name);
 			} else if (s == "CONNECTING") {
-				//m_window->event_connecting(event.pop(), event.pop() );
-				std::cout << "event_connecting" << std::endl;
+				m_window->event_connecting(event.pop_first());
+			} else if (s == "LOGGING_IN") {
+				m_window->event_loggingIn(event.pop_first());
 			} else if (s == "ERROR_CONNECTING") {	
 				got_here();
 				m_window->event_errorConnecting(event.pop_first() );

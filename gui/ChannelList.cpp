@@ -9,11 +9,21 @@ ChannelList::ChannelList(Glib::RefPtr<Gtk::TreeStore> p_store, Gtk::TreeModelCol
 
 	append_column("Name", *m_column);	
 	set_size_request(180,400);
+	set_headers_visible(false);
 }
 
 void ChannelList::notifyDisconnected()
 {
 	m_store->clear();
+}
+
+void ChannelList::putMessage(std::string p_msg)
+{
+	m_store->clear();
+	Gtk::TreeModel::iterator iter;
+
+	iter = m_store->append();
+	(*iter)[*m_column] = p_msg;
 }
 
 bool ChannelList::on_button_press_event(GdkEventButton* p_evb)
@@ -28,7 +38,8 @@ bool ChannelList::on_button_press_event(GdkEventButton* p_evb)
 	{	
 		if( (p_evb->button == 3) )
 		{
-			createChannelListMenu(temp,p_evb, whatIsThis(temp));
+			createChannelListMenu(temp);
+			m_menu.popup(p_evb->button, p_evb->time);	
 		}
 	}
 
@@ -80,13 +91,15 @@ void ChannelList::on_backgroundmenu_newChannel()
 }
 
 
-void ChannelList::createChannelListMenu(std::string p_entry, GdkEventButton* p_evb, unsigned int p_type)
+void ChannelList::createChannelListMenu(std::string p_entry)
 {
 	got_here();
 
 	m_lastclicked = p_entry;
 
 	m_menu.items().clear();
+
+	int p_type = whatIsThis(p_entry);
 
 	if (p_type == 0) // Person menu
 	{
@@ -104,7 +117,7 @@ void ChannelList::createChannelListMenu(std::string p_entry, GdkEventButton* p_e
 			sigc::mem_fun(*this,&ChannelList::on_backgroundmenu_newChannel) ));
 	}
 
-	m_menu.popup(p_evb->button, p_evb->time);	
+
 }
 
 

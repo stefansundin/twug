@@ -35,6 +35,8 @@ public:
 	void event_newNewName (std::string p_name);
 	void event_showMsgWindow (std::string p_name);
 	void event_disconnected ();
+	void event_connecting(std::string p_server);
+	void event_loggingIn(std::string p_server);
 protected:
 	virtual void on_button_released();
 	virtual void on_button_pressed();
