@@ -5,28 +5,18 @@ DataKeeper::DataKeeper()
 	m_sending = false;
 }
 
-void DataKeeper::lock()
-{
-	m_lock.lock();
-}
-
-void DataKeeper::unlock()
-{
-	m_lock.unlock();
-}
-
 void DataKeeper::setSending(bool p_sending)
 {
-	lock();
+	m_lock.lock();
 	m_sending = p_sending;
-	unlock();
+	m_lock.unlock();
 }
 
 bool DataKeeper::getSending()
 {
-	lock();
+	m_lock.lock();
 	bool temp = m_sending;
-	unlock();
+	m_lock.unlock();
 	return temp;
 }
 
