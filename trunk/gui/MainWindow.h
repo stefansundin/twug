@@ -16,7 +16,7 @@
 #include <gtkmm/messagedialog.h>
 
 #include "../debug.h"
-#include "../UIEvents.h"
+#include "UIEvents.h"
 #include "MessageHandler.h"
 
 class mwColumns : public Gtk::TreeModelColumnRecord

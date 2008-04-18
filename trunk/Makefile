@@ -1,4 +1,4 @@
-LOCAL_OBJECTS = UIEventQueue.o UIEvent.o Lock.o DataKeeper.o UIManager.o AudioManager.o NetworkManager.o main.o
+LOCAL_OBJECTS = UIEventQueue.o UIEventQueueHolder.o UIEvent.o Lock.o DataKeeper.o UIManager.o AudioManager.o NetworkManager.o main.o
 
 CFLAGS = -g
 
@@ -15,7 +15,7 @@ server: make_network
 
 client: make_gui make_network $(LOCAL_OBJECTS)
 	@echo "#\n# Compiling and linking with network and gui\n#"
-	g++ $(CFLAGS) -o twug `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags --libs` network/ClientPool.o network/ClientNetwork.o  network/Network.o network/Data.o network/debug.o network/strip.o network/fill.o gui/MainWindow.o  gui/TrayIcon.o gui/PrefsWindow.o gui/MessageHandler.o gui/MessageWindow.o $(LOCAL_OBJECTS)
+	g++ $(CFLAGS) -o twug `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags --libs` network/ClientPool.o network/ClientNetwork.o  network/Network.o network/Data.o network/debug.o network/strip.o network/fill.o gui/MainWindow.o  gui/TrayIcon.o gui/PrefsWindow.o gui/MessageHandler.o gui/MessageWindow.o gui/UIEvents.o gui/UIEventQueueHolder_ToUI.o gui/UIEventQueueHolder_ToNetwork.o $(LOCAL_OBJECTS)
 
 .cpp.o :
 	gcc $(CFLAGS) `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags` -c -o $@ $<

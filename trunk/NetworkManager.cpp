@@ -5,9 +5,9 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 	m_to_network = p_to_network;
 	m_data = p_data;
 
-	m_readfd = p_to_network->getReadFd(); //opens to_network for reading
+	m_readfd = p_to_network->getReadFd();
 
-	m_events = new UIEventsNetwork(p_to_ui); // opens to_ui for writing
+	m_events = new EventsToUI(p_to_ui);
 
 	m_talk_button = false; // means we will not send audio data
 
@@ -31,7 +31,7 @@ void NetworkManager::run()
 
 		if (last_connected_status && !new_connection_status) //means if we where connected last time and not this time
 		{
-			m_events->to_ui->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "CONNECTION_LOST", m_connected_to));
+			m_events->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "CONNECTION_LOST", m_connected_to));
 		}
 
 		struct timeval tv;
@@ -179,7 +179,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	{
 			print_me("got \"SERVER_LOGIN_OK\"");
 			m_connected_to = m_last_requested_server;
-			m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTED", m_last_requested_server, m_last_requested_nick ) );
+			m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTED", m_last_requested_server, m_last_requested_nick ) );
 			channelListChanged();
 			
 	}
@@ -191,19 +191,19 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		if(why == 1)
 		{
 			print_me("bad username");
-			m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", "bad nickname" ) );
+			m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", "bad nickname" ) );
 		} else if(why == 2) {
 			print_me("bad password");
-			m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", "ERR_IS_PASSWORD" ) );
+			m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", "ERR_IS_PASSWORD" ) );
 		} else if(why == 3) {
 			print_me("there is already a user with that name");
-			m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", "Nickname busy" ) );
+			m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", "Nickname busy" ) );
 		}
 	}
 	else if(p_message.getData().getType() == SERVER_DISCONNECT)
 	{
 		print_me("got \"SERVER_DISCONNECT\"");
-		m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTION_LOST", m_connected_to ) );
+		m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTION_LOST", m_connected_to ) );
 
 		if(m_client_network.disconnect() != 0)
 		{
@@ -225,7 +225,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 
 		//remove this later, this is only for the dirty hack "pumping"
 		if (sender != "server") {
-			m_events->to_ui->pushEvent(UIEvent("TEXT_MESSAGE", sender, message));
+			m_events->pushEvent(UIEvent("TEXT_MESSAGE", sender, message));
 			print_me(sender+": "+message);
 		} else {
 			print_me("server pump");
@@ -296,7 +296,7 @@ void NetworkManager::channelListChanged()
 		new_list.push_back( "--END--" );
 	}	
 
-	m_events->to_ui->pushEvent( UIEvent ("NEW_CHANNEL_LIST", new_list) );
+	m_events->pushEvent( UIEvent ("NEW_CHANNEL_LIST", new_list) );
 }
 
 void NetworkManager::joinChannel(std::string p_channel_name)
@@ -327,7 +327,7 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 	m_last_requested_nick = p_username;
 	m_last_requested_server = p_address;
 
-	m_events->to_ui->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTING", m_last_requested_server, m_last_requested_nick ) );
+	m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTING", m_last_requested_server, m_last_requested_nick ) );
 
 	int returned = m_client_network.connect(parsed_ip, parsed_port);
 	print_me("returned:");
@@ -337,7 +337,7 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 		m_client_network.loginRequest(m_last_requested_nick, p_password);
 		print_me("Sent login request");
 	} else {
-		m_events->to_ui->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", m_last_requested_server));
+		m_events->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", m_last_requested_server));
 	}
 }
 
@@ -352,6 +352,6 @@ void NetworkManager::disconnect()
 	}
 	print_me("Disconnected");
 
-	m_events->to_ui->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "DISCONNECTED"));
+	m_events->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "DISCONNECTED"));
 }
 

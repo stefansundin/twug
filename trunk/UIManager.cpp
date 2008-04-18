@@ -1,11 +1,11 @@
 #include "UIManager.h"
 
-UIManager::UIManager(UIEvents* p_events)
+UIManager::UIManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network, void (*p_funptr)())
 {
-	m_events = p_events;
-	m_restore_prefs_window=0;
+	m_events = new UIEvents(p_to_ui, p_to_network, p_funptr);
 
-	//m_events->to_network->pushEvent( UIEvent ("HACK" ));
+	m_restore_prefs_window = false;
+
 	m_iochannel = Glib::IOChannel::create_from_fd(m_events->to_ui->getReadFd());
  	Glib::signal_io().connect(sigc::mem_fun(*this,&UIManager::on_fd_readable), m_iochannel, Glib::IO_IN);
 }
@@ -26,10 +26,10 @@ bool UIManager::on_fd_readable(Glib::IOCondition condition)
 	{
 		print_me("Error: got other than Glib::IO_IN");
 	} else {
-		print_me("UIManager: reading from fd");
+		//print_me("UIManager: reading from fd");
 		Glib::ustring buf;
 		m_iochannel->read_line(buf);
-		print_me("UIManager: read this line from fd: "+buf);
+		//print_me("UIManager: read this line from fd: "+buf);
 		processEvents();
 	}
 
