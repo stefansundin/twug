@@ -11,8 +11,7 @@ private:
 	Lock m_lock;
 public:
 	DataKeeper();
-	void lock();
-	void unlock();
+
 	bool getSending();
 	void setSending(bool p_sending);
 };
