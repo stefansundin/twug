@@ -12,18 +12,16 @@ void UIEventQueue::lock()
 			completed = true;
 		}
 	}*/
-	pthread_mutex_lock(&m_mutex);
+	m_lock.lock();
 }
 void UIEventQueue::unlock()
 {
 	//m_lock = false;
-	pthread_mutex_unlock(&m_mutex);
+	m_lock.unlock();
 }
 
 UIEventQueue::UIEventQueue(std::string p_name)
 {
-	pthread_mutex_init (&m_mutex, NULL);
-
 	m_name = p_name;
 	m_filepath = p_name + ".temp";
 	//m_lock = 0;
