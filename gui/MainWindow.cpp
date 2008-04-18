@@ -18,11 +18,11 @@ MainWindow::MainWindow(UIEvents* p_events)
 	Gtk::VBox* vbox = new Gtk::VBox();
 
 
-	Gtk::TreeModelColumn<Glib::ustring>* namecolumn = new Gtk::TreeModelColumn<Glib::ustring>();
-	Gtk::TreeModelColumnRecord* columns = new Gtk::TreeModelColumnRecord();
-	columns->add(*namecolumn);
-        Glib::RefPtr<Gtk::TreeStore> treestore = Gtk::TreeStore::create(*columns);
-        m_channellist = new ChannelList(treestore,namecolumn,m_events,m_nameptr);
+
+	setup_channelList();
+
+
+
 
 
 	
@@ -45,7 +45,14 @@ MainWindow::MainWindow(UIEvents* p_events)
 		sigc::mem_fun(*this,&MainWindow::on_button_released));
 }
 
-
+void MainWindow::setup_channelList()
+{
+	Gtk::TreeModelColumn<Glib::ustring>* namecolumn = new Gtk::TreeModelColumn<Glib::ustring>();
+	Gtk::TreeModelColumnRecord* columns = new Gtk::TreeModelColumnRecord();
+	columns->add(*namecolumn);
+        Glib::RefPtr<Gtk::TreeStore> treestore = Gtk::TreeStore::create(*columns);
+        m_channellist = new ChannelList(treestore,namecolumn,m_events,m_nameptr);
+}
 void MainWindow::event_newNewName (std::string p_name)
 {
 	m_newname = p_name;

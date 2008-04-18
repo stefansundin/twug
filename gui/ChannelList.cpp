@@ -20,25 +20,15 @@ bool ChannelList::on_button_press_event(GdkEventButton* p_evb)
 {
 	bool val = TreeView::on_button_press_event(p_evb);
 
-
 	Gtk::TreeModel::iterator iter = get_selection()->get_selected();
 	Glib::ustring temp = (*iter)[*m_column];
-	print_me("got selection value " + temp);
+	//print_me("got selection value " + temp);
 
 	if (p_evb->type == GDK_BUTTON_PRESS)
 	{	
 		if( (p_evb->button == 3) )
 		{
-			if (temp=="")
-			{
-				createChannelListMenu(temp,p_evb, 2);
-			}
-			else if (isChannel( temp ) )
-			{
-				createChannelListMenu(temp,p_evb,1);
-			} else {
-				createChannelListMenu(temp,p_evb,0);
-			}
+			createChannelListMenu(temp,p_evb, whatIsThis(temp));
 		}
 	}
 
@@ -59,22 +49,22 @@ void ChannelList::on_personmenu_message()
 	m_events->to_ui->pushEvent ( UIEvent ( "SHOW_MSG_WINDOW" , m_lastclicked ) );	
 }
 
-bool ChannelList::isChannel(std::string name)
+int ChannelList::whatIsThis(std::string name)
 {
 	for(int i=0; i<m_lastchannellist.size(); i++)
 	{
 		if (m_lastchannellist.at(i) == name)
 		{
 			if (i==0)
-				return true;
+				return 1;
 			else if (m_lastchannellist.at(i-1) == "--END--")
-				return true;
+				return 1;
 			else
-				return false;
+				return 0;
 		}
 	}
-	std::cout << "ERROR: Not a channel or nickname" << std::endl;	
-	return false;
+	std::cout << "ChannelList: <DEBUG> Clicked item not a channel or nickname" << std::endl;	
+	return 2;
 }
 
 
