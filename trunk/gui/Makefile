@@ -4,6 +4,8 @@ CFLAGS = -g `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags`
 
 all: $(OBJECTS)
 
+#this is not used anymore
+
 MainWindow: MainWindow.cpp MainWindow.h MessageHandler.cpp MessageHandler.h MessageWindow.h MessageWindow.cpp
 	g++ -g -c -o build/MainWindow.o MainWindow.cpp `pkg-config gtkmm-2.4 --cflags`
 
@@ -24,3 +26,4 @@ MessageHandler: MessageHandler.cpp MessageHandler.h MessageWindow.h MessageWindo
 
 clean :
 	-rm *.o
+
