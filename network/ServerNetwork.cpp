@@ -68,14 +68,14 @@ void ServerNetwork::processNetworking()
 			highest = mitr->first;
 		}
 
-		//start hack
+		//start pump hack
 		std::string pump_message = "server00000000000000NETWORK_PUMP";
 		Data pump = Data(SERVER_TEXT_DATA, pump_message);
 		if(mitr->first != m_accepting_socket)
 		{
 			sendData(mitr->first, pump);
 		}
-		//end hack
+		//end pump hack
 	}
 
 	//select client sockets and the accepting socket
