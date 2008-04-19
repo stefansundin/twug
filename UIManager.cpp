@@ -63,7 +63,6 @@ void UIManager::processEvents()
 				m_window->event_errorConnecting(event.pop_first() );
 				got_here();
 			} else if (s == "DISCONNECTED") {
-				print_me(event.getFirst());
 				m_window->event_disconnected();
 			}
 		} else if (event.getType() == "TEXT_MESSAGE") {
