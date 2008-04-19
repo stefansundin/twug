@@ -94,42 +94,50 @@ void handle_message(Message p_message)
 		int returned = checkLogin(username, password);
 		if(returned == 0)	//this client babba ok kk
 		{
-			std::string client_name, channel_name;
-			std::vector<std::string> channel_names = g_client_pool->getChannelNames(), client_names;
-			std::string m;
-			int i, j;
-
-			//respond that the login successful
-			g_client_pool->addClient(username, DEFAULT_CHANNEL, p_message.getSocket());
+			//respond that the login was successful
 			response = Data(SERVER_LOGIN_OK, "");
 			g_network->sendData(p_message.getSocket(), response);
 
-			printf("channel_names.size() = \"%d\"\n", channel_names.size());
 			//tell the newly connected client of all the previously connected clients
+			std::string client_name;
+			std::string channel_name;
+
+			std::vector<std::string> channel_names = g_client_pool->getChannelNames();
+			std::vector<std::string> client_names;
+			printf("channel_names.size() = \"%d\"\n", channel_names.size());
+			std::string to_send;
+			int i, j;
 			for(i = 0; i < channel_names.size(); i++)
 			{
+				channel_name = channel_names.at(i);
+				fill(channel_name, 20);
+
 				g_client_pool->getChannelClients(channel_names.at(i), &client_names);
 				for(j = 0; j < client_names.size(); j++)
 				{
-					channel_name = channel_names.at(i);
 					client_name = client_names.at(j);
-					fill(channel_name, 20);
 					fill(client_name, 20);
-					m = client_name + channel_name;
-					response = Data(SERVER_ADD_CLIENT, m);
+
+					to_send = client_name + channel_name;
+					response = Data(SERVER_ADD_CLIENT, to_send);
 					g_network->sendData(p_message.getSocket(), response);
 
 					std::string to;
 					g_client_pool->socketToName(p_message.getSocket(), &to);
-					print_me("sent SERVER_ADD_CLIENT ("+m+") to "+to);
+					print_me("sent SERVER_ADD_CLIENT ("+to_send+") to "+to);
 				}
 			}
 
-			channel_name = DEFAULT_CHANNEL;
+			//add the new client to the client pool before we tell everyone to add it
+			//this so that it will add itself too
+			g_client_pool->addClient(username, DEFAULT_CHANNEL, p_message.getSocket());
+
 			fill(username, 20);
+			channel_name = DEFAULT_CHANNEL;
 			fill(channel_name, 20);
-			m = username + channel_name;
-			response = Data(SERVER_ADD_CLIENT, m);
+			to_send = username + channel_name;
+			response = Data(SERVER_ADD_CLIENT, to_send);
+
 			client_names = g_client_pool->getClientNames();
 			int s;
 			for(i = 0; i < client_names.size(); i++)
@@ -139,17 +147,10 @@ void handle_message(Message p_message)
 
 				std::string to2;
 				g_client_pool->socketToName(s, &to2);
-				print_me("sent SERVER_ADD_CLIENT ("+m+") to "+to2);
+				print_me("sent SERVER_ADD_CLIENT ("+to_send+") to "+to2);
 			}
 
 			printClientPool(g_client_pool);
-
-			/*m = "server00000000000000spam!";
-			response = Data(SERVER_TEXT_DATA, m);
-			for(i = 0; i < 10; i++)
-			{
-				g_network->sendData(p_message.getSocket(), response);
-			}*/
 		}
 		else if(returned == -1)		//bad username
 		{

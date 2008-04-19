@@ -72,14 +72,13 @@ void NetworkManager::run()
 			} else {
 				bigone = m_readfd+1;
 			}
-			
+
 			print_me("selecting on both fds");
 			int select_returned = select(bigone, &read, NULL, NULL, &tv);
 			if(select_returned == -1)
 			{
 				report_error(strerror(errno));
 			}
-
 			print_me("selected on both fds");
 
 			if(FD_ISSET(m_socket, &read))
