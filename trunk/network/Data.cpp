@@ -9,7 +9,7 @@ Data::Data()
 Data::Data(int p_type, std::string p_str_data)
 {
 	m_type = p_type;
-	m_length = p_str_data.size()+1;
+	m_length = p_str_data.size();
 
 	m_data = new char[m_length];
 	memcpy(m_data, p_str_data.c_str(), m_length);

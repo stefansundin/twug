@@ -78,7 +78,7 @@ void ClientNetwork::sendText(std::string p_to_username, std::string p_message)
 
 bool ClientNetwork::processNetworking()
 {
-	print_me("start of function");
+//	print_me("start of function");
 
 	if(!m_connected)
 		return false;
@@ -92,9 +92,9 @@ bool ClientNetwork::processNetworking()
 
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
-	print_me("before select");
+//	print_me("before select");
 	int select_returned = select(m_socket+1, &readable, NULL, NULL, &tv);
-	print_me("after select");
+//	print_me("after select");
 	if(select_returned == -1)
 	{
 		report_error(strerror(errno));
@@ -102,7 +102,7 @@ bool ClientNetwork::processNetworking()
 
 	if(FD_ISSET(m_socket, &readable))
 	{
-		print_me("data on m_socket");
+//		print_me("data on m_socket");
 		if(!updateBuffer(m_socket))
 		{
 			m_connected = false;
@@ -110,11 +110,11 @@ bool ClientNetwork::processNetworking()
 	}
 	else
 	{
-		print_me("no data on m_socket");
+//		print_me("no data on m_socket");
 		return false;
 	}
 
-	print_me("end of function");
+//	print_me("end of function");
 
 	return true;
 }

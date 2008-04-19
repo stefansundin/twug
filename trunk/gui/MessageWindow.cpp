@@ -41,14 +41,14 @@ MessageWindow::MessageWindow(std::string p_name, UIEvents* p_events, std::string
 	
 	set_focus(*m_entry);
 
-	std::cout << "MessageWindow(" << m_name << "): constructed\n";
+	print_me("MessageWindow("+m_name+"): constructed");
 }
 
-void MessageWindow::giveMessage(std::string p_msg)
+void MessageWindow::giveMessage(std::string p_message)
 {
-	std::cout << "MessageWindow(" << m_name << "): Recieved new message: " << p_msg << std::endl;
+	print_me("MessageWindow("+m_name+"): Recieved new message: ("+p_message+")");
 
-	m_buffer->insert(m_buffer->end(), m_name+": "+p_msg+"\n");
+	m_buffer->insert(m_buffer->end(), m_name+": "+p_message+"\n");
 	scrollDown();
 }
 
