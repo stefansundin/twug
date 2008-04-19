@@ -148,7 +148,8 @@ void handle_message(Message p_message)
 
 				std::string to2;
 				g_client_pool->socketToName(s, &to2);
-				print_me("sent SERVER_ADD_CLIENT ("+to_send+") to "+to2);
+				print_me("sent SERVER_ADD_CLIENT ("+to_send+") to ("+to2+")");
+				printf("with socket (%d)\n", s);
 			}
 
 			printClientPool(g_client_pool);
