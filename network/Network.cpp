@@ -40,7 +40,7 @@ bool Network::updateBuffer(int p_socket)
 		return false;
 	}
 
-	printf("HELLO!!!!! recv() got: \"%s\" (%d bytes)\n", recv_buffer, recv_length);
+//	printf("HELLO!!!!! recv() got: \"%s\" (%d bytes)\n", recv_buffer, recv_length);
 
 	//create a temp variable big enough to contain the new and old data
 	char *new_buffer = new char[m_buffers[p_socket].getLength()+recv_length];
@@ -50,12 +50,11 @@ bool Network::updateBuffer(int p_socket)
 	//update the buffer
 	m_buffers[p_socket].setBuffer(new_buffer, m_buffers[p_socket].getLength() + recv_length);
 
-	printf("header size: (%d)\n", HEADER_SIZE);
-	printf("Buffer is now (%s) (%d bytes)\n", m_buffers[p_socket].getBuffer(), m_buffers[p_socket].getLength());
+//	printf("Buffer is now (%s) (%d bytes)\n", m_buffers[p_socket].getBuffer(), m_buffers[p_socket].getLength());
 
 	if(m_buffers[p_socket].getLength() >= HEADER_SIZE)
 	{
-		print_me("got a complete header but not a whole message\n");
+//		print_me("got a complete header but not a whole message\n");
 
 		header temp_header;
 		memcpy(&temp_header, m_buffers[p_socket].getBuffer(), HEADER_SIZE);
@@ -70,7 +69,7 @@ bool Network::updateBuffer(int p_socket)
 
 		if(m_buffers[p_socket].getLength()-HEADER_SIZE >= temp_header.message_length)
 		{
-			print_me("got a complete message\n");
+//			print_me("got a complete message\n");
 
 			//get the message
 			//dont include the header now
@@ -79,7 +78,6 @@ bool Network::updateBuffer(int p_socket)
 			memcpy(message, m_buffers[p_socket].getBuffer()+HEADER_SIZE, temp_header.message_length);
 
 			message[temp_header.message_length] = '\0';
-			printf("Message is (%s) (%d bytes)\n", message, temp_header.message_length);
 
 			//setup nice temp length variables
 			int header_message_length = HEADER_SIZE+temp_header.message_length;
@@ -94,12 +92,11 @@ bool Network::updateBuffer(int p_socket)
 			//add the new message to the message queue
 			Message m;
 			m.setSocket(p_socket);
+			printf("Message is (%s) (%d bytes)\n", message, temp_header.message_length);
 			m.setData(Data(temp_header.message_type, message, temp_header.message_length));
 			m_messages.push(m);
 		}
 	}
-
-	print_me("END OF FUNCTION");
 	return true;
 }
 

@@ -119,8 +119,6 @@ void ServerNetwork::processNetworking()
 			}
 		}
 	}
-
-	print_me("END OF FUNCTION");
 }
 
 void ServerNetwork::disconnectClient(int p_socket)

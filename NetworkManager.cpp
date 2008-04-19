@@ -23,7 +23,7 @@ void NetworkManager::run()
 	bool last_connected_status = false;
 	while(true) // thread main loop
 	{
-		print_me("start of network thread loop");
+//		print_me("start of network thread loop");
 
 		bool new_connection_status = m_client_network.getConnectionStatus();
 
@@ -105,20 +105,20 @@ void NetworkManager::run()
 
 void NetworkManager::processNetworkEvents()
 {
-	print_me("start of processNetworkEvents()");
+//	print_me("start of processNetworkEvents()");
 	Message incoming_message;
 	while(m_client_network.processNetworking())
 	{
-		print_me("start of processNetworking() loop");
+//		print_me("start of processNetworking() loop");
 		while(m_client_network.getMessage(incoming_message))
 		{
-			print_me("start of getMessage() loop");
+//			print_me("start of getMessage() loop");
 			handleNetworkMessage(incoming_message);
-			print_me("end of getMessage() loop");
+//			print_me("end of getMessage() loop");
 		}
-		print_me("end of processNetworking() loop");
+//		print_me("end of processNetworking() loop");
 	}
-	print_me("leaving processNetworkEvents()");
+//	print_me("leaving processNetworkEvents()");
 }
 void NetworkManager::processUIEvents()
 {
@@ -163,8 +163,14 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 {
 	char *data = (char*)p_message.getData().getData();
 	int length = p_message.getData().getLength();
-	std::string data_str = data;
 	Data response;
+
+	std::string data_str;
+	int i;
+	for(i = 0; i < length; i++)
+	{
+		data_str.push_back(data[i]);
+	}
 
 	if(p_message.getData().getType() == SERVER_LOGIN_OK)
 	{
@@ -208,18 +214,17 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	else if(p_message.getData().getType() == SERVER_TEXT_DATA)
 	{
 		print_me("got \"SERVER_TEXT_DATA\"");
-		std::string str = data;
-		print_me("got message: ("+str+")");
-		std::string sender = str.substr(0, 20);
+		print_me("got message: ("+data_str+")");
+		std::string sender = data_str.substr(0, 20);
 		strip(sender);
-		std::string message = str.substr(20);
+		std::string message = data_str.substr(20);
 
 		//remove this later, this is only for the dirty hack "pumping"
 		if (sender != "server") {
 			m_events->pushEvent(UIEvent("TEXT_MESSAGE", sender, message));
 			print_me(sender+": "+message);
 		} else {
-			print_me("server pump");
+//			print_me("server pump");
 		}
 	}
 	else if(p_message.getData().getType() == SERVER_CHANNEL_CHANGE_RESPONSE)
@@ -233,8 +238,20 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	else if(p_message.getData().getType() == SERVER_ADD_CLIENT)
 	{
 		print_me("got \"SERVER_ADD_CLIENT\"");
-		std::string client_name = data_str.substr(0, 20);
-		std::string channel_name = data_str.substr(20);
+
+		if(data_str.size() != 40)
+		{
+			print_me("Message not of proper length");
+			printf("data_str.size(): (%d)\n", data_str.size());
+			std::cout << "data_str: (" << data_str << ")" << std::endl;
+
+			printf("lengt: (%d)\n", length);
+			printf("printf: data: (%s)\n", data);
+			return;
+		}
+
+		std::string client_name = data_str.substr(0,20);
+		std::string channel_name = data_str.substr(20,20);
 		strip(client_name);
 		strip(channel_name);
 
@@ -275,19 +292,19 @@ void NetworkManager::channelListChanged()
 	std::vector<std::string> channels = m_client_pool.getChannelNames();
 	for (int i=0;i<channels.size();i++)
 	{
-		new_list.push_back( channels.at(i) );
+		new_list.push_back(channels.at(i));
 
 		std::vector<std::string> members;
 		m_client_pool.getChannelClientNames(channels.at(i), &members);
 		for(int j=0;j<members.size();j++)
 		{
-			new_list.push_back( members.at(j) );
+			new_list.push_back(members.at(j));
 		}
 	
-		new_list.push_back( "--END--" );
+		new_list.push_back("--END--");
 	}	
 
-	m_events->pushEvent( UIEvent ("NEW_CHANNEL_LIST", new_list) );
+	m_events->pushEvent(UIEvent("NEW_CHANNEL_LIST", new_list));
 }
 
 void NetworkManager::joinChannel(std::string p_channel_name)

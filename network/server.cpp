@@ -60,8 +60,14 @@ void handle_message(Message p_message)
 
 	char *data = (char*)p_message.getData().getData();
 	int length = p_message.getData().getLength();
-	std::string data_str = data;
 	Data response;
+
+	std::string data_str;
+	int i;
+	for(i = 0; i < length; i++)
+	{
+		data_str.push_back(data[i]);
+	}
 
 	if(p_message.getData().getType() == CLIENT_LOGIN_REQUEST)
 	{
@@ -95,7 +101,7 @@ void handle_message(Message p_message)
 
 			//respond that the login successful
 			g_client_pool->addClient(username, DEFAULT_CHANNEL, p_message.getSocket());
-			response = Data(SERVER_LOGIN_OK, "", 0);
+			response = Data(SERVER_LOGIN_OK, "");
 			g_network->sendData(p_message.getSocket(), response);
 
 			printf("channel_names.size() = \"%d\"\n", channel_names.size());
@@ -110,7 +116,7 @@ void handle_message(Message p_message)
 					fill(channel_name, 20);
 					fill(client_name, 20);
 					m = client_name + channel_name;
-					response = Data(SERVER_ADD_CLIENT, m.c_str(), m.size()+1);
+					response = Data(SERVER_ADD_CLIENT, m);
 					g_network->sendData(p_message.getSocket(), response);
 
 					std::string to;
@@ -123,7 +129,7 @@ void handle_message(Message p_message)
 			fill(username, 20);
 			fill(channel_name, 20);
 			m = username + channel_name;
-			response = Data(SERVER_ADD_CLIENT, m.c_str(), m.size()+1);
+			response = Data(SERVER_ADD_CLIENT, m);
 			client_names = g_client_pool->getClientNames();
 			int s;
 			for(i = 0; i < client_names.size(); i++)
@@ -139,7 +145,7 @@ void handle_message(Message p_message)
 			printClientPool(g_client_pool);
 
 			/*m = "server00000000000000spam!";
-			response = Data(SERVER_TEXT_DATA, m.c_str(), m.size()+1);
+			response = Data(SERVER_TEXT_DATA, m);
 			for(i = 0; i < 10; i++)
 			{
 				g_network->sendData(p_message.getSocket(), response);
@@ -177,7 +183,7 @@ void handle_message(Message p_message)
 		g_client_pool->removeClient(p_message.getSocket());
 		printClientPool(g_client_pool);
 
-		response = Data(SERVER_REMOVE_CLIENT, remove_name.c_str(), remove_name.size()+1);
+		response = Data(SERVER_REMOVE_CLIENT, remove_name);
 		g_network->sendData(p_message.getSocket(), response);
 
 		std::string to;
@@ -273,7 +279,7 @@ void handle_message(Message p_message)
 
 //		LOG << "hejsan" << std::endl;
 
-		response = Data(SERVER_TEXT_DATA, m.c_str(), m.size()+1);
+		response = Data(SERVER_TEXT_DATA, m);
 		g_network->sendData(recv_socket, response);
 
 		strip(sender);
@@ -358,7 +364,7 @@ void handle_message(Message p_message)
 		printClientPool(g_client_pool);
 
 		fill(remove_name, 20);
-		response = Data(SERVER_REMOVE_CLIENT, remove_name.c_str(), remove_name.size()+1);
+		response = Data(SERVER_REMOVE_CLIENT, remove_name);
 		std::vector<std::string> client_names = g_client_pool->getClientNames();
 		int i, s;
 		for(i = 0; i < client_names.size(); i++)
