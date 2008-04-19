@@ -92,7 +92,7 @@ bool Network::updateBuffer(int p_socket)
 			//add the new message to the message queue
 			Message m;
 			m.setSocket(p_socket);
-			printf("Message is (%s) (%d bytes)\n", message, temp_header.message_length);
+			//printf("Message is (%s) (%d bytes)\n", message, temp_header.message_length);
 			m.setData(Data(temp_header.message_type, message, temp_header.message_length));
 			m_messages.push(m);
 		}

@@ -23,6 +23,7 @@ std::vector<std::string> ClientPool::getClientNames()
 
 bool ClientPool::addClient(std::string p_name, std::string p_channel_name, int p_socket)
 {
+	print_me("Adding client " + p_name + " to "+  p_channel_name);
 	int i;
 	for(i = 0; i < m_clients.size(); i++)
 	{
