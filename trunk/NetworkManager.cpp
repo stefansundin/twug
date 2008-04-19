@@ -296,9 +296,11 @@ void NetworkManager::channelListChanged()
 		new_list.push_back(channels.at(i));
 
 		std::vector<std::string> members;
+		print_me("channel: ("+channels.at(i)+")");
 		m_client_pool.getChannelClientNames(channels.at(i), &members);
 		for(int j=0;j<members.size();j++)
 		{
+			print_me("member: ("+members.at(j)+")");
 			new_list.push_back(members.at(j));
 		}
 	
