@@ -29,9 +29,15 @@ MainWindow::MainWindow(UIEvents* p_events)
 	m_button.set_border_width(5);
 	m_button.set_label("Talk button");
 
+
+	Gtk::Button* addbutton = new Gtk::Button(Gtk::Stock::ADD);
+	addbutton->signal_clicked().connect(
+		sigc::mem_fun(*this,&MainWindow::on_addbutton_clicked));
+
 	vbox->add(m_popup);
-	vbox->add(m_button);
+	//vbox->add(m_button);
 	vbox->add(*m_channellist);
+	vbox->add(*addbutton);
 	add(*vbox);
 	show_all();
 
@@ -43,6 +49,23 @@ MainWindow::MainWindow(UIEvents* p_events)
 		sigc::mem_fun(*this,&MainWindow::on_button_pressed));
 	m_button.signal_released().connect(
 		sigc::mem_fun(*this,&MainWindow::on_button_released));
+}
+
+void MainWindow::on_addbutton_clicked()
+{
+	Gtk::MessageDialog kaka(*this,"Add new channel",false,Gtk::MESSAGE_QUESTION,Gtk::BUTTONS_OK_CANCEL);
+	kaka.set_secondary_text("What do you want to call the new channel?");
+
+	Gtk::Entry* entry = new Gtk::Entry(); 
+	kaka.get_vbox()->add(*entry);
+	kaka.show_all();
+
+	int answer = kaka.run();
+
+	if ( entry->get_text() != "" && answer == Gtk::RESPONSE_OK )
+	{
+		m_events->to_network->pushEvent( UIEvent ( "NEWCHANNEL", entry->get_text()  ) );
+	}
 }
 
 void MainWindow::setup_channelList()

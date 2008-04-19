@@ -12,6 +12,7 @@
 #include <gtkmm/menu.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/messagedialog.h>
+#include <gtkmm/stock.h>
 
 #include "../debug.h"
 #include "UIEvents.h"
@@ -39,6 +40,7 @@ public:
 	void event_loggingIn(std::string p_server);
 protected:
 	virtual void on_button_released();
+	virtual void on_addbutton_clicked();
 	virtual void on_button_pressed();
 	virtual void on_popup_changed();
 	void on_button_clicked();
