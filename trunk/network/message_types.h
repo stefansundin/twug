@@ -8,9 +8,9 @@
 
 #define CLIENT_CHANNEL_CHANGE 4			//fill(channel_name,20) + fill(password,20)
 
-#define CLIENT_ADMIN_CREATE_CHANNEL		//fill(channel_name,20)
-#define CLIENT_ADMIN_REMOVE_CHANNEL		//fill(channel_name,20)
-#define CLIENT_ADMIN_SET_PASSWORD		//fill(new_server_password,20)
+#define CLIENT_ADMIN_CREATE_CHANNEL 5		//fill(channel_name,20)
+#define CLIENT_ADMIN_REMOVE_CHANNEL 6		//fill(channel_name,20)
+#define CLIENT_ADMIN_SET_PASSWORD 7		//fill(new_server_password,20)
 
 
 #define SERVER_LOGIN_OK 0		//no message

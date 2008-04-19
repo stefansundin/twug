@@ -130,3 +130,20 @@ bool ClientNetwork::getConnectionStatus() const
 	return m_connected;
 }
 
+void ClientNetwork::sendCreateChannelRequest(std::string p_name)
+{
+	fill(p_name, 20);
+
+	Data data = Data(CLIENT_ADMIN_CREATE_CHANNEL, p_name);
+	sendData(m_socket, data);
+}
+
+void ClientNetwork::sendRemoveChannelRequest(std::string p_name)
+{
+	fill(p_name, 20);
+
+	Data data = Data(CLIENT_ADMIN_REMOVE_CHANNEL, p_name);
+	sendData(m_socket, data);
+}
+
+

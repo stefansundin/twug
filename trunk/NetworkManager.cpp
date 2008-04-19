@@ -140,9 +140,9 @@ void NetworkManager::processUIEvents()
 		} else if (event.getType() == "JOINCHANNEL") {
 				joinChannel(event.pop());
 		} else if (event.getType() == "NEWCHANNEL") {
-				std::cout << "DEBUG> CREATE NEW CHANNEL " << event.pop() << std::endl;
+				m_client_network.sendCreateChannelRequest(event.pop());
 		} else if (event.getType() == "REMOVECHANNEL") {
-				std::cout << "DEBUG> REMOVE CHANNEL " << event.pop() << std::endl;
+				m_client_network.sendRemoveChannelRequest(event.pop());
 		} else if (event.getType() == "CONNECTTOSERVER") {
 				connectToServer( event.pop(), event.pop(), event.pop() );
 		} else if (event.getType() == "DISCONNECT") {
