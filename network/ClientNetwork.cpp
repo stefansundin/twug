@@ -23,7 +23,6 @@ int ClientNetwork::connect(std::string p_address, int p_port)
 	{
 		printf("%d\n", m_socket);
 		m_connected = true;
-		//fcntl(m_socket, F_SETFL, O_NONBLOCK);
 	}
 	return status;
 }
@@ -44,14 +43,14 @@ bool ClientNetwork::loginRequest(std::string p_user, std::string p_password)
 	}
 	std::string temp = p_user + p_password;
 
-	Data data = Data(CLIENT_LOGIN_REQUEST, temp.c_str(), temp.size());
+	Data data = Data(CLIENT_LOGIN_REQUEST, temp);
 	sendData(m_socket, data);
 }
 void ClientNetwork::logout()
 {
 	if(m_connected)
 	{
-		Data data = Data(CLIENT_LOGOUT, "", 0);
+		Data data = Data(CLIENT_LOGOUT, "");
 		sendData(m_socket, data);
 	}
 }
@@ -62,7 +61,7 @@ void ClientNetwork::changeChannels(std::string p_channel, std::string p_password
 	fill(p_password, 20);
 	std::string to_send = p_channel + p_password;
 
-	Data data = Data(CLIENT_CHANNEL_CHANGE, to_send.c_str(), to_send.size()+1);
+	Data data = Data(CLIENT_CHANNEL_CHANGE, to_send);
 	sendData(m_socket, data);
 }
 

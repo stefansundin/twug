@@ -132,11 +132,3 @@ void ServerNetwork::disconnectClient(int p_socket)
 	shutdown(p_socket, SHUT_RDWR);		//we dont care if this fails since (AFAIK) it only does if the socket is already disconnect (or if it's not a socket, which it should be :P)
 }
 
-
-
-
-
-
-
-
-
