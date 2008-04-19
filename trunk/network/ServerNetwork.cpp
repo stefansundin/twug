@@ -81,8 +81,8 @@ void ServerNetwork::processNetworking()
 	//select client sockets and the accepting socket
 	//tv.tv_sec = 5;
 	//tv.tv_usec = 0;
-	tv.tv_sec = 0;
-	tv.tv_usec = 100000;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;//100000;
 	int select_returned = select(highest+1, &readable, NULL, NULL, &tv);
 	if(select_returned == -1)
 	{

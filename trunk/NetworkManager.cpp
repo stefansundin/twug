@@ -46,35 +46,35 @@ void NetworkManager::run()
 			print_me("selecting on readfd");
 			int select_returned = select(m_readfd+1, &read, NULL, NULL, &tv);
 			print_me("selected on readfd");
-
 			if(select_returned == -1)
 			{
 				report_error(strerror(errno));
-			}	
+			}
+
 		} else { //selecting on both fds
 
 			FD_SET(m_socket, &read);
 
-			if ( m_data->getSending() ) // means we need to wake up more often and send audio data
+			if(m_data->getSending()) // means we need to wake up more often and send audio data
 			{
 				tv.tv_sec = 0;
 				tv.tv_usec = 10000;
 
 				// need to send audio data here, too
 			} else {
-				tv.tv_sec = 60;
+				tv.tv_sec = 1;
 				tv.tv_usec = 0;
 			}		
 
-			int bigone;
-			if (m_socket>m_readfd) {
-				bigone = m_socket+1;
+			int highest;
+			if (m_socket > m_readfd) {
+				highest = m_socket+1;
 			} else {
-				bigone = m_readfd+1;
+				highest = m_readfd+1;
 			}
 
 			print_me("selecting on both fds");
-			int select_returned = select(bigone, &read, NULL, NULL, &tv);
+			int select_returned = select(highest, &read, NULL, NULL, &tv);
 			if(select_returned == -1)
 			{
 				report_error(strerror(errno));
@@ -86,6 +86,11 @@ void NetworkManager::run()
 				print_me("got network data");
 				processNetworkEvents();
 				print_me("processed network data");
+			}
+			else
+			{
+				print_me("not set, reading anyway");
+				processNetworkEvents();
 			}
 		}
 
@@ -104,20 +109,22 @@ void NetworkManager::run()
 
 void NetworkManager::processNetworkEvents()
 {
-//	print_me("start of processNetworkEvents()");
-	Message incoming_message;
-	while(m_client_network.processNetworking())
+	if(!m_client_network.processNetworking())
 	{
-//		print_me("start of processNetworking() loop");
-		while(m_client_network.getMessage(incoming_message))
-		{
-//			print_me("start of getMessage() loop");
-			handleNetworkMessage(incoming_message);
-//			print_me("end of getMessage() loop");
-		}
-//		print_me("end of processNetworking() loop");
+		print_me("Got disconnected");
 	}
-//	print_me("leaving processNetworkEvents()");
+	else
+	{
+		print_me("Processed networking");
+	}
+
+	Message incoming_message;
+	while(m_client_network.getMessage(incoming_message))
+	{
+		handleNetworkMessage(incoming_message);
+		print_me("Got Message");
+	}
+	print_me("Got all available messages");
 }
 void NetworkManager::processUIEvents()
 {
@@ -256,9 +263,15 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		strip(client_name);
 		strip(channel_name);
 
-		m_client_pool.addClient(client_name, channel_name, 0);
-		print_me("added \""+client_name+"\" to \""+channel_name+"\"");
-		channelListChanged();
+		if(!m_client_pool.addClient(client_name, channel_name, 0))
+		{
+			print_me("Could not add client ("+client_name+") to channel ("+channel_name+")");
+		}
+		else
+		{
+			print_me("Added ("+client_name+") to ("+channel_name+")");
+			channelListChanged();
+		}
 	}
 	else if(p_message.getData().getType() == SERVER_MOVE_CLIENT)
 	{
@@ -297,7 +310,10 @@ void NetworkManager::channelListChanged()
 
 		std::vector<std::string> members;
 		print_me("channel: ("+channels.at(i)+")");
-		m_client_pool.getChannelClientNames(channels.at(i), &members);
+		if(!m_client_pool.getChannelClientNames(channels.at(i), &members))
+		{
+			log_this("could not get channel's client names");
+		}
 		for(int j=0;j<members.size();j++)
 		{
 			print_me("member: ("+members.at(j)+")");
@@ -328,7 +344,7 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 	if (pos == -1)
 	{
 		parsed_ip = p_address;
-		parsed_port = 6789; // twug standard port
+		parsed_port = STANDARD_PORT; // twug standard port
 	}
 	else
 	{		

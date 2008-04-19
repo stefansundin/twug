@@ -32,6 +32,7 @@ bool Network::updateBuffer(int p_socket)
 	if(recv_length == -1)
 	{
 		report_error(strerror(errno));
+		printf("ERRNO: (%s)\n", strerror(errno));
 		return false;
 	}
 	else if(recv_length == 0)
@@ -87,7 +88,7 @@ bool Network::updateBuffer(int p_socket)
 			new_buffer = new char[new_length];
 			memcpy(new_buffer, m_buffers[p_socket].getBuffer()+header_message_length, new_length);
 			m_buffers[p_socket].setBuffer(new_buffer, new_length);
-			delete[] new_buffer;
+			delete [] new_buffer;
 
 			//add the new message to the message queue
 			Message m;
@@ -103,6 +104,11 @@ bool Network::updateBuffer(int p_socket)
 
 void Network::sendData(int p_socket, Data &p_data)
 {
+	static int total_sent = 0;
+	total_sent += p_data.getLength();
+	print_me("TOTAL SENT:");
+	printf("(%d)\n", total_sent);
+
 	header h;
 	memcpy(h.id, "TWUG", sizeof(char)*5);
 	h.version = NETWORK_VERSION;
