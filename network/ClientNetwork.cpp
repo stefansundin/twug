@@ -101,16 +101,19 @@ bool ClientNetwork::processNetworking()
 
 	if(FD_ISSET(m_socket, &readable))
 	{
+
 //		print_me("data on m_socket");
 		if(!updateBuffer(m_socket))
 		{
 			m_connected = false;
+			return false;
 		}
+
 	}
 	else
 	{
-//		print_me("no data on m_socket");
-		return false;
+		print_me("no data on m_socket");
+		return true;
 	}
 
 //	print_me("end of function");

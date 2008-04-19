@@ -13,6 +13,7 @@
 #endif
 
 #include <fcntl.h>
+#include <stdio.h>
 
 #include "../debug.h"
 

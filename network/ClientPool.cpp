@@ -31,7 +31,7 @@ bool ClientPool::addClient(std::string p_name, std::string p_channel_name, int p
 		{
 			return false;
 		}
-		if(m_clients.at(i).getSocket() == p_socket)
+		if(p_socket != 0 && m_clients.at(i).getSocket() == p_socket)
 		{
 			return false;
 		}
@@ -133,25 +133,6 @@ bool ClientPool::hasSocket(int p_socket)
 }
 
 
-bool ClientPool::getChannelClients(std::string p_channel_name, std::vector<std::string> *p_channel)
-{
-	bool return_value = false;
-
-	std::vector<std::string> channel;
-
-	int i;
-	for(i = 0; i < m_clients.size(); i++)
-	{
-		if(m_clients.at(i).getChannelName() == p_channel_name)
-		{
-			channel.push_back(m_clients.at(i).getName());
-			return_value = true;
-		}
-	}
-
-	*p_channel = channel;
-	return return_value;
-}
 std::vector<std::string> ClientPool::getChannelNames()
 {
 	std::vector<std::string> channel_names;
@@ -176,7 +157,7 @@ bool ClientPool::getChannelClientNames(std::string p_channel_name, std::vector<s
 	bool clients_found = false;
 	std::vector<std::string> client_names;
 
-	int i, j;
+	int i;
 	for(i = 0; i < m_clients.size(); i++)
 	{
 		if(m_clients.at(i).getChannelName() == p_channel_name)
@@ -188,5 +169,18 @@ bool ClientPool::getChannelClientNames(std::string p_channel_name, std::vector<s
 
 	*p_client_names = client_names;
 	return clients_found;
+}
+bool ClientPool::getClientPrivileges(std::string p_name, int *p_privileges)
+{
+	int i;
+	for(i = 0; i < m_clients.size(); i++)
+	{
+		if(m_clients.at(i).getName() == p_name)
+		{
+			*p_privileges = m_clients.at(i).getPrivileges();
+			return true;
+		}
+	}
+	return false;
 }
 

@@ -112,7 +112,7 @@ void handle_message(Message p_message)
 				channel_name = channel_names.at(i);
 				fill(channel_name, 20);
 
-				g_client_pool->getChannelClients(channel_names.at(i), &client_names);
+				g_client_pool->getChannelClientNames(channel_names.at(i), &client_names);
 				for(j = 0; j < client_names.size(); j++)
 				{
 					client_name = client_names.at(j);

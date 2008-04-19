@@ -19,6 +19,8 @@
 
 #include "DataKeeper.h"
 
+#define STANDARD_PORT 6789
+
 class EventsToUI : public UIEventQueueHolder
 {
 public:
