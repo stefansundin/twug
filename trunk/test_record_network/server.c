@@ -10,52 +10,10 @@
 #include <unistd.h>     /* for close() */
 #include <errno.h>
 #include "portaudio.h"
+#include "shared.h"
+
 
 #define MAXPENDING 5    /* Maximum outstanding connection requests */
-
-/* AUDIO */
-#define SAMPLE_RATE  (44100)
-#define FRAMES_PER_BUFFER (1024)
-#define NUM_CHANNELS    (1)
-
-#if 0
-#define PA_SAMPLE_TYPE  paFloat32
-typedef float SAMPLE;
-#define SAMPLE_SILENCE  (0.0f)
-#define PRINTF_S_FORMAT "%.8f"
-#elif 0
-#define PA_SAMPLE_TYPE  paInt16
-typedef short SAMPLE;
-#define SAMPLE_SILENCE  (0)
-#define PRINTF_S_FORMAT "%d"
-#elif 0
-#define PA_SAMPLE_TYPE  paInt8
-typedef char SAMPLE;
-#define SAMPLE_SILENCE  (0)
-#define PRINTF_S_FORMAT "%d"
-#else
-#define PA_SAMPLE_TYPE  paUInt8
-typedef unsigned char SAMPLE;
-#define SAMPLE_SILENCE  (128)
-#define PRINTF_S_FORMAT "%d"
-#endif
-
-typedef struct {
-    SAMPLE *samples;
-    int frameIndex;
-    int maxFrameIndex;
-    int tx_pos;
-    int size;
-} paBuffer;
-
-typedef struct
-{
-	int play;
-    int play_buffer;
-    int new_buffer;
-    int last_buffer;
-    paBuffer buffers[2];
-} paTestData;
 
 static int playCallback( const void *inputBuffer, void *outputBuffer,
                          unsigned long framesPerBuffer,
@@ -63,59 +21,23 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
                          PaStreamCallbackFlags statusFlags,
                          void *userData )
 {
-    paTestData *data = (paTestData*)userData;
+    paData *data = (paData*)userData;
 	SAMPLE *wptr = (SAMPLE*)outputBuffer;
 	
-	int finished;
 	unsigned int i=0;
-
-	if (!data->play) {
-		//Silence
-		for( i=0; i<framesPerBuffer; i++ )
-	    {
-	        *wptr++ = 0;  // left
-	        if( NUM_CHANNELS == 2 ) *wptr++ = 0;  // right
-	    }
-	    finished = paContinue;
-	}
-	else {
-		paBuffer *buffer = &data->buffers[data->play_buffer];
-		SAMPLE *rptr;
-		//Check if we have to change buffer
-		if (buffer->frameIndex+framesPerBuffer > buffer->maxFrameIndex) {
-			//Yes, we have to, but first, check if we have some frames left in the old buffer
-			if (buffer->frameIndex < buffer->maxFrameIndex) {
-				//Play the remaining frames
-				rptr = &buffer->samples[buffer->frameIndex * NUM_CHANNELS];
-				for(; i < buffer->maxFrameIndex-buffer->frameIndex; i++ )
-				{
-					*wptr++ = *rptr++;  // left
-					if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  // right
-				}
-				buffer->frameIndex=buffer->maxFrameIndex;
-			}
-			//Switch buffers
-			data->play_buffer = (data->play_buffer+1)%2;
-			data->new_buffer = 1;
-			buffer = &data->buffers[data->play_buffer];
+    
+	paBuffer *buffer = &data->play_buffers[0];
+	if (buffer->go) {
+		SAMPLE *rptr = &buffer->samples[buffer->frameIndex * NUM_CHANNELS];
+		unsigned int framesLeft = buffer->maxFrameIndex-buffer->frameIndex;
+		unsigned int framesToPlay = (framesLeft < framesPerBuffer?framesLeft:framesPerBuffer);
+		//We got some audio to play
+		for(i=0; i < framesToPlay; i++ )
+		{
+		    *wptr++ = *rptr++;  // left
+		    if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  // right
 		}
-		//Do we have more audio to play?
-		if (!data->last_buffer || !data->new_buffer) {
-			rptr = &buffer->samples[buffer->frameIndex * NUM_CHANNELS];
-			unsigned int framesLeft = buffer->maxFrameIndex-buffer->frameIndex;
-			unsigned int framesToPlay = (framesLeft < framesPerBuffer?framesLeft:framesPerBuffer);
-			//We got some audio to play
-			for(; i < framesToPlay; i++ )
-			{
-			    *wptr++ = *rptr++;  // left
-			    if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  // right
-			}
-		    buffer->frameIndex += framesToPlay;
-			finished = paContinue;
-		}
-		else {
-			finished = paComplete;
-		}
+	    buffer->frameIndex += framesToPlay;
 	    //Fill the rest of the buffer with silence
 	    for(; i<framesPerBuffer; i++ )
 	    {
@@ -123,7 +45,21 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
 	        if( NUM_CHANNELS == 2 ) *wptr++ = 0;  // right
 	    }
 	}
-    return finished;
+	else {
+		//Silence
+		for( i=0; i<framesPerBuffer; i++ )
+	    {
+	        *wptr++ = 0;  // left
+	        if( NUM_CHANNELS == 2 ) *wptr++ = 0;  // right
+	    }
+	}
+	
+	if (buffer->go && buffer->frameIndex == buffer->maxFrameIndex) {
+		return paComplete;
+	}
+	else {
+		return paContinue;
+	}
 }
 
 /* main */
@@ -145,7 +81,7 @@ int main(int argc, char *argv[]) {
     PaStreamParameters  outputParameters;
     PaStream*           stream;
     PaError             err = paNoError;
-    paTestData          data;
+    paData          data;
     int                 i;
     int                 numBytes;
     SAMPLE              max, val;
@@ -153,30 +89,37 @@ int main(int argc, char *argv[]) {
 
     err = Pa_Initialize();
     if( err != paNoError ) goto done;
-    
-    data.play=0;
-	data.play_buffer=0;
-	data.new_buffer=0;
-	data.last_buffer=0;
-    data.buffers[0].frameIndex=0;
-    data.buffers[0].maxFrameIndex=0;
-	data.buffers[0].tx_pos=0;
-	data.buffers[0].size=sizeof(SAMPLE)*NUM_CHANNELS*FRAMES_PER_BUFFER*100;
-    data.buffers[1].frameIndex=0;
-    data.buffers[1].maxFrameIndex=0;
-	data.buffers[1].tx_pos=0;
-	data.buffers[1].size=sizeof(SAMPLE)*NUM_CHANNELS*FRAMES_PER_BUFFER*100;
+    //fprintf(stderr,"Line: %d\n",__LINE__);
 	
-	// Allocate size for 100 frames in each buffer
-	if ((data.buffers[0].samples=(SAMPLE*)malloc(data.buffers[0].size)) == NULL) {
+    data.record_buffer.frameIndex=0;
+    data.record_buffer.maxFrameIndex=SAMPLE_RATE;
+	data.record_buffer.tx_pos=0;
+	data.record_buffer.size=sizeof(SAMPLE)*NUM_CHANNELS*data.record_buffer.maxFrameIndex;
+	data.record_buffer.go=0;
+	// Allocate size for 1 second
+	if ((data.record_buffer.samples=(SAMPLE*)malloc(data.record_buffer.size)) == NULL) {
 		fprintf(stderr,"failed.\nmalloc() failed. file %s, line %d.\n",__FILE__,__LINE__);
 		exit(1);
 	}
-	if ((data.buffers[1].samples=(SAMPLE*)malloc(data.buffers[1].size)) == NULL) {
+	//fprintf(stderr,"Line: %d\n",__LINE__);
+    data.num_play_buffers=2;
+	if ((data.play_buffers=(paBuffer*)malloc(data.num_play_buffers)) == NULL) {
 		fprintf(stderr,"failed.\nmalloc() failed. file %s, line %d.\n",__FILE__,__LINE__);
 		exit(1);
 	}
-	
+	for (i=0; i < data.num_play_buffers; i++) {
+		data.play_buffers[i].frameIndex=0;
+		data.play_buffers[i].maxFrameIndex=0;
+		data.play_buffers[i].tx_pos=0;
+		data.play_buffers[i].size=sizeof(SAMPLE)*NUM_CHANNELS*SAMPLE_RATE;
+		data.play_buffers[i].go=0;
+		// Allocate size for 1 second
+		if ((data.play_buffers[i].samples=(SAMPLE*)malloc(data.play_buffers[i].size)) == NULL) {
+			fprintf(stderr,"failed.\nmalloc() failed. file %s, line %d.\n",__FILE__,__LINE__);
+			exit(1);
+		}
+	}
+	//fprintf(stderr,"Line: %d\n",__LINE__);
 	//Config portaudio
     outputParameters.device = Pa_GetDefaultOutputDevice();
     outputParameters.channelCount = NUM_CHANNELS;
@@ -184,13 +127,17 @@ int main(int argc, char *argv[]) {
     outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = NULL;
 
+    //Open file
+    FILE *f;
+    f=fopen("recording-server.raw","wb");
+
     err = Pa_OpenStream(
               &stream,
-              NULL, /* no input */
+              NULL, // no input
               &outputParameters,
               SAMPLE_RATE,
               FRAMES_PER_BUFFER,
-              paClipOff,      /* we won't output out of range samples so don't bother clipping them */
+              paClipOff,      // we won't output out of range samples so don't bother clipping them
               playCallback,
               &data );
     if( err != paNoError ) goto done;
@@ -233,79 +180,72 @@ int main(int argc, char *argv[]) {
 	unsigned int addrlength = sizeof(clientaddr);
 	
 	/* Wait for a client to connect */
-	int clientsock; /* Socket descriptor for client */
-	if ((clientsock = accept(serversock, (struct sockaddr *) &clientaddr, &addrlength)) < 0) {
+	int sock; /* Socket descriptor for client */
+	if ((sock = accept(serversock, (struct sockaddr *) &clientaddr, &addrlength)) < 0) {
 		fprintf(stderr,"failed.\naccept() failed. file %s, line %d.\n",__FILE__,__LINE__);
 		exit(1);
 	}
 	
-	/* clientsock is connected to a client! */
+	/* sock is connected to a client! */
 	printf("%s connected\n", inet_ntoa(clientaddr.sin_addr)); fflush(stdout);
 	
-	/* Get the number of samples */
-	int numFrames;
-	if (recv(clientsock, &numFrames, sizeof(numFrames), 0) < 0) {
-		fprintf(stderr,"recv() failed. file %s, line %d.\n",__FILE__,__LINE__);
-		exit(1);
-	}
-	printf("numFrames: %d frames.\n",numFrames);
-	
-	/* Receive the message */
+	// Receive data
 	int bytesreceived;
-	int byte=0;
-	printf("Getting samples: 0"); fflush(stdout);
+	paBuffer *buffer=&data.play_buffers[0];
+	
+	printf("Getting samples: ...\n"); fflush(stdout);
 	do {
-		paBuffer *put_buffer=&data.buffers[(data.play_buffer+1)%2];
-		int bytestorecv=sizeof(SAMPLE)*FRAMES_PER_BUFFER*NUM_CHANNELS;
-		//Check if we have a new buffer
-		if (data.new_buffer) {
-			data.new_buffer=0;
-			//Reset properties
-			put_buffer->frameIndex=0;
-			put_buffer->maxFrameIndex=0;
-			put_buffer->tx_pos=0;
-			//Realloc buffer?
-		}
+		int bytestorecv=sizeof(SAMPLE)*NUM_CHANNELS*FRAMES_PER_BUFFER;
 		//Check if we have to increase the buffer
-		if (put_buffer->tx_pos+bytestorecv > put_buffer->size) {
-			//We have to realloc, add size for 100 frames
-			put_buffer->size+=sizeof(SAMPLE)*NUM_CHANNELS*FRAMES_PER_BUFFER*100;
-			put_buffer->maxFrameIndex+=100;
-			if (realloc(put_buffer->samples,put_buffer->size) == NULL) {
+		if (buffer->tx_pos+bytestorecv > buffer->size) {
+			//We have to realloc, add size for 1 second
+			buffer->maxFrameIndex+=SAMPLE_RATE;
+			buffer->size=sizeof(SAMPLE)*NUM_CHANNELS*buffer->maxFrameIndex;
+			printf("Realloc buffer, new size: %d bytes.\n",buffer->size);
+			if ((buffer->samples=(SAMPLE*)realloc(buffer->samples,buffer->size)) == NULL) {
 				fprintf(stderr,"realloc() failed. file %s, line %d.\n",__FILE__,__LINE__);
 				exit(1);
 			}
 		}
 		//Receive the data
-		bytesreceived=recv(clientsock, put_buffer->samples+put_buffer->tx_pos, bytestorecv, 0);
-		put_buffer->tx_pos+=bytesreceived;
-		put_buffer->maxFrameIndex=put_buffer->tx_pos/sizeof(SAMPLE);
-		printf("\rPutting samples in buffer %d at %d (max %d, got %d)            ",(data.play_buffer+1)%2,put_buffer->tx_pos,put_buffer->size,bytesreceived); fflush(stdout);
+		bytesreceived=recv(sock, buffer->samples+buffer->tx_pos, bytestorecv, 0);
+		fwrite(buffer->samples+buffer->tx_pos,1,bytesreceived,f); fflush(f);
+		printf("Getting samples: %d-%d (max %d, got %d)\n",buffer->tx_pos,buffer->tx_pos+bytesreceived,buffer->size,bytesreceived); fflush(stdout);
+		buffer->tx_pos+=bytesreceived;
+		buffer->maxFrameIndex=buffer->tx_pos/(sizeof(SAMPLE)*NUM_CHANNELS);
 		//Start playback if we got some audio
-		if (!data.play && put_buffer->maxFrameIndex > FRAMES_PER_BUFFER*5) {
-			data.play_buffer=(data.play_buffer+1)%2; //Switch buffers
-			data.new_buffer=1; 
-			data.play=1;
-		    printf("\rStarting playback.                                                    \n"); fflush(stdout);
+		if (!buffer->go && buffer->maxFrameIndex > FRAMES_PER_BUFFER*5) {
+			buffer->go=1;
+		    printf("Starting playback.\n"); fflush(stdout);
 		}
 	} while(bytesreceived != 0);
-	data.last_buffer=1;
+	//data.final_buffer=1;
+	//If playback haven't started, start it now
+	if (!buffer->go) {
+		buffer->go=1;
+	}
+
+	printf("Closing connection... "); fflush(stdout);
+	close(sock);
+	printf("done\n"); fflush(stdout);
 	
-	printf("\n");
+	fclose(f);
+	
     printf("Waiting for playback to finish... "); fflush(stdout);
-	
     while( ( err = Pa_IsStreamActive( stream ) ) == 1 ) Pa_Sleep(100);
     if( err < 0 ) goto done;
     err = Pa_CloseStream( stream );
     if( err != paNoError ) goto done;
     printf("done!\n");
 
-	close(clientsock);    /* Close client socket */
-
 done:
     Pa_Terminate();
-    if( data.buffers[0].samples ) free( data.buffers[0].samples );
-    if( data.buffers[1].samples ) free( data.buffers[1].samples );
+    if( data.record_buffer.samples ) free( data.record_buffer.samples );
+    for (i=0; i < data.num_play_buffers; i++) {
+		if( data.play_buffers[i].samples ) free( data.play_buffers[i].samples );
+    }
+    free( data.play_buffers );
+
     if( err != paNoError )
     {
         fprintf( stderr, "An error occured while using the portaudio stream\n" );
