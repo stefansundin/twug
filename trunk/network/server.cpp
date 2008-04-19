@@ -275,9 +275,7 @@ void handle_message(Message p_message)
 			return;
 		}
 		fill(sender, 20);
-		std::string m = sender + message;	
-
-//		LOG << "hejsan" << std::endl;
+		std::string m = sender + message;
 
 		response = Data(SERVER_TEXT_DATA, m);
 		g_network->sendData(recv_socket, response);
