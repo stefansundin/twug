@@ -16,6 +16,8 @@ public:
 	void logout();
 	void changeChannels(std::string p_channel, std::string p_password);
 	void sendText(std::string p_to_username, std::string p_message);
+	void sendCreateChannelRequest(std::string p_name);
+	void sendRemoveChannelRequest(std::string p_name);
 
 	bool processNetworking();
 
