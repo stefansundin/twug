@@ -5,12 +5,12 @@ MessageHandler::MessageHandler(UIEvents* p_events, std::string* p_nameptr)
 	m_nameptr = p_nameptr;
 	m_events = p_events; 
 
-	std::cout << "MessageHandler: constructed\n";
+	print_me("Constructed");
 }
 
 void MessageHandler::handleMessage(std::string p_sendername, std::string p_msg)
 {
-	std::cout << "MessageHandler: Handling message from " << p_sendername << std::endl;
+	print_me("Handling message from "+p_sendername);
 	showWindow(p_sendername);
 	//std::cout << "MessageHandler: <DEBUG> Window is shown\n";	
 
@@ -48,3 +48,4 @@ void MessageHandler::showWindow(std::string p_name)
 		m_windows.push_back( new MessageWindow(p_name,m_events,m_nameptr) );
 	}
 }
+

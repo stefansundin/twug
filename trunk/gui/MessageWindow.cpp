@@ -47,6 +47,7 @@ MessageWindow::MessageWindow(std::string p_name, UIEvents* p_events, std::string
 void MessageWindow::giveMessage(std::string p_message)
 {
 	print_me("MessageWindow("+m_name+"): Recieved new message: ("+p_message+")");
+	printf("(%d long)\n", p_message.size());
 
 	m_buffer->insert(m_buffer->end(), m_name+": "+p_message+"\n");
 	scrollDown();
@@ -67,7 +68,9 @@ void MessageWindow::sendEntry()
 		m_buffer->insert(m_buffer->end(), (*m_nameptr)+": "+msg+"\n");
 		scrollDown();
 
-		m_events->to_network->pushEvent( UIEvent ( "SEND_TEXT", m_name, msg ) );
+		m_events->to_network->pushEvent(UIEvent("SEND_TEXT", m_name, msg));
+		print_me("giving ("+msg+") from ("+m_name+")");
+		printf("(%d long)\n", msg.size());
 	}
 }
 

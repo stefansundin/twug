@@ -109,10 +109,17 @@ void Network::sendData(int p_socket, Data &p_data)
 	h.message_type = p_data.getType();
 	h.message_length = p_data.getLength();
 
-	print_me("sending: ("+std::string((char*)p_data.getData())+")");
+	char *data = (char*)p_data.getData();
+	std::string message;
+	int i;
+	for(i = 0; i < h.message_length; i++)
+	{
+		message.push_back((char)data[i]);
+	}
+
+	print_me("sending: ("+message+")");
+	printf("(%d long)\n", p_data.getLength());
 
 	send(p_socket, (void*)&h, HEADER_SIZE, 0);
 	send(p_socket, p_data.getData(), p_data.getLength(), 0);
-	//m_lame_send((char*)&h, HEADER_SIZE );
-	//m_lame_send((char*)p_data.getData(), p_data.getLength());
 }

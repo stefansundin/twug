@@ -149,7 +149,8 @@ void NetworkManager::processUIEvents()
 				std::string destination = event.pop_first();
 				std::string msg = event.pop_first();
 	
-				print_me("NetworkManager::sendText() sending \""+msg+"\" to \""+destination+"\"");
+				print_me("sending ("+msg+") to ("+destination+")");
+				printf("(%d long)\n", msg.size());
 
 				m_client_network.sendText(destination, msg);
 		} else {
@@ -169,7 +170,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	int i;
 	for(i = 0; i < length; i++)
 	{
-		data_str.push_back(data[i]);
+		data_str.push_back((char)data[i]);
 	}
 
 	if(p_message.getData().getType() == SERVER_LOGIN_OK)
@@ -215,6 +216,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	{
 		print_me("got \"SERVER_TEXT_DATA\"");
 		print_me("got message: ("+data_str+")");
+		printf("(%d long)\n", data_str.size());
 		std::string sender = data_str.substr(0, 20);
 		strip(sender);
 		std::string message = data_str.substr(20);
