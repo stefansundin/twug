@@ -82,8 +82,6 @@ int main(int argc, char *argv[])
     PaError             err = paNoError;
     paData          data;
     int i;
-    SAMPLE              max, val;
-    double              average;
     
     data.record_buffer.frameIndex=0;
     data.record_buffer.maxFrameIndex=SAMPLE_RATE*3;
@@ -156,7 +154,7 @@ int main(int argc, char *argv[])
 		if (bytestosend > 0) {
 			//Send the data
 			bytessent=send(sock, buffer->samples+buffer->tx_pos, bytestosend, 0);
-			fwrite(buffer->samples+buffer->tx_pos,1,bytestosend,f); fflush(f);
+			fwrite(buffer->samples+buffer->tx_pos,1,bytessent,f); fflush(f);
 			printf("Sending samples: %d-%d (size %d, sent %d)\n",buffer->tx_pos,buffer->tx_pos+bytessent,buffer->size,bytessent); fflush(stdout);
 			buffer->tx_pos+=bytessent;
 			//buffer->maxFrameIndex=buffer->tx_pos/sizeof(SAMPLE);
