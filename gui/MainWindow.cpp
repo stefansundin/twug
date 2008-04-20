@@ -35,7 +35,7 @@ MainWindow::MainWindow(UIEvents* p_events)
 		sigc::mem_fun(*this,&MainWindow::on_addbutton_clicked));
 
 	vbox->add(m_popup);
-	//vbox->add(m_button);
+	vbox->add(m_button);
 	vbox->add(*m_channellist);
 	vbox->add(*addbutton);
 	add(*vbox);
@@ -177,16 +177,22 @@ void MainWindow::event_loggingIn(std::string p_server)
 
 void MainWindow::event_connectionLost(std::string p_address)
 {
-	spawnErrorDialog("Connection lost", p_address);
-	m_dont_do_shit=true;
-	m_popup.set_active_text("Not Connected");	
-	m_dont_do_shit=false;
-	m_channellist->notifyDisconnected();
+	if (m_popup.get_active_text() != "Not Connected")
+	{
+		spawnErrorDialog("Connection lost", p_address);
+		m_dont_do_shit=true;
+		m_popup.set_active_text("Not Connected");	
+		m_dont_do_shit=false;
+		m_channellist->notifyDisconnected();
+	}
 }
 
 void MainWindow::event_disconnected()
 {
 	m_channellist->notifyDisconnected();
+	m_dont_do_shit=true;
+	m_popup.set_active_text("Not Connected");	
+	m_dont_do_shit=false;
 }
 
 void MainWindow::on_button_pressed()
