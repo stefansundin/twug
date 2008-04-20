@@ -239,9 +239,32 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	{
 		print_me("got \"SERVER_CHANNEL_CHANGE_RESPONSE\"");
 
-		int response = *((int*)data);
+		if(data_str.size() != 1)
+		{
+			print_me("Message not of proper length");
+		}
 
-		printf("got %d in response", response);
+		if(data_str == "0")
+		{
+			print_me("Channel change successful");
+		}
+		else if(data_str == "1")
+		{
+			log_this("Channel name not found");
+		}
+		else if(data_str == "2")
+		{
+			print_me("<OPEN A DIALOG HERE NOTIFYING THE USER>");
+			print_me("bad password");
+		}
+		else if(data_str == "3")
+		{
+			log_this("Channel change failed. Reason unknown.");
+		}
+		else
+		{
+			log_this("Got an unknown message");
+		}
 	}
 	else if(p_message.getData().getType() == SERVER_ADD_CLIENT)
 	{
@@ -311,7 +334,14 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 
 		std::string channel_name = data_str.substr(0, MESSAGE_FILL);
 		strip(channel_name);
-		m_client_pool.addChannel(channel_name, "");
+		if(!m_client_pool.addChannel(channel_name, ""))
+		{
+			print_me("Could not add channel ("+channel_name+")");
+		}
+		else
+		{
+			print_me("Added channel ("+channel_name+")");
+		}
 	}
 }
 

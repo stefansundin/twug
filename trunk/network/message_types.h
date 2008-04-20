@@ -17,7 +17,7 @@
 #define SERVER_AUDIO_DATA 3				//audio data
 #define SERVER_TEXT_DATA 4				//fill(from_user_name) + message_text
 
-#define SERVER_CHANNEL_CHANGE_RESPONSE 5	//int: 0 for ok, 1 for bad channel name, 2 for bad password, 3 for other
+#define SERVER_CHANNEL_CHANGE_RESPONSE 5	//string: "0" for ok, "1" for bad channel name, "2" for bad password, "3" for other
 #define SERVER_ADD_CLIENT 6	 			//fill("client name") + fill("channel name")
 #define SERVER_MOVE_CLIENT 7			//fill("client name") + fill("new channel name")
 #define SERVER_REMOVE_CLIENT 8			//fill("client name")

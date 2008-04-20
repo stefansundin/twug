@@ -54,7 +54,83 @@ int checkLogin(std::string p_username, std::string p_password)
 	return -2;	//bad password
 }
 
-void handle_message(Message p_message)
+void broadcastSend(Data p_data)
+{
+	std::vector<std::string> channel_names = g_client_pool->getChannelNames();
+
+	for(unsigned int i = 0; i < channel_names.size(); i++)
+	{
+		std::vector<std::string> client_names;
+		g_client_pool->getChannelClientNames(channel_names.at(i), client_names);
+
+		for(unsigned int j = 0; j < client_names.size(); j++)
+		{
+			int socket;
+			if(!g_client_pool->nameToSocket(client_names.at(j), socket))
+			{
+				print_me("Could not get socket from name ("+client_names.at(j)+")");
+			}
+			else
+			{
+				g_network->sendData(socket, p_data);
+			}
+		}
+	}
+}
+
+void sendChannelList(int p_socket)
+{
+	std::vector<std::string> channel_names = g_client_pool->getChannelNames();
+
+	for(unsigned int i = 0; i < channel_names.size(); i++)
+	{
+		std::string channel_name = channel_names.at(i);
+		fill(channel_name, MESSAGE_FILL);
+
+		Data data = Data(SERVER_ADD_CHANNEL, channel_name);
+		g_network->sendData(p_socket, data);
+
+		std::vector<std::string> client_names;
+		g_client_pool->getChannelClientNames(channel_names.at(i), client_names);
+
+		for(unsigned int j = 0; j < client_names.size(); j++)
+		{
+			std::string client_name = client_names.at(j);
+			fill(client_name, MESSAGE_FILL);
+
+			std::string to_send = client_name + channel_name;
+			data = Data(SERVER_ADD_CLIENT, to_send);
+			g_network->sendData(p_socket, data);
+		}
+	}
+}
+
+//this seems a little useless now, about 10 minutes after I wrote it...
+void broadcastChannelList()
+{
+	std::vector<std::string> channel_names = g_client_pool->getChannelNames();
+
+	for(unsigned int i = 0; i < channel_names.size(); i++)
+	{
+		std::string channel_name = channel_names.at(i);
+		fill(channel_name, MESSAGE_FILL);
+
+		std::vector<std::string> client_names;
+		g_client_pool->getChannelClientNames(channel_names.at(i), client_names);
+
+		for(unsigned int j = 0; j < client_names.size(); j++)
+		{
+			std::string client_name = client_names.at(j);
+			fill(client_name, MESSAGE_FILL);
+
+			std::string to_send = client_name + channel_name;
+			Data data = Data(SERVER_ADD_CLIENT, to_send);
+			broadcastSend(data);
+		}
+	}
+}
+
+void handleMessage(Message p_message)
 {
 	print_me("Handling messages");
 
@@ -98,75 +174,20 @@ void handle_message(Message p_message)
 			response = Data(SERVER_LOGIN_OK, "");
 			g_network->sendData(p_message.getSocket(), response);
 
-			//tell the newly connected client of all channels
-			std::string channel_name;
-			std::vector<std::string> channel_names = g_client_pool->getChannelNames();
-			unsigned int i;
-			for(i = 0; i < channel_names.size(); i++)
-			{
-				channel_name = channel_names.at(i);
-				fill(channel_name, MESSAGE_FILL);
-				response = Data(SERVER_ADD_CHANNEL, channel_name);
-				g_network->sendData(p_message.getSocket(), response);
-
-				std::string to;
-				g_client_pool->socketToName(p_message.getSocket(), to);
-				print_me("sent SERVER_ADD_CHANNEL ("+channel_name+")");
-				printf("to socket (%d)\n", p_message.getSocket());
-			}
-
-			//tell the newly connected client of all the previously connected clients
-			std::string client_name;
-
-			channel_names = g_client_pool->getChannelNames();
-			std::vector<std::string> client_names;
-			printf("channel_names.size() = \"%d\"\n", channel_names.size());
-			std::string to_send;
-			unsigned int j;
-			for(i = 0; i < channel_names.size(); i++)
-			{
-				channel_name = channel_names.at(i);
-				fill(channel_name, MESSAGE_FILL);
-
-				g_client_pool->getChannelClientNames(channel_names.at(i), client_names);
-				for(j = 0; j < client_names.size(); j++)
-				{
-					client_name = client_names.at(j);
-					fill(client_name, MESSAGE_FILL);
-
-					to_send = client_name + channel_name;
-					response = Data(SERVER_ADD_CLIENT, to_send);
-					g_network->sendData(p_message.getSocket(), response);
-
-					std::string to;
-					g_client_pool->socketToName(p_message.getSocket(), to);
-					print_me("sent SERVER_ADD_CLIENT ("+to_send+") to ("+to+")");
-					printf("with socket (%d)\n", p_message.getSocket());
-				}
-			}
+			//send a complete channel/client list to the new client
+			sendChannelList(p_message.getSocket());
 
 			//add the new client to the client pool before we tell everyone to add it
 			//this so that it will add itself too
 			g_client_pool->addClient(username, DEFAULT_CHANNEL, p_message.getSocket());
 
 			fill(username, MESSAGE_FILL);
-			channel_name = DEFAULT_CHANNEL;
+			std::string channel_name = DEFAULT_CHANNEL;
 			fill(channel_name, MESSAGE_FILL);
-			to_send = username + channel_name;
+			std::string to_send = username + channel_name;
 			response = Data(SERVER_ADD_CLIENT, to_send);
 
-			client_names = g_client_pool->getClientNames();
-			int s;
-			for(i = 0; i < client_names.size(); i++)
-			{
-				g_client_pool->nameToSocket(client_names.at(i), s);
-				g_network->sendData(s, response);
-
-				std::string to2;
-				g_client_pool->socketToName(s, to2);
-				print_me("sent SERVER_ADD_CLIENT ("+to_send+") to ("+to2+")");
-				printf("with socket (%d)\n", s);
-			}
+			broadcastSend(response);
 
 			printClientPool(g_client_pool);
 		}
@@ -324,37 +345,51 @@ void handle_message(Message p_message)
 		strip(channel);
 		std::string password = data_str.substr(MESSAGE_FILL,MESSAGE_FILL);
 		strip(password);
+		print_me("password: ("+password+")");
 
-		int why;
-
-		int returned = 0;
-		if(returned == -1)
+		std::string client_name;
+		if(!g_client_pool->socketToName(p_message.getSocket(), client_name))
 		{
-			report_error("user name passed too long");
+			log_this("Couldn't get name from socket");
+			return;
 		}
-		else if(returned == -2)
+
+		std::string result;
+		int returned = g_client_pool->switchClientChannels(client_name, channel, password);
+		if(returned == 0)
 		{
-			report_error("channel name passed too long");
+			print_me("Move of client ("+client_name+") to channel ("+channel+") successful");
+			result = "0";
+
+			fill(client_name, MESSAGE_FILL);
+			response = Data(SERVER_REMOVE_CLIENT, client_name);
+			broadcastSend(response);
+
+			fill(channel, MESSAGE_FILL);
+			response = Data(SERVER_ADD_CLIENT, client_name+channel);
+			broadcastSend(response);
 		}
 		else if(returned == -3)
 		{
 			report_error("client not found");
+			result = "3";
 		}
 		else if(returned == -4)
 		{
 			report_error("channel name not found");
-			why =  1;
+			result = "1";
 		}
 		else if(returned == -5)
 		{
 			report_error("bad password");
-			why = 2;
+			result = "2";
 		}
 		else
 		{
-			why = 3;
+			result = "3";
 		}
-		response = Data(SERVER_CHANNEL_CHANGE_RESPONSE, &why, sizeof(why));
+		response = Data(SERVER_CHANNEL_CHANGE_RESPONSE, result);
+		g_network->sendData(p_message.getSocket(), response);
 	}
 	else if(p_message.getData().getType() == CLIENT_ADMIN_CREATE_CHANNEL)
 	{
@@ -493,7 +528,7 @@ int main()
 		g_network->processNetworking();
 		while(g_network->getMessage(incomming_message))	//means we have incomming data in incomming_message
 		{
-			handle_message(incomming_message);
+			handleMessage(incomming_message);
 		}
 	}
 }

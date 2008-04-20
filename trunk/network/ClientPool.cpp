@@ -121,9 +121,8 @@ bool ClientPool::removeClient(std::string p_name)
 	std::map<Channel*, std::vector<Client> >::iterator itr;
 	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
 	{
-		std::vector<Client> channel_clients = itr->second;
 		std::vector<Client>::iterator iitr;
-		for(iitr = channel_clients.begin(); iitr != channel_clients.end(); iitr++)
+		for(iitr = itr->second.begin(); iitr != itr->second.end(); iitr++)
 		{
 			if(iitr->getName() == p_name)
 			{
@@ -155,6 +154,69 @@ bool ClientPool::removeClient(int p_socket)
 		}
 	}
 	return false;
+}
+
+//return values:
+//0 on success
+//-1 client was not found
+//-2 bad password
+//-3 channel not found
+//-4 client could not be removed
+int ClientPool::switchClientChannels(std::string p_client_name, std::string p_channel_name, std::string p_password)
+{
+	print_me("Moving client ("+p_client_name+") to channel ("+p_channel_name+")");
+
+	Client client;
+	bool client_found = false;
+	std::vector<Client> channel_clients;
+
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		channel_clients = itr->second;
+
+		std::vector<Client>::iterator iitr;
+		for(iitr = channel_clients.begin(); iitr != channel_clients.end(); iitr++)
+		{
+			if(iitr->getName() == p_client_name)
+			{
+				client_found = true;
+				client = (*iitr);
+				break;
+			}
+		}
+	}
+	if(!client_found)
+	{
+		return -1;
+	}
+
+	bool channel_found = false;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		if(itr->first->getName() == p_channel_name)
+		{
+			if(itr->first->getPassword() != p_password)
+			{
+				return -2;
+			}
+			channel_found = true;
+			itr->second.push_back(client);
+			break;
+		}
+	}
+	if(!channel_found)
+	{
+		return -3;
+	}
+
+	if(!removeClient(p_client_name))
+	{
+		return -4;
+	}
+
+	//success!
+	return 0;
 }
 
 

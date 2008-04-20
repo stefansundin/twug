@@ -1,5 +1,5 @@
-#ifndef MESSAGEHANDLER_H
-#define	MESSAGEHANDLER_H
+#ifndef MessageHandler_h
+#define	MessageHandler_h
 
 #include <vector>
 #include <string>
@@ -21,4 +21,5 @@ public:
 	void showWindow(std::string p_name);
 };
 
-#endif
+#endif //MessageHandler_h
+
