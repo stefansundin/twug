@@ -1,10 +1,10 @@
 OLD_OBJECTS = Channel.o ChannelList.o Client.o ClientNetwork.o Data.o Network.o ServerNetwork.o strip.o fill.o
 
-COMMON_OBJECTS = Network.o Data.o strip.o fill.o ClientPool.o Buffer.o Message.o
+COMMON_OBJECTS = Network.o Data.o strip.o fill.o ClientPool.o Channel.o Client.o Buffer.o Message.o
 SERVER_OBJECTS = ServerNetwork.o server.o
 CLIENT_OBJECTS = ClientNetwork.o client.o
 
-CFLAGS = -g -O0
+CFLAGS = -g -O0 -Wall
 
 all : client_objects server
 

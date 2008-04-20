@@ -1,41 +1,28 @@
-#ifndef CHANNEL_H_
-#define CHANNEL_H_
+#ifndef Channel_h
+#define Channel_h
 
-#include <vector>
-
-#include "Client.h"
+#include <string>
 
 #include "../debug.h"
-
-class Client;
 
 class Channel
 {
 public:
 	Channel();
-	Channel(std::string p_name);
+	Channel(std::string p_name, std::string p_password);
 	~Channel();
 
-	std::string getName();
-	std::string getPassword();
-	bool setName(std::string p_name);
-	bool setPassword(std::string p_password);
+	std::string getName() const;
+	std::string getPassword() const;
 
-	bool addClient(Client *p_client);
-	bool removeClient(Client *p_client);
+	void setPassword(std::string p_password);
 
-	bool addSubchannel(Channel *p_channel);
-	bool removeSubchannel(Channel *p_channel);
-
-	void print(int p_extra_tab);		//server debug thingy
+	bool operator<(const Channel &p_rhs) const;
 
 private:
 	std::string m_name;
 	std::string m_password;
-
-	std::vector<Client*> m_clients;
-	std::vector<Channel*> m_subchannels;
 };
 
-#endif //CHANNEL_H_
+#endif //Channel_h
 

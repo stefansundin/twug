@@ -69,7 +69,9 @@ void ServerNetwork::processNetworking()
 		}
 
 		//start pump hack
-		std::string pump_message = "server00000000000000NETWORK_PUMP";
+		std::string name = "server";
+		fill(name, MESSAGE_FILL);
+		std::string pump_message = name+"NETWORK_PUMP";
 		Data pump = Data(SERVER_TEXT_DATA, pump_message);
 		if(mitr->first != m_accepting_socket)
 		{
@@ -128,7 +130,10 @@ void ServerNetwork::disconnectClient(int p_socket)
 	m.setData(Data(SOCKET_DISCONNECTED, "", 0));
 	m_messages.push(m);
 
-	int removed = m_buffers.erase(p_socket);			//remove the client from the list of sockets
+	if(!m_buffers.erase(p_socket))	//remove the client from the list of sockets
+	{
+		log_this("no socket removed");
+	}
 	shutdown(p_socket, SHUT_RDWR);		//we dont care if this fails since (AFAIK) it only does if the socket is already disconnect (or if it's not a socket, which it should be :P)
 }
 

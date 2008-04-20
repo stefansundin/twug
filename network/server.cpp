@@ -19,11 +19,11 @@ void printClientPool(ClientPool *p_client_pool)
 
 	printf("----Channels------------\n");
 
-	int i, j;
+	unsigned int i, j;
 	for(i = 0; i < channel_names.size(); i++)
 	{
 		printf("%s:\n", channel_names.at(i).c_str());
-		if(!g_client_pool->getChannelClientNames(channel_names.at(i), &client_names))
+		if(!g_client_pool->getChannelClientNames(channel_names.at(i), client_names))
 		{
 			log_this("couldn't get channel client names");
 			return;
@@ -42,7 +42,7 @@ int checkLogin(std::string p_username, std::string p_password)
 	printf("password: %s\n", p_password.c_str());
 
 	std::vector<std::string> client_names = g_client_pool->getClientNames();
-	int i;
+	unsigned int i;
 	for(i = 0; i < client_names.size(); i++)
 	{
 		if(client_names.at(i) == p_username)
@@ -59,11 +59,11 @@ void handle_message(Message p_message)
 	print_me("Handling messages");
 
 	char *data = (char*)p_message.getData().getData();
-	int length = p_message.getData().getLength();
+	unsigned int length = p_message.getData().getLength();
 	Data response;
 
 	std::string data_str;
-	int i;
+	unsigned int i;
 	for(i = 0; i < length; i++)
 	{
 		data_str.push_back(data[i]);
@@ -74,7 +74,7 @@ void handle_message(Message p_message)
 		printf("got \"CLIENT_LOGIN_REQUEST\"\n");
 
 		//check that the message is of proper length
-		if(data_str.size() != 40)
+		if(data_str.size() != MESSAGE_FILL*2)
 		{
 			print_me("Message not of proper length");
 			printf("data_str.size(): (%d)\n", data_str.size());
@@ -85,8 +85,8 @@ void handle_message(Message p_message)
 			return;
 		}
 
-		std::string username = data_str.substr(0, 20);
-		std::string password = data_str.substr(20, 20);
+		std::string username = data_str.substr(0, MESSAGE_FILL);
+		std::string password = data_str.substr(MESSAGE_FILL, MESSAGE_FILL);
 		strip(username);
 		strip(password);
 
@@ -98,32 +98,48 @@ void handle_message(Message p_message)
 			response = Data(SERVER_LOGIN_OK, "");
 			g_network->sendData(p_message.getSocket(), response);
 
-			//tell the newly connected client of all the previously connected clients
-			std::string client_name;
+			//tell the newly connected client of all channels
 			std::string channel_name;
-
 			std::vector<std::string> channel_names = g_client_pool->getChannelNames();
-			std::vector<std::string> client_names;
-			printf("channel_names.size() = \"%d\"\n", channel_names.size());
-			std::string to_send;
-			int i, j;
+			unsigned int i;
 			for(i = 0; i < channel_names.size(); i++)
 			{
 				channel_name = channel_names.at(i);
-				fill(channel_name, 20);
+				fill(channel_name, MESSAGE_FILL);
+				response = Data(SERVER_ADD_CHANNEL, channel_name);
+				g_network->sendData(p_message.getSocket(), response);
 
-				g_client_pool->getChannelClientNames(channel_names.at(i), &client_names);
+				std::string to;
+				g_client_pool->socketToName(p_message.getSocket(), to);
+				print_me("sent SERVER_ADD_CHANNEL ("+channel_name+")");
+				printf("to socket (%d)\n", p_message.getSocket());
+			}
+
+			//tell the newly connected client of all the previously connected clients
+			std::string client_name;
+
+			channel_names = g_client_pool->getChannelNames();
+			std::vector<std::string> client_names;
+			printf("channel_names.size() = \"%d\"\n", channel_names.size());
+			std::string to_send;
+			unsigned int j;
+			for(i = 0; i < channel_names.size(); i++)
+			{
+				channel_name = channel_names.at(i);
+				fill(channel_name, MESSAGE_FILL);
+
+				g_client_pool->getChannelClientNames(channel_names.at(i), client_names);
 				for(j = 0; j < client_names.size(); j++)
 				{
 					client_name = client_names.at(j);
-					fill(client_name, 20);
+					fill(client_name, MESSAGE_FILL);
 
 					to_send = client_name + channel_name;
 					response = Data(SERVER_ADD_CLIENT, to_send);
 					g_network->sendData(p_message.getSocket(), response);
 
 					std::string to;
-					g_client_pool->socketToName(p_message.getSocket(), &to);
+					g_client_pool->socketToName(p_message.getSocket(), to);
 					print_me("sent SERVER_ADD_CLIENT ("+to_send+") to ("+to+")");
 					printf("with socket (%d)\n", p_message.getSocket());
 				}
@@ -133,9 +149,9 @@ void handle_message(Message p_message)
 			//this so that it will add itself too
 			g_client_pool->addClient(username, DEFAULT_CHANNEL, p_message.getSocket());
 
-			fill(username, 20);
+			fill(username, MESSAGE_FILL);
 			channel_name = DEFAULT_CHANNEL;
-			fill(channel_name, 20);
+			fill(channel_name, MESSAGE_FILL);
 			to_send = username + channel_name;
 			response = Data(SERVER_ADD_CLIENT, to_send);
 
@@ -143,11 +159,11 @@ void handle_message(Message p_message)
 			int s;
 			for(i = 0; i < client_names.size(); i++)
 			{
-				g_client_pool->nameToSocket(client_names.at(i), &s);
+				g_client_pool->nameToSocket(client_names.at(i), s);
 				g_network->sendData(s, response);
 
 				std::string to2;
-				g_client_pool->socketToName(s, &to2);
+				g_client_pool->socketToName(s, to2);
 				print_me("sent SERVER_ADD_CLIENT ("+to_send+") to ("+to2+")");
 				printf("with socket (%d)\n", s);
 			}
@@ -181,7 +197,7 @@ void handle_message(Message p_message)
 		printf("socket %d sent CLIENT_LOGOUT", p_message.getSocket());
 
 		std::string remove_name;
-		g_client_pool->socketToName(p_message.getSocket(), &remove_name);
+		g_client_pool->socketToName(p_message.getSocket(), remove_name);
 
 		g_client_pool->removeClient(p_message.getSocket());
 		printClientPool(g_client_pool);
@@ -190,7 +206,7 @@ void handle_message(Message p_message)
 		g_network->sendData(p_message.getSocket(), response);
 
 		std::string to;
-		g_client_pool->socketToName(p_message.getSocket(), &to);
+		g_client_pool->socketToName(p_message.getSocket(), to);
 		printf("sent: type=SERVER_REMOVE_CLIENT to (%s)\n", to.c_str());
 	}
 	else if(p_message.getData().getType() == CLIENT_AUDIO_DATA)
@@ -204,28 +220,29 @@ void handle_message(Message p_message)
 		}
 
 		std::string client_name;
-		if(!g_client_pool->socketToName(p_message.getSocket(), &client_name))
+		if(!g_client_pool->socketToName(p_message.getSocket(), client_name))
 		{
 			log_this("couldn't get client name");
 			return;
 		}
 		std::string channel_name;
-		if(!g_client_pool->clientNameToChannelName(client_name, &channel_name))
+		if(!g_client_pool->clientNameToChannelName(client_name, channel_name))
 		{
 			log_this("couldn't get channel name");
 			return;
 		}
 		std::vector<std::string> channel_client_names;
-		if(!g_client_pool->getChannelClientNames(channel_name, &channel_client_names))
+		if(!g_client_pool->getChannelClientNames(channel_name, channel_client_names))
 		{
 			log_this("couldn't get channel client names");
 			return;
 		}
 
-		int i, s;
+		unsigned int i;
+		int s;
 		for(i = 0; i < channel_client_names.size(); i++)
 		{
-			if(!g_client_pool->nameToSocket(channel_client_names.at(i), &s))
+			if(!g_client_pool->nameToSocket(channel_client_names.at(i), s))
 			{
 				log_this("couldn't get socket from name");
 				return;
@@ -234,7 +251,7 @@ void handle_message(Message p_message)
 			g_network->sendData(s, response);
 
 			std::string to;
-			g_client_pool->socketToName(s, &to);
+			g_client_pool->socketToName(s, to);
 			printf("sent: type=SERVER_AUDIO_DATA to (%s)\n", to.c_str());
 		}
 	}
@@ -243,7 +260,7 @@ void handle_message(Message p_message)
 		printf("got \"CLIENT_TEXT_DATA\"\n");
 
 		//check that the message is of proper length
-		if(data_str.size() < 20)
+		if(data_str.size() < MESSAGE_FILL)
 		{
 			print_me("Message not of proper length");
 			printf("data_str.size(): (%d)\n", data_str.size());
@@ -260,24 +277,24 @@ void handle_message(Message p_message)
 			return;
 		}
 
-		std::string reciever = data_str.substr(0,20);
-		std::string message = data_str.substr(20);
+		std::string reciever = data_str.substr(0,MESSAGE_FILL);
+		std::string message = data_str.substr(MESSAGE_FILL);
 
 		strip(reciever);
 		int recv_socket;
-		if(!g_client_pool->nameToSocket(reciever, &recv_socket))
+		if(!g_client_pool->nameToSocket(reciever, recv_socket))
 		{
 			log_this("no client ("+reciever+") found");
 			return;
 		}
 
 		std::string sender = "";
-		if(!g_client_pool->socketToName(p_message.getSocket(), &sender))
+		if(!g_client_pool->socketToName(p_message.getSocket(), sender))
 		{
 			log_this("Couldn't get name from socket");
 			return;
 		}
-		fill(sender, 20);
+		fill(sender, MESSAGE_FILL);
 		std::string m = sender + message;
 
 		response = Data(SERVER_TEXT_DATA, m);
@@ -291,7 +308,7 @@ void handle_message(Message p_message)
 		printf("socket %d sent CLIENT_CHANNEL_CHANGE", p_message.getSocket());
 
 		//check that the message is of proper length
-		if(data_str.size() != 40)
+		if(data_str.size() != MESSAGE_FILL*2)
 		{
 			print_me("Message not of proper length");
 			return;
@@ -303,9 +320,9 @@ void handle_message(Message p_message)
 			return;
 		}
 
-		std::string channel = data_str.substr(0,20);
+		std::string channel = data_str.substr(0,MESSAGE_FILL);
 		strip(channel);
-		std::string password = data_str.substr(20,20);
+		std::string password = data_str.substr(MESSAGE_FILL,MESSAGE_FILL);
 		strip(password);
 
 		int why;
@@ -339,6 +356,69 @@ void handle_message(Message p_message)
 		}
 		response = Data(SERVER_CHANNEL_CHANGE_RESPONSE, &why, sizeof(why));
 	}
+	else if(p_message.getData().getType() == CLIENT_ADMIN_CREATE_CHANNEL)
+	{
+		printf("got \"CLIENT_ADMIN_CREATE_CHANNEL\"\n");
+
+		if(data_str.size() != MESSAGE_FILL)
+		{
+			print_me("Message not of proper length");
+			return;
+		}
+
+		std::string client_name;
+		if(!g_client_pool->socketToName(p_message.getSocket(), client_name))
+		{
+			log_this("Could not get name from socket");
+			return;
+		}
+
+		int privs = PRIV_NONE;
+		if(!g_client_pool->getClientPrivileges(client_name, privs))
+		{
+			log_this("Could not get privileges from name");
+			return;
+		}
+
+		if(privs & PRIV_CREATE_CHANNEL)
+		{
+			std::string channel_name = data_str.substr(0,MESSAGE_FILL);
+			strip(channel_name);
+
+			g_client_pool->addChannel(channel_name, "");
+
+			std::vector<std::string> channel_names = g_client_pool->getChannelNames();
+			std::vector<std::string> client_names;
+			int socket;
+			unsigned int i, j;
+			for(i = 0; i < channel_names.size(); i++)
+			{
+				g_client_pool->getChannelClientNames(channel_names.at(i), client_names);
+				for(j = 0; j < client_names.size(); j++)
+				{
+					if(!g_client_pool->nameToSocket(client_names.at(j), socket))
+					{
+						log_this("Could not get socket from name");
+						return;
+					}
+
+					fill(channel_name, MESSAGE_FILL);
+					response = Data(SERVER_ADD_CHANNEL, channel_name);
+					g_network->sendData(socket, response);
+
+					std::string to;
+					g_client_pool->socketToName(p_message.getSocket(), to);
+					print_me("sent SERVER_ADD_CHANNEL ("+channel_name+") to ("+client_names.at(j)+")");
+					printf("to socket (%d)\n", p_message.getSocket());
+				}
+			}
+		}
+		else
+		{
+			log_this("Client ("+client_name+") is not allowed to create channels");
+			return;
+		}
+	}
 	else if(p_message.getData().getType() == SOCKET_DISCONNECTED)
 	{
 		printf("socket %d sent SOCKET_DISCONNECTED\n", p_message.getSocket());
@@ -350,7 +430,7 @@ void handle_message(Message p_message)
 		}
 
 		std::string remove_name;
-		if(!g_client_pool->socketToName(p_message.getSocket(), &remove_name))
+		if(!g_client_pool->socketToName(p_message.getSocket(), remove_name))
 		{
 			log_this("Couldn't get name from socket");
 			return;
@@ -364,19 +444,24 @@ void handle_message(Message p_message)
 		}
 		printClientPool(g_client_pool);
 
-		fill(remove_name, 20);
+		fill(remove_name, MESSAGE_FILL);
 		response = Data(SERVER_REMOVE_CLIENT, remove_name);
 		std::vector<std::string> client_names = g_client_pool->getClientNames();
-		int i, s;
+		unsigned int i;
+		int s;
 		for(i = 0; i < client_names.size(); i++)
 		{
-			g_client_pool->nameToSocket(client_names.at(i), &s);
+			g_client_pool->nameToSocket(client_names.at(i), s);
 			g_network->sendData(s, response);
 
 			std::string to;
-			g_client_pool->socketToName(s, &to);
+			g_client_pool->socketToName(s, to);
 			printf("sent: type=SERVER_REMOVE_CLIENT to (%s)\n", to.c_str());
 		}
+	}
+	else
+	{
+		log_this("Got unknown message ("+data_str+")");
 	}
 }
 
@@ -398,6 +483,7 @@ int main()
 
 	//setup the client pool
 	g_client_pool = new ClientPool();
+	g_client_pool->addChannel(DEFAULT_CHANNEL, "");
 
 	printClientPool(g_client_pool);
 

@@ -223,9 +223,9 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		print_me("got \"SERVER_TEXT_DATA\"");
 		print_me("got message: ("+data_str+")");
 		printf("(%d long)\n", data_str.size());
-		std::string sender = data_str.substr(0, 20);
+		std::string sender = data_str.substr(0, MESSAGE_FILL);
 		strip(sender);
-		std::string message = data_str.substr(20);
+		std::string message = data_str.substr(MESSAGE_FILL);
 
 		//remove this later, this is only for the dirty hack "pumping"
 		if (sender != "server") {
@@ -247,7 +247,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	{
 		print_me("got \"SERVER_ADD_CLIENT\"");
 
-		if(data_str.size() != 40)
+		if(data_str.size() != MESSAGE_FILL*2)
 		{
 			print_me("Message not of proper length");
 			printf("data_str.size(): (%d)\n", data_str.size());
@@ -258,27 +258,36 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 			return;
 		}
 
-		std::string client_name = data_str.substr(0,20);
-		std::string channel_name = data_str.substr(20,20);
+		std::string client_name = data_str.substr(0,MESSAGE_FILL);
+		std::string channel_name = data_str.substr(MESSAGE_FILL,MESSAGE_FILL);
 		strip(client_name);
 		strip(channel_name);
 
-		if(!m_client_pool.addClient(client_name, channel_name, 0))
-		{
-			print_me("Could not add client ("+client_name+") to channel ("+channel_name+")");
-		}
-		else
+		int returned = m_client_pool.addClient(client_name, channel_name, 0);
+		if(returned == 0)
 		{
 			print_me("Added ("+client_name+") to ("+channel_name+")");
 			channelListChanged();
+		}
+		else if(returned == -1)
+		{
+			print_me("Could not find channel ("+channel_name+")");
+		}
+		else if(returned == -2)
+		{
+			print_me("Client with name ("+client_name+") already exists");
+		}
+		else if(returned == -3)
+		{
+			print_me("Client with the same socket already exists");
 		}
 	}
 	else if(p_message.getData().getType() == SERVER_MOVE_CLIENT)
 	{
 		print_me("got \"SERVER_MOVE_CLIENT\"");
 
-		std::string client_name = data_str.substr(0, 20);
-		std::string channel_name = data_str.substr(20);
+		std::string client_name = data_str.substr(0, MESSAGE_FILL);
+		std::string channel_name = data_str.substr(MESSAGE_FILL);
 		strip(client_name);
 		strip(channel_name);
 
@@ -289,12 +298,20 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	{
 		print_me("got \"SERVER_REMOVE_CLIENT\"");
 
-		std::string client_name = data_str.substr(0, 20);
+		std::string client_name = data_str.substr(0, MESSAGE_FILL);
 		strip(client_name);
 
 		m_client_pool.removeClient(client_name);
 		print_me("removed \""+client_name+"\"");
 		channelListChanged();
+	}
+	else if(p_message.getData().getType() == SERVER_ADD_CHANNEL)
+	{
+		print_me("got \"SERVER_ADD_CHANNEL\"");
+
+		std::string channel_name = data_str.substr(0, MESSAGE_FILL);
+		strip(channel_name);
+		m_client_pool.addChannel(channel_name, "");
 	}
 }
 
@@ -310,7 +327,7 @@ void NetworkManager::channelListChanged()
 
 		std::vector<std::string> members;
 		print_me("channel: ("+channels.at(i)+")");
-		if(!m_client_pool.getChannelClientNames(channels.at(i), &members))
+		if(!m_client_pool.getChannelClientNames(channels.at(i), members))
 		{
 			log_this("could not get channel's client names");
 		}

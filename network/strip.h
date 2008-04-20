@@ -1,7 +1,11 @@
-#ifndef STRIP_H_
-#define STRIP_H_
+#ifndef strip_h
+#define strip_h
+
+#include <string>
+
+#include "fill.h"
 
 bool strip(std::string &p_str);
 
-#endif /*STRIP_H_*/
+#endif //strip_h
 
