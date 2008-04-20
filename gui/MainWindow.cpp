@@ -17,15 +17,8 @@ MainWindow::MainWindow(UIEvents* p_events)
 
 	Gtk::VBox* vbox = new Gtk::VBox();
 
-
-
 	setup_channelList();
 
-
-
-
-
-	
 	m_button.set_border_width(5);
 	m_button.set_label("Talk button");
 
@@ -40,7 +33,6 @@ MainWindow::MainWindow(UIEvents* p_events)
 	vbox->add(*addbutton);
 	add(*vbox);
 	show_all();
-
 
 
 	m_popup.signal_changed().connect(
