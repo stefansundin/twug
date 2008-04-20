@@ -33,13 +33,20 @@ bool ChannelList::on_button_press_event(GdkEventButton* p_evb)
 	Gtk::TreeModel::iterator iter = get_selection()->get_selected();
 	Glib::ustring temp = (*iter)[*m_column];
 	//print_me("got selection value " + temp);
-
-	if (p_evb->type == GDK_BUTTON_PRESS)
-	{	
-		if( (p_evb->button == 3) )
+	m_lastclicked = temp;
+	if (p_evb->type == GDK_BUTTON_PRESS && p_evb->button == 3)
+	{
+		createChannelListMenu(temp);
+		m_menu.popup(p_evb->button, p_evb->time);	
+	} else if (p_evb->type == GDK_2BUTTON_PRESS)
+	{
+		int type = whatIsThis(temp);
+		if (type == 0) //person
 		{
-			createChannelListMenu(temp);
-			m_menu.popup(p_evb->button, p_evb->time);	
+			on_personmenu_message();
+		} else if (type == 1 || type == 4) //channel
+		{
+			on_channelmenu_join();
 		}
 	}
 
@@ -62,18 +69,24 @@ void ChannelList::on_personmenu_message()
 
 int ChannelList::whatIsThis(std::string name)
 {
-	if (name == " <empty> ")
+	if (name == "<empty>")
 		return 3;
+
 	for(int i=0; i<m_lastchannellist.size(); i++)
 	{
 		if (m_lastchannellist.at(i) == name)
 		{
-			if (i==0)
-				return 1;
-			else if (m_lastchannellist.at(i-1) == "--END--")
-				return 1;
+			if (i==0 || m_lastchannellist.at(i-1) == "--END--")
+			{
+				if (m_mychannel == m_lastchannellist.at(i))
+					return 4;
+				else
+					return 1;
+			}
 			else
+			{
 				return 0;
+			}
 		}
 	}
 	std::cout << "ChannelList: <DEBUG> Clicked item not a channel or nickname" << std::endl;	
@@ -97,8 +110,6 @@ void ChannelList::createChannelListMenu(std::string p_entry)
 {
 	got_here();
 
-	m_lastclicked = p_entry;
-
 	m_menu.items().clear();
 
 	int p_type = whatIsThis(p_entry);
@@ -109,14 +120,16 @@ void ChannelList::createChannelListMenu(std::string p_entry)
 			sigc::mem_fun(*this,&ChannelList::on_personmenu_message) ));
 	} else if (p_type == 1) // Channel menu
 	{
-		m_menu.items().push_back(Gtk::Menu_Helpers::MenuElem("_Join channel"+p_entry,
+		m_menu.items().push_back(Gtk::Menu_Helpers::MenuElem("_Join channel "+p_entry,
 			sigc::mem_fun(*this,&ChannelList::on_channelmenu_join) ));
 		m_menu.items().push_back(Gtk::Menu_Helpers::MenuElem("_Remove channel "+p_entry,
 			sigc::mem_fun(*this,&ChannelList::on_channelmenu_removeChannel) ));
-	} else if (p_type == 2) // Background menu
+	} else if (p_type == 4) // My channel menu
 	{
-		m_menu.items().push_back(Gtk::Menu_Helpers::MenuElem("_New channel",
-			sigc::mem_fun(*this,&ChannelList::on_backgroundmenu_newChannel) ));
+		m_menu.items().push_back(Gtk::Menu_Helpers::MenuElem("_Leave channel "+p_entry,
+			sigc::mem_fun(*this,&ChannelList::on_channelmenu_join) ));
+		m_menu.items().push_back(Gtk::Menu_Helpers::MenuElem("_Remove channel "+p_entry,
+			sigc::mem_fun(*this,&ChannelList::on_channelmenu_removeChannel) ));
 	}
 
 
@@ -151,8 +164,8 @@ void ChannelList::giveChannelList(std::vector<std::string> channels)
 		
 		if (channels.at(i) == "--END--")
 		{
-			iter = m_store->append();
-			(*iter)[*m_column] = " <empty> ";
+			child_iter = m_store->append(iter->children());
+			(*child_iter)[*m_column] = "<empty>";
 		} else {
 			for(;channels.at(i)!="--END--";i++)
 			{
