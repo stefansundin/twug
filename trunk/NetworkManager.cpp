@@ -62,7 +62,7 @@ void NetworkManager::run()
 
 				// need to send audio data here, too
 			} else {
-				tv.tv_sec = 1;
+				tv.tv_sec = 120;
 				tv.tv_usec = 0;
 			}		
 
