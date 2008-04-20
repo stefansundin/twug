@@ -74,7 +74,6 @@ int main(int argc, char *argv[]) {
 	/* <port> */
 	unsigned short serverport = atoi(argv[1]);
 
-
 	/* Audio */
 	printf("Initializing portaudio... "); fflush(stdout);
 	
@@ -83,13 +82,9 @@ int main(int argc, char *argv[]) {
     PaError             err = paNoError;
     paData          data;
     int                 i;
-    int                 numBytes;
-    SAMPLE              max, val;
-    double              average;
 
     err = Pa_Initialize();
     if( err != paNoError ) goto done;
-    //fprintf(stderr,"Line: %d\n",__LINE__);
 	
     data.record_buffer.frameIndex=0;
     data.record_buffer.maxFrameIndex=SAMPLE_RATE;
@@ -119,7 +114,7 @@ int main(int argc, char *argv[]) {
 			exit(1);
 		}
 	}
-	//fprintf(stderr,"Line: %d\n",__LINE__);
+	
 	//Config portaudio
     outputParameters.device = Pa_GetDefaultOutputDevice();
     outputParameters.channelCount = NUM_CHANNELS;
@@ -219,7 +214,7 @@ int main(int argc, char *argv[]) {
 		    printf("Starting playback.\n"); fflush(stdout);
 		}
 	} while(bytesreceived != 0);
-	//data.final_buffer=1;
+	
 	//If playback haven't started, start it now
 	if (!buffer->go) {
 		buffer->go=1;
