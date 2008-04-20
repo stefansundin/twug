@@ -62,6 +62,8 @@ void ChannelList::on_personmenu_message()
 
 int ChannelList::whatIsThis(std::string name)
 {
+	if (name == " <empty> ")
+		return 3;
 	for(int i=0; i<m_lastchannellist.size(); i++)
 	{
 		if (m_lastchannellist.at(i) == name)
@@ -146,19 +148,25 @@ void ChannelList::giveChannelList(std::vector<std::string> channels)
 		}
 
 		i++;
-
-		for(;channels.at(i)!="--END--";i++)
+		
+		if (channels.at(i) == "--END--")
 		{
-			if(channame == "__lobby__")
-			{	
-				iter = m_store->append();
-				(*iter)[*m_column] = channels.at(i);	
-			} else {
-				child_iter = m_store->append(iter->children());
-				(*child_iter)[*m_column] = channels.at(i);
+			iter = m_store->append();
+			(*iter)[*m_column] = " <empty> ";
+		} else {
+			for(;channels.at(i)!="--END--";i++)
+			{
+				if(channame == "__lobby__")
+				{	
+					iter = m_store->append();
+					(*iter)[*m_column] = channels.at(i);	
+				} else {
+					child_iter = m_store->append(iter->children());
+					(*child_iter)[*m_column] = channels.at(i);
+				}
+				if ((*m_nameptr) == channels.at(i))
+					m_mychannel = channame;		
 			}
-			if ((*m_nameptr) == channels.at(i))
-				m_mychannel = channame;		
 		}
 	}
 	expand_all();
