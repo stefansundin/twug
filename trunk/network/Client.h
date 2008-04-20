@@ -1,34 +1,28 @@
-#ifndef CLIENT_H_
-#define CLIENT_H_
+#ifndef Client_h
+#define Client_h
 
 #include <string>
 
-#include "Channel.h"
-
-class Channel;
+#include "privileges.h"
 
 class Client
 {
 public:
 	Client();
-	Client(std::string p_username);
+	Client(std::string p_name, int p_socket);
+	Client(std::string p_name, int p_socket, int p_privileges);
 	~Client();
 
-	Channel* getChannel();
-	int getSocket();
-	std::string getUsername();
-	unsigned char getPrivileges();
-
-	void setChannel(Channel *p_channel);
-	void setPrivileges(unsigned char p_privileges);
-
-//the ChannelList keeps track of this
-//	void setSocket(int p_socket);
+	std::string getName() const;
+	int getSocket() const;
+	int getPrivileges() const;
 
 private:
-	Channel *m_channel;
-	std::string m_username;
-	unsigned char m_privileges;		//bit #1: can talk; #2: can listen; #3: can text; #4: can get text;
+	std::string m_name;
+	std::string m_channel_name;
+	int m_socket;
+	int m_privileges;
 };
 
-#endif //CLIENT_H_
+#endif //Client_h
+

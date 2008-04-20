@@ -1,12 +1,10 @@
-#ifndef FILL_H_
-#define FILL_H_
+#ifndef fill_h
+#define fill_h
 
-#define FILL_CHAR "0"
+#define FILL_CHAR '0'
 
+//fills out the passed string until it is p_length long then returns true.
+//if p_str is already longer than p_length false is returned.
 bool fill(std::string &p_str, unsigned int p_length);
-/*
-fills out the passed string until it is p_length long then returns true.
-if p_str is already longer than p_length false is returned.
-*/
 
-#endif /*FILL_H_*/
+#endif //fill_h

@@ -8,109 +8,212 @@ ClientPool::~ClientPool()
 }
 
 
-std::vector<std::string> ClientPool::getClientNames()
+std::vector<std::string> ClientPool::getClientNames() const
 {
+	print_me("Retrieving all client names");
+
 	std::vector<std::string> client_names;
-	int i;
-	for(i = 0; i < m_clients.size(); i++)
+	std::string client = "";
+
+	std::map<Channel*, std::vector<Client> >::const_iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
 	{
-		client_names.push_back(m_clients.at(i).getName());
+		std::vector<Client> channel_clients = itr->second;
+		for(unsigned int i = 0; i < channel_clients.size(); i++)
+		{
+			client = channel_clients.at(i).getName();
+			client_names.push_back(client);
+		}
 	}
 
 	return client_names;
 }
-
-
-bool ClientPool::addClient(std::string p_name, std::string p_channel_name, int p_socket)
+std::vector<std::string> ClientPool::getChannelNames() const
 {
-	print_me("Adding client " + p_name + " to "+  p_channel_name);
-	int i;
-	for(i = 0; i < m_clients.size(); i++)
+	print_me("Getting channel names");
+
+	std::vector<std::string> channel_names;
+
+	if(m_channel_list.size() < 1)
 	{
-		if(m_clients.at(i).getName() == p_name)
+		return channel_names;
+	}
+
+	std::map<Channel*, std::vector<Client> >::const_iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		std::string name = itr->first->getName();
+		channel_names.push_back(name);
+	}
+
+	return channel_names;
+}
+
+
+//returns 0 if successful
+//returns -1 if channel wasn't found
+//returns -2 if client already exists
+//returns -3 if same socket already exists
+int ClientPool::addClient(std::string p_name, std::string p_channel_name, int p_socket)
+{
+	print_me("Adding client ("+p_name+") to ("+p_channel_name+")");
+
+	bool channel_found = false;
+	std::map<Channel*, std::vector<Client> >::iterator channel_itr;
+
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		if(itr->first->getName() == p_channel_name)
 		{
-			return false;
+			channel_found = true;
+			channel_itr = itr;
+
+			std::vector<Client> channel_clients = (*itr).second;
+			for(unsigned int i = 0; i < channel_clients.size(); i++)
+			{
+				if(channel_clients.at(i).getName() == p_name)
+				{
+					return -2;
+				}
+				if(p_socket != 0 && channel_clients.at(i).getSocket() == p_socket)
+				{
+					return -3;
+				}
+			}
 		}
-		if(p_socket != 0 && m_clients.at(i).getSocket() == p_socket)
+	}
+
+	if(channel_found)
+	{
+		channel_itr->second.push_back(Client(p_name, p_socket));
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
+}
+bool ClientPool::addChannel(std::string p_name, std::string p_password)
+{
+	print_me("Adding channel ("+p_name+")");
+
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		if(itr->first->getName() == p_name)
 		{
 			return false;
 		}
 	}
 
-	m_clients.push_back(client(p_name, p_channel_name, p_socket));
+	Channel *channel = new Channel(p_name, p_password);
+	std::vector<Client> clients;
+	m_channel_list[channel] = clients;
 	return true;
 }
+//returns 0 if successful
+//returns -1 if the client was not found
 bool ClientPool::removeClient(std::string p_name)
 {
-	std::vector<client>::iterator citr;
-	for(citr = m_clients.begin(); citr != m_clients.end(); citr++)
+	print_me("Removing client ("+p_name+")");
+
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
 	{
-		if(citr->getName() == p_name)
+		std::vector<Client> channel_clients = itr->second;
+		std::vector<Client>::iterator iitr;
+		for(iitr = channel_clients.begin(); iitr != channel_clients.end(); iitr++)
 		{
-			m_clients.erase(citr);
-			return true;
+			if(iitr->getName() == p_name)
+			{
+				itr->second.erase(iitr);
+				return true;
+			}
 		}
 	}
 	return false;
 }
+//returns 0 if successful
+//returns -1 if the client was not found
 bool ClientPool::removeClient(int p_socket)
 {
-	std::vector<client>::iterator citr;
-	for(citr = m_clients.begin(); citr != m_clients.end(); citr++)
-	{
-		if(citr->getSocket() == p_socket)
-		{
-			m_clients.erase(citr);
-			return true;
-		}
-	}
-	return false;
-}
+	print_me("Removing client with socket:");
+	printf("(%d)\n", p_socket);
 
-
-bool ClientPool::socketToName(int p_socket, std::string *p_name)
-{
-	int i;
-	for(i = 0; i < m_clients.size(); i++)
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
 	{
-		if(m_clients.at(i).getSocket() == p_socket)
+		std::vector<Client>::iterator iitr;
+		for(iitr = itr->second.begin(); iitr != itr->second.end(); iitr++)
 		{
-			*p_name = m_clients.at(i).getName();
-			return true;
-		}
-	}
-	return false;
-}
-bool ClientPool::nameToSocket(std::string p_name, int *p_socket)
-{
-	int i;
-	for(i = 0; i < m_clients.size(); i++)
-	{
-		if(m_clients.at(i).getName() == p_name)
-		{
-			*p_socket = m_clients.at(i).getSocket();
-			return true;
-		}
-	}
-	return false;
-}
-bool ClientPool::clientNameToChannelName(std::string p_client_name, std::string *p_channel_name)
-{
-	std::vector<std::string> channel_names = getChannelNames();
-	std::vector<std::string> client_names;
-	int i, j;
-	for(i = 0; i < channel_names.size(); i++)
-	{
-		if(!getChannelClientNames(channel_names.at(i), &client_names))
-		{
-			log_this("couldn't get channel client names");
-			return false;
-		}
-		for(j = 0; j < client_names.size(); j++)
-		{
-			if(client_names.at(j) == p_client_name)
+			if(iitr->getSocket() == p_socket)
 			{
-				*p_channel_name = channel_names.at(i);
+				itr->second.erase(iitr);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+//returns true if successful
+//returns false if the socket was not found
+bool ClientPool::socketToName(int p_socket, std::string &p_name)
+{
+	print_me("Retrieving name from socket:");
+	printf("(%d)\n", p_socket);
+
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		std::vector<Client> channel_clients = itr->second;
+		for(unsigned int i = 0; i < channel_clients.size(); i++)
+		{
+			if(channel_clients.at(i).getSocket() == p_socket)
+			{
+				p_name = channel_clients.at(i).getName();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+//returns true if successful
+//returns false if the name was not found
+bool ClientPool::nameToSocket(std::string p_name, int &p_socket)
+{
+	print_me("Retrieving socket from name: ("+p_name+")");
+
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		std::vector<Client> channel_clients = itr->second;
+		for(unsigned int i = 0; i < channel_clients.size(); i++)
+		{
+			if(channel_clients.at(i).getName() == p_name)
+			{
+				p_socket = channel_clients.at(i).getSocket();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+bool ClientPool::clientNameToChannelName(std::string p_client_name, std::string &p_channel_name)
+{
+	print_me("Retrieving channel name from client name: ("+p_client_name+")");
+
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		std::vector<Client> channel_clients = itr->second;
+		for(unsigned int i = 0; i < channel_clients.size(); i++)
+		{
+			if(channel_clients.at(i).getName() == p_client_name)
+			{
+				p_channel_name = itr->first->getName();
 				return true;
 			}
 		}
@@ -121,63 +224,97 @@ bool ClientPool::clientNameToChannelName(std::string p_client_name, std::string 
 
 bool ClientPool::hasSocket(int p_socket)
 {
-	int i;
-	for(i = 0; i < m_clients.size(); i++)
+	print_me("Checking if there is a client with socket:");
+	printf("(%d)\n", p_socket);
+
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
 	{
-		if(m_clients.at(i).getSocket() == p_socket)
+		std::vector<Client> channel_clients = itr->second;
+		for(unsigned int i = 0; i < channel_clients.size(); i++)
 		{
-			return true;
+			if(channel_clients.at(i).getSocket() == p_socket)
+			{
+				return true;
+			}
 		}
 	}
 	return false;
 }
 
 
-std::vector<std::string> ClientPool::getChannelNames()
+bool ClientPool::getChannelClientNames(std::string p_channel_name, std::vector<std::string> &p_channel) const
 {
-	std::vector<std::string> channel_names;
+	print_me("Getting clients of channel: ("+p_channel_name+")");
 
-	int i, j;
-	for(i = 0; i < m_clients.size(); i++)
-	{
-		bool channel_name_exists = false;
-		for(j = 0; j < channel_names.size(); j++)
-		{
-			if(m_clients.at(i).getChannelName() == channel_names.at(j))
-				channel_name_exists = true;
-		}
-		if(!channel_name_exists)
-			channel_names.push_back(m_clients.at(i).getChannelName());
-	}
-
-	return channel_names;
-}
-bool ClientPool::getChannelClientNames(std::string p_channel_name, std::vector<std::string> *p_client_names)
-{
-	bool clients_found = false;
 	std::vector<std::string> client_names;
 
-	int i;
-	for(i = 0; i < m_clients.size(); i++)
+	std::map<Channel*, std::vector<Client> >::const_iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
 	{
-		if(m_clients.at(i).getChannelName() == p_channel_name)
+		if(itr->first->getName() == p_channel_name)
 		{
-			client_names.push_back(m_clients.at(i).getName());
-			clients_found = true;
+			std::vector<Client> channel_clients = itr->second;
+			for(unsigned int i = 0; i < channel_clients.size(); i++)
+			{
+				client_names.push_back(channel_clients.at(i).getName());
+			}
+
+			p_channel = client_names;
+			return true;
 		}
 	}
-
-	*p_client_names = client_names;
-	return clients_found;
+	return false;
 }
-bool ClientPool::getClientPrivileges(std::string p_name, int *p_privileges)
+bool ClientPool::getChannelPassword(std::string p_name, std::string &p_password) const
 {
-	int i;
-	for(i = 0; i < m_clients.size(); i++)
+	print_me("Getting password of channel ("+p_name+")");
+
+	std::map<Channel*, std::vector<Client> >::const_iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
 	{
-		if(m_clients.at(i).getName() == p_name)
+		if(itr->first->getName() == p_name)
 		{
-			*p_privileges = m_clients.at(i).getPrivileges();
+			p_password = itr->first->getPassword();
+			return true;
+		}
+	}
+	return false;
+}
+bool ClientPool::getClientPrivileges(std::string p_name, int &p_privileges) const
+{
+	print_me("Getting privileges of client: ("+p_name+")");
+
+	std::map<Channel*, std::vector<Client> >::const_iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		std::vector<Client> channel_clients = itr->second;
+		for(unsigned int i = 0; i < channel_clients.size(); i++)
+		{
+			if(channel_clients.at(i).getName() == p_name)
+			{
+				p_privileges = channel_clients.at(i).getPrivileges();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+bool ClientPool::setChannelPassword(std::string p_name, std::string p_password)
+{
+	print_me("Changing password of channel ("+p_name+") to ("+p_password+")");
+
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		if(itr->first->getName() == p_name)
+		{
+//			int ip= (int)&((*itr).first);
+//			Channel *p = (Channel*)ip;
+//			p->setPassword(p_password);
+			itr->first->setPassword(p_password);
 			return true;
 		}
 	}

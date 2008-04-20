@@ -2,44 +2,37 @@
 
 Client::Client()
 {
-	m_channel = NULL;
-	m_username = "no_name_client";
-	m_privileges = 0x0;
+	m_name = "";
+	m_socket = 0;
+	m_privileges = PRIV_TALK | PRIV_TEXT | PRIV_ALL;	//remove PRIV_ALL later
 }
-Client::Client(std::string p_username)
+Client::Client(std::string p_name, int p_socket)
 {
-	m_channel = NULL;
-	printf("setting m_username to %s\n", m_username.c_str());
-	m_username = p_username;
-	m_privileges = 0x0;
+	m_name = p_name;
+	m_socket = p_socket;
+	m_privileges = PRIV_TALK | PRIV_TEXT | PRIV_ALL;	//remove PRIV_ALL later
+}
+Client::Client(std::string p_name, int p_socket, int p_privileges)
+{
+	m_name = p_name;
+	m_socket = p_socket;
+	m_privileges = p_privileges;
 }
 Client::~Client()
 {
 }
 
 
-Channel* Client::getChannel()
+std::string Client::getName() const
 {
-	return m_channel;
+	return m_name;
 }
-std::string Client::getUsername()
+int Client::getSocket() const
 {
-	printf("getUsername()\n");
-	printf("returning %s\n", m_username.c_str());
-	return m_username;
+	return m_socket;
 }
-unsigned char Client::getPrivileges()
+int Client::getPrivileges() const
 {
 	return m_privileges;
-}
-
-
-void Client::setChannel(Channel *p_channel)
-{
-	m_channel = p_channel;
-}
-void Client::setPrivileges(unsigned char p_privileges)
-{
-	m_privileges = p_privileges;
 }
 

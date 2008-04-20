@@ -41,7 +41,7 @@ bool Network::updateBuffer(int p_socket)
 		return false;
 	}
 
-//	printf("HELLO!!!!! recv() got: \"%s\" (%d bytes)\n", recv_buffer, recv_length);
+	printf("HELLO!!!!! recv() got: \"%s\" (%d bytes)\n", recv_buffer, recv_length);
 
 	//create a temp variable big enough to contain the new and old data
 	char *new_buffer = new char[m_buffers[p_socket].getLength()+recv_length];
@@ -93,7 +93,7 @@ bool Network::updateBuffer(int p_socket)
 			//add the new message to the message queue
 			Message m;
 			m.setSocket(p_socket);
-			//printf("Message is (%s) (%d bytes)\n", message, temp_header.message_length);
+			printf("Message is (%s) (%d bytes)\n", message, temp_header.message_length);
 			m.setData(Data(temp_header.message_type, message, temp_header.message_length));
 			m_messages.push(m);
 		}
@@ -117,7 +117,7 @@ void Network::sendData(int p_socket, Data &p_data)
 
 	char *data = (char*)p_data.getData();
 	std::string message;
-	int i;
+	unsigned int i;
 	for(i = 0; i < h.message_length; i++)
 	{
 		message.push_back((char)data[i]);

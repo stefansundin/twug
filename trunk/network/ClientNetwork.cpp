@@ -37,7 +37,7 @@ int ClientNetwork::disconnect()
 
 bool ClientNetwork::loginRequest(std::string p_user, std::string p_password)
 {
-	if(!fill(p_user, 20) || !fill(p_password, 20))
+	if(!fill(p_user, MESSAGE_FILL) || !fill(p_password, MESSAGE_FILL))
 	{
 		return false;
 	}
@@ -45,6 +45,8 @@ bool ClientNetwork::loginRequest(std::string p_user, std::string p_password)
 
 	Data data = Data(CLIENT_LOGIN_REQUEST, temp);
 	sendData(m_socket, data);
+
+	return true;
 }
 void ClientNetwork::logout()
 {
@@ -57,8 +59,8 @@ void ClientNetwork::logout()
 
 void ClientNetwork::changeChannels(std::string p_channel, std::string p_password)
 {
-	fill(p_channel, 20);
-	fill(p_password, 20);
+	fill(p_channel, MESSAGE_FILL);
+	fill(p_password, MESSAGE_FILL);
 	std::string to_send = p_channel + p_password;
 
 	Data data = Data(CLIENT_CHANNEL_CHANGE, to_send);
@@ -67,7 +69,7 @@ void ClientNetwork::changeChannels(std::string p_channel, std::string p_password
 
 void ClientNetwork::sendText(std::string p_to_username, std::string p_message)
 {
-	fill(p_to_username, 20);
+	fill(p_to_username, MESSAGE_FILL);
 	std::string to_send = p_to_username + p_message;
 
 	Data data = Data(CLIENT_TEXT_DATA, to_send);
@@ -132,7 +134,7 @@ bool ClientNetwork::getConnectionStatus() const
 
 void ClientNetwork::sendCreateChannelRequest(std::string p_name)
 {
-	fill(p_name, 20);
+	fill(p_name, MESSAGE_FILL);
 
 	Data data = Data(CLIENT_ADMIN_CREATE_CHANNEL, p_name);
 	sendData(m_socket, data);
@@ -140,7 +142,7 @@ void ClientNetwork::sendCreateChannelRequest(std::string p_name)
 
 void ClientNetwork::sendRemoveChannelRequest(std::string p_name)
 {
-	fill(p_name, 20);
+	fill(p_name, MESSAGE_FILL);
 
 	Data data = Data(CLIENT_ADMIN_REMOVE_CHANNEL, p_name);
 	sendData(m_socket, data);
