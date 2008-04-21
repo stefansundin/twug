@@ -12,6 +12,8 @@
 #include "Client.h"
 #include "Channel.h"
 
+#define DEFAULT_CHANNEL "__lobby__"
+
 class ClientPool
 {
 public:
@@ -25,6 +27,7 @@ public:
 	bool addChannel(std::string p_name, std::string p_password);
 	bool removeClient(std::string p_name);
 	bool removeClient(int p_socket);
+	bool removeChannel(std::string p_name);
 
 	int switchClientChannels(std::string p_client_name, std::string p_channel_name, std::string p_password);
 

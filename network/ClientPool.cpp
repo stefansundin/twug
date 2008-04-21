@@ -155,6 +155,59 @@ bool ClientPool::removeClient(int p_socket)
 	}
 	return false;
 }
+bool ClientPool::removeChannel(std::string p_name)
+{
+	print_me("Removing channel ("+p_name+")");
+
+	std::vector<std::string> client_names;
+	if(!getChannelClientNames(p_name, client_names))
+	{
+		log_this("Could not get clients from channel ("+p_name+")");
+	}
+
+	for(unsigned int i = 0; i < client_names.size(); i++)
+	{
+		std::string client_name = client_names.at(i);
+		print_me("Channel: ("+p_name+") client: ("+client_name+")");
+		int returned = switchClientChannels(client_name, DEFAULT_CHANNEL, "");
+		if(returned == 0)
+		{
+			print_me("Move of client ("+client_name+") to ("+DEFAULT_CHANNEL+") successful");
+		}
+		else if(returned == -1)
+		{
+			log_this("Client ("+client_name+") not found");
+		}
+		else if(returned == -2)
+		{
+			log_this("eek. This should NOT happen");
+		}
+		else if(returned == -3)
+		{
+			log_this("eek. This should NOT happen");
+		}
+		else if(returned == -4)
+		{
+			log_this("Client ("+client_name+") could not be removed in switchClientChannels");
+		}
+		else
+		{
+			log_this("switchClientChannels returned an unexpected value!");
+		}
+	}
+
+	std::map<Channel*, std::vector<Client> >::iterator itr;
+	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
+	{
+		if(itr->first->getName() == p_name)
+		{
+			m_channel_list.erase(itr);
+			return true;
+		}
+	}
+
+	return false;
+}
 
 //return values:
 //0 on success
