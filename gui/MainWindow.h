@@ -60,6 +60,9 @@ protected:
 
 	ChannelList *m_channellist;
 	void setup_channelList(); 
+
+	void hack();
+	Gtk::MessageDialog* m_kaka;
 };
 
 #endif //MainWindow_h

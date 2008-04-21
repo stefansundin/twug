@@ -43,16 +43,23 @@ MainWindow::MainWindow(UIEvents* p_events)
 		sigc::mem_fun(*this,&MainWindow::on_button_released));
 }
 
+void MainWindow::hack()
+{
+	m_kaka->response(Gtk::RESPONSE_OK);
+	m_kaka->hide();
+}
+
 void MainWindow::on_addbutton_clicked()
 {
-	Gtk::MessageDialog kaka(*this,"Add new channel",false,Gtk::MESSAGE_QUESTION,Gtk::BUTTONS_OK_CANCEL);
-	kaka.set_secondary_text("What do you want to call the new channel?");
+	m_kaka = new Gtk::MessageDialog(*this,"Add new channel",false,Gtk::MESSAGE_QUESTION,Gtk::BUTTONS_OK_CANCEL);
+	m_kaka->set_secondary_text("What do you want to call the new channel?");
 
 	Gtk::Entry* entry = new Gtk::Entry(); 
-	kaka.get_vbox()->add(*entry);
-	kaka.show_all();
+	m_kaka->get_vbox()->add(*entry);
+	entry->signal_activate().connect(sigc::mem_fun(*this,&MainWindow::hack));
+	m_kaka->show_all();
 
-	int answer = kaka.run();
+	int answer = m_kaka->run();
 
 	if ( entry->get_text() != "" && answer == Gtk::RESPONSE_OK )
 	{
