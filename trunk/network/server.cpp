@@ -7,8 +7,6 @@
 #include "strip.h"
 #include "ClientPool.h"
 
-#define DEFAULT_CHANNEL "__lobby__"
-
 ServerNetwork *g_network;
 ClientPool *g_client_pool;
 
@@ -453,6 +451,32 @@ void handleMessage(Message p_message)
 			log_this("Client ("+client_name+") is not allowed to create channels");
 			return;
 		}
+	}
+	else if(p_message.getData().getType() == CLIENT_ADMIN_REMOVE_CHANNEL)
+	{
+		if(data_str.size() != MESSAGE_FILL)
+		{
+			print_me("Message not of proper length");
+			return;
+		}
+
+		std::string channel_name = data_str.substr(0, MESSAGE_FILL);
+		strip(channel_name);
+
+		std::vector<std::string> client_names;
+		if(g_client_pool->removeChannel(channel_name))
+		{
+			print_me("Channel ("+channel_name+") removed");
+			fill(channel_name, MESSAGE_FILL);
+			Data response = Data(SERVER_REMOVE_CHANNEL, channel_name);
+			broadcastSend(response);
+		}
+		else
+		{
+			log_this("Removal of channel ("+channel_name+") failed");
+		}
+
+		return;
 	}
 	else if(p_message.getData().getType() == SOCKET_DISCONNECTED)
 	{

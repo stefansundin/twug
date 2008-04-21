@@ -350,7 +350,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 
 		std::string channel_name = data_str.substr(0, MESSAGE_FILL);
 		strip(channel_name);
-		if(!m_client_pool.removeChannel(channel_name, ""))
+		if(!m_client_pool.removeChannel(channel_name))
 		{
 			print_me("Could not remove channel ("+channel_name+")");
 		}
