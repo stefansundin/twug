@@ -23,7 +23,7 @@ void printClientPool(ClientPool *p_client_pool)
 		printf("%s:\n", channel_names.at(i).c_str());
 		if(!g_client_pool->getChannelClientNames(channel_names.at(i), client_names))
 		{
-			log_this("couldn't get channel client names");
+			log_this("Could not get channel client names.");
 			return;
 		}
 		for(j = 0; j < client_names.size(); j++)
@@ -36,8 +36,8 @@ void printClientPool(ClientPool *p_client_pool)
 
 int checkLogin(std::string p_username, std::string p_password)
 {
-	printf("username: %s\n", p_username.c_str());
-	printf("password: %s\n", p_password.c_str());
+	print_me("Username: "+p_username+".");
+	print_me("Password: "+p_password+".");
 
 	std::vector<std::string> client_names = g_client_pool->getClientNames();
 	unsigned int i;
@@ -66,7 +66,7 @@ void broadcastSend(Data p_data)
 			int socket;
 			if(!g_client_pool->nameToSocket(client_names.at(j), socket))
 			{
-				print_me("Could not get socket from name ("+client_names.at(j)+")");
+				print_me("Could not get socket from name ("+client_names.at(j)+").");
 			}
 			else
 			{
@@ -130,7 +130,7 @@ void broadcastChannelList()
 
 void handleMessage(Message p_message)
 {
-	print_me("Handling messages");
+	print_me("Handling messages.");
 
 	char *data = (char*)p_message.getData().getData();
 	unsigned int length = p_message.getData().getLength();
@@ -145,17 +145,12 @@ void handleMessage(Message p_message)
 
 	if(p_message.getData().getType() == CLIENT_LOGIN_REQUEST)
 	{
-		printf("got \"CLIENT_LOGIN_REQUEST\"\n");
+		print_me("Got \"CLIENT_LOGIN_REQUEST\".");
 
 		//check that the message is of proper length
 		if(data_str.size() != MESSAGE_FILL*2)
 		{
-			print_me("Message not of proper length");
-			printf("data_str.size(): (%d)\n", data_str.size());
-			std::cout << "data_str: (" << data_str << ")" << std::endl;
-
-			printf("lengt: (%d)\n", length);
-			printf("printf: data: (%s)\n", data);
+			print_me("Message not of proper length.");
 			return;
 		}
 
@@ -194,26 +189,27 @@ void handleMessage(Message p_message)
 			why = 1;
 			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
 			g_network->sendData(p_message.getSocket(), response);
-			printf("bad username\n");
+			print_me("Bad username.");
 		}
 		else if(returned == -2)		//bad password
 		{
 			why = 2;
 			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
 			g_network->sendData(p_message.getSocket(), response);
-			printf("bad password\n");
+			print_me("Bad password.");
 		}
 		else if(returned == -3)		//username already taken
 		{
 			why = 3;
 			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
 			g_network->sendData(p_message.getSocket(), response);
-			printf("username already taken\n");
+			printf("Username already taken.");
 		}
 	}
+/*	//this message is handled by the same as SOCKET_DISCONNECTED for the time being
 	else if(p_message.getData().getType() == CLIENT_LOGOUT)
 	{
-		printf("socket %d sent CLIENT_LOGOUT", p_message.getSocket());
+		print_me("Got \"CLIENT_LOGOUT\".");
 
 		std::string remove_name;
 		g_client_pool->socketToName(p_message.getSocket(), remove_name);
@@ -222,38 +218,35 @@ void handleMessage(Message p_message)
 		printClientPool(g_client_pool);
 
 		response = Data(SERVER_REMOVE_CLIENT, remove_name);
-		g_network->sendData(p_message.getSocket(), response);
-
-		std::string to;
-		g_client_pool->socketToName(p_message.getSocket(), to);
-		printf("sent: type=SERVER_REMOVE_CLIENT to (%s)\n", to.c_str());
+		broadcastSend(response);
 	}
+*/
 	else if(p_message.getData().getType() == CLIENT_AUDIO_DATA)
 	{
-		printf("socket %d sent CLIENT_AUDIO_DATA", p_message.getSocket());
+		print_me("Got \"CLIENT_AUDIO_DATA\".");
 
 		if(!g_client_pool->hasSocket(p_message.getSocket()))
 		{
-			log_this("dropping message comming from a socket not logged in");
+			log_this("Dropping message comming from a socket not logged in.");
 			return;
 		}
 
 		std::string client_name;
 		if(!g_client_pool->socketToName(p_message.getSocket(), client_name))
 		{
-			log_this("couldn't get client name");
+			log_this("Could not get client name.");
 			return;
 		}
 		std::string channel_name;
 		if(!g_client_pool->clientNameToChannelName(client_name, channel_name))
 		{
-			log_this("couldn't get channel name");
+			log_this("Could not get channel name.");
 			return;
 		}
 		std::vector<std::string> channel_client_names;
 		if(!g_client_pool->getChannelClientNames(channel_name, channel_client_names))
 		{
-			log_this("couldn't get channel client names");
+			log_this("Could not get channel client names.");
 			return;
 		}
 
@@ -263,7 +256,7 @@ void handleMessage(Message p_message)
 		{
 			if(!g_client_pool->nameToSocket(channel_client_names.at(i), s))
 			{
-				log_this("couldn't get socket from name");
+				log_this("Could not get socket from name.");
 				return;
 			}
 			response = Data(SERVER_AUDIO_DATA, data, length);
@@ -271,28 +264,23 @@ void handleMessage(Message p_message)
 
 			std::string to;
 			g_client_pool->socketToName(s, to);
-			printf("sent: type=SERVER_AUDIO_DATA to (%s)\n", to.c_str());
+			printf("Sent: type=SERVER_AUDIO_DATA to (%s)\n", to.c_str());
 		}
 	}
 	else if(p_message.getData().getType() == CLIENT_TEXT_DATA)
 	{
-		printf("got \"CLIENT_TEXT_DATA\"\n");
+		print_me("Got \"CLIENT_TEXT_DATA\".");
 
 		//check that the message is of proper length
 		if(data_str.size() < MESSAGE_FILL)
 		{
-			print_me("Message not of proper length");
-			printf("data_str.size(): (%d)\n", data_str.size());
-			std::cout << "data_str: (" << data_str << ")" << std::endl;
-
-			printf("lengt: (%d)\n", length);
-			printf("printf: data: (%s)\n", data);
+			print_me("Message not of proper length.");
 			return;
 		}
 
 		if(!g_client_pool->hasSocket(p_message.getSocket()))
 		{
-			log_this("dropping message comming from a socket not logged in");
+			log_this("Dropping message comming from a socket not logged in.");
 			return;
 		}
 
@@ -303,14 +291,14 @@ void handleMessage(Message p_message)
 		int recv_socket;
 		if(!g_client_pool->nameToSocket(reciever, recv_socket))
 		{
-			log_this("no client ("+reciever+") found");
+			log_this("No client ("+reciever+") found.");
 			return;
 		}
 
 		std::string sender = "";
 		if(!g_client_pool->socketToName(p_message.getSocket(), sender))
 		{
-			log_this("Couldn't get name from socket");
+			log_this("Could not get name from socket.");
 			return;
 		}
 		fill(sender, MESSAGE_FILL);
@@ -324,18 +312,18 @@ void handleMessage(Message p_message)
 	}
 	else if(p_message.getData().getType() == CLIENT_CHANNEL_CHANGE)
 	{
-		printf("socket %d sent CLIENT_CHANNEL_CHANGE", p_message.getSocket());
+		print_me("Got \"CLIENT_CHANNEL_CHANGE\".");
 
 		//check that the message is of proper length
 		if(data_str.size() != MESSAGE_FILL*2)
 		{
-			print_me("Message not of proper length");
+			print_me("Message not of proper length.");
 			return;
 		}
 
 		if(!g_client_pool->hasSocket(p_message.getSocket()))
 		{
-			log_this("dropping message comming from a socket not logged in");
+			log_this("Dropping message comming from a socket not logged in.");
 			return;
 		}
 
@@ -343,12 +331,12 @@ void handleMessage(Message p_message)
 		strip(channel);
 		std::string password = data_str.substr(MESSAGE_FILL,MESSAGE_FILL);
 		strip(password);
-		print_me("password: ("+password+")");
+		print_me("Password: ("+password+").");
 
 		std::string client_name;
 		if(!g_client_pool->socketToName(p_message.getSocket(), client_name))
 		{
-			log_this("Couldn't get name from socket");
+			log_this("Could not get name from socket.");
 			return;
 		}
 
@@ -356,7 +344,7 @@ void handleMessage(Message p_message)
 		int returned = g_client_pool->switchClientChannels(client_name, channel, password);
 		if(returned == 0)
 		{
-			print_me("Move of client ("+client_name+") to channel ("+channel+") successful");
+			print_me("Move of client ("+client_name+") to channel ("+channel+") successful.");
 			result = "0";
 
 			fill(client_name, MESSAGE_FILL);
@@ -369,17 +357,17 @@ void handleMessage(Message p_message)
 		}
 		else if(returned == -3)
 		{
-			report_error("client not found");
+			report_error("Client not found.");
 			result = "3";
 		}
 		else if(returned == -4)
 		{
-			report_error("channel name not found");
+			report_error("Channel name not found.");
 			result = "1";
 		}
 		else if(returned == -5)
 		{
-			report_error("bad password");
+			report_error("Bad password.");
 			result = "2";
 		}
 		else
@@ -391,25 +379,26 @@ void handleMessage(Message p_message)
 	}
 	else if(p_message.getData().getType() == CLIENT_ADMIN_CREATE_CHANNEL)
 	{
-		printf("got \"CLIENT_ADMIN_CREATE_CHANNEL\"\n");
+		print_me("got \"CLIENT_ADMIN_CREATE_CHANNEL\".");
 
+		//check that the message is of proper length
 		if(data_str.size() != MESSAGE_FILL)
 		{
-			print_me("Message not of proper length");
+			print_me("Message not of proper length.");
 			return;
 		}
 
 		std::string client_name;
 		if(!g_client_pool->socketToName(p_message.getSocket(), client_name))
 		{
-			log_this("Could not get name from socket");
+			log_this("Could not get name from socket.");
 			return;
 		}
 
 		int privs = PRIV_NONE;
 		if(!g_client_pool->getClientPrivileges(client_name, privs))
 		{
-			log_this("Could not get privileges from name");
+			log_this("Could not get privileges from name.");
 			return;
 		}
 
@@ -431,7 +420,7 @@ void handleMessage(Message p_message)
 				{
 					if(!g_client_pool->nameToSocket(client_names.at(j), socket))
 					{
-						log_this("Could not get socket from name");
+						log_this("Could not get socket from name.");
 						return;
 					}
 
@@ -441,22 +430,25 @@ void handleMessage(Message p_message)
 
 					std::string to;
 					g_client_pool->socketToName(p_message.getSocket(), to);
-					print_me("sent SERVER_ADD_CHANNEL ("+channel_name+") to ("+client_names.at(j)+")");
-					printf("to socket (%d)\n", p_message.getSocket());
+					print_me("Sent SERVER_ADD_CHANNEL ("+channel_name+") to ("+client_names.at(j)+")");
+					printf("to socket (%d).\n", p_message.getSocket());
 				}
 			}
 		}
 		else
 		{
-			log_this("Client ("+client_name+") is not allowed to create channels");
+			log_this("Client ("+client_name+") is not allowed to create channels.");
 			return;
 		}
 	}
 	else if(p_message.getData().getType() == CLIENT_ADMIN_REMOVE_CHANNEL)
 	{
+		print_me("Got \"CLIENT_ADMIN_REMOVE_CHANNEL\".");
+
+		//check that the message is of proper length
 		if(data_str.size() != MESSAGE_FILL)
 		{
-			print_me("Message not of proper length");
+			print_me("Message not of proper length.");
 			return;
 		}
 
@@ -466,38 +458,39 @@ void handleMessage(Message p_message)
 		std::vector<std::string> client_names;
 		if(g_client_pool->removeChannel(channel_name))
 		{
-			print_me("Channel ("+channel_name+") removed");
+			print_me("Channel ("+channel_name+") removed.");
 			fill(channel_name, MESSAGE_FILL);
 			Data response = Data(SERVER_REMOVE_CHANNEL, channel_name);
 			broadcastSend(response);
 		}
 		else
 		{
-			log_this("Removal of channel ("+channel_name+") failed");
+			log_this("Removal of channel ("+channel_name+") failed.");
 		}
 
 		return;
 	}
-	else if(p_message.getData().getType() == SOCKET_DISCONNECTED)
+	else if(p_message.getData().getType() == SOCKET_DISCONNECTED
+			|| p_message.getData().getType() == CLIENT_LOGOUT)
 	{
-		printf("socket %d sent SOCKET_DISCONNECTED\n", p_message.getSocket());
+		print_me("Got \"SOCKET_DISCONNECTED\" or \"CLIENT_LOGOUT\"");
 
 		if(!g_client_pool->hasSocket(p_message.getSocket()))
 		{
-			log_this("not telling clients to remove someone not there");
+			log_this("Not telling clients to remove someone not there.");
 			return;
 		}
 
 		std::string remove_name;
 		if(!g_client_pool->socketToName(p_message.getSocket(), remove_name))
 		{
-			log_this("Couldn't get name from socket");
+			log_this("Could not get name from socket.");
 			return;
 		}
 
 		if(!g_client_pool->removeClient(p_message.getSocket()))
 		{
-			log_this("Couldn't remove client ("+remove_name+")");
+			log_this("Could not remove client ("+remove_name+").");
 			printClientPool(g_client_pool);
 			return;
 		}
@@ -505,22 +498,11 @@ void handleMessage(Message p_message)
 
 		fill(remove_name, MESSAGE_FILL);
 		response = Data(SERVER_REMOVE_CLIENT, remove_name);
-		std::vector<std::string> client_names = g_client_pool->getClientNames();
-		unsigned int i;
-		int s;
-		for(i = 0; i < client_names.size(); i++)
-		{
-			g_client_pool->nameToSocket(client_names.at(i), s);
-			g_network->sendData(s, response);
-
-			std::string to;
-			g_client_pool->socketToName(s, to);
-			printf("sent: type=SERVER_REMOVE_CLIENT to (%s)\n", to.c_str());
-		}
+		broadcastSend(response);
 	}
 	else
 	{
-		log_this("Got unknown message ("+data_str+")");
+		log_this("Got unknown message ("+data_str+").");
 	}
 }
 
@@ -532,12 +514,12 @@ int main()
 	g_network = new ServerNetwork();
 	if(!g_network->initSocket("", 6789))
 	{
-		printf("couldn't initialize networking :(\nquiting\n");
+		print_me("Could not initialize networking... :(\nQuiting.");
 		return -1;
 	}
 	else
 	{
-		printf("initialized networking\n");
+		print_me("Initialized networking.\n");
 	}
 
 	//setup the client pool

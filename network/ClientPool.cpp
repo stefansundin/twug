@@ -221,15 +221,12 @@ int ClientPool::switchClientChannels(std::string p_client_name, std::string p_ch
 
 	Client client;
 	bool client_found = false;
-	std::vector<Client> channel_clients;
 
 	std::map<Channel*, std::vector<Client> >::iterator itr;
 	for(itr = m_channel_list.begin(); itr != m_channel_list.end(); itr++)
 	{
-		channel_clients = itr->second;
-
 		std::vector<Client>::iterator iitr;
-		for(iitr = channel_clients.begin(); iitr != channel_clients.end(); iitr++)
+		for(iitr = itr->second.begin(); iitr != itr->second.end(); iitr++)
 		{
 			if(iitr->getName() == p_client_name)
 			{
@@ -254,18 +251,20 @@ int ClientPool::switchClientChannels(std::string p_client_name, std::string p_ch
 				return -2;
 			}
 			channel_found = true;
-			itr->second.push_back(client);
 			break;
 		}
 	}
-	if(!channel_found)
+	if(channel_found)
+	{
+		if(!removeClient(p_client_name))
+		{
+			return -4;
+		}
+		itr->second.push_back(client);
+	}
+	else
 	{
 		return -3;
-	}
-
-	if(!removeClient(p_client_name))
-	{
-		return -4;
 	}
 
 	//success!
@@ -369,10 +368,10 @@ bool ClientPool::getChannelClientNames(std::string p_channel_name, std::vector<s
 	{
 		if(itr->first->getName() == p_channel_name)
 		{
-			std::vector<Client> channel_clients = itr->second;
-			for(unsigned int i = 0; i < channel_clients.size(); i++)
+			for(unsigned int i = 0; i < itr->second.size(); i++)
 			{
-				client_names.push_back(channel_clients.at(i).getName());
+				print_me("Got client ("+itr->second.at(i).getName()+") from channel ("+p_channel_name+")");
+				client_names.push_back(itr->second.at(i).getName());
 			}
 
 			p_channel = client_names;
