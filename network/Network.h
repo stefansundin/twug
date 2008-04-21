@@ -26,6 +26,7 @@
 #include "Message.h"
 
 #define NETWORK_VERSION 0
+#define RECV_LENGTH 10
 #define HEADER_SIZE sizeof(header) //replace this with crossplatform size
 
 class Network

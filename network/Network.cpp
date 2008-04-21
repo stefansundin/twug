@@ -27,8 +27,8 @@ bool Network::getMessage(Message &p_msg)
 bool Network::updateBuffer(int p_socket)
 {
 	//recived data
-	char *recv_buffer = new char[2048];
-	int recv_length = recv(p_socket, (void*)recv_buffer, 1, 0);
+	char *recv_buffer = new char[RECV_LENGTH];
+	int recv_length = recv(p_socket, (void*)recv_buffer, RECV_LENGTH, 0);
 	if(recv_length == -1)
 	{
 		report_error(strerror(errno));
