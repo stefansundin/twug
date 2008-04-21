@@ -344,6 +344,22 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		}
 		channelListChanged();
 	}
+	else if(p_message.getData().getType() == SERVER_REMOVE_CHANNEL)
+	{
+		print_me("got \"SERVER_REMOVE_CHANNEL\"");
+
+		std::string channel_name = data_str.substr(0, MESSAGE_FILL);
+		strip(channel_name);
+		if(!m_client_pool.removeChannel(channel_name, ""))
+		{
+			print_me("Could not remove channel ("+channel_name+")");
+		}
+		else
+		{
+			print_me("Removed channel ("+channel_name+")");
+		}
+		channelListChanged();
+	}
 }
 
 void NetworkManager::channelListChanged()
