@@ -69,14 +69,14 @@ void ServerNetwork::processNetworking()
 		}
 
 		//start pump hack
-		std::string name = "server";
+		/*std::string name = "server";
 		fill(name, MESSAGE_FILL);
 		std::string pump_message = name+"NETWORK_PUMP";
 		Data pump = Data(SERVER_TEXT_DATA, pump_message);
 		if(mitr->first != m_accepting_socket)
 		{
 			sendData(mitr->first, pump);
-		}
+		}*/
 		//end pump hack
 	}
 
