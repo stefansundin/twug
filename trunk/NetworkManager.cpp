@@ -342,6 +342,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		{
 			print_me("Added channel ("+channel_name+")");
 		}
+		channelListChanged();
 	}
 }
 

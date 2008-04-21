@@ -28,7 +28,7 @@ bool Network::updateBuffer(int p_socket)
 {
 	//recived data
 	char *recv_buffer = new char[2048];
-	int recv_length = recv(p_socket, (void*)recv_buffer, 2048, 0);
+	int recv_length = recv(p_socket, (void*)recv_buffer, 1, 0);
 	if(recv_length == -1)
 	{
 		report_error(strerror(errno));
