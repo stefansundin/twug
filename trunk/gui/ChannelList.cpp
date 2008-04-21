@@ -162,7 +162,7 @@ void ChannelList::giveChannelList(std::vector<std::string> channels)
 
 		i++;
 		
-		if (channels.at(i) == "--END--")
+		if (channels.at(i) == "--END--" && channels.at(i-1) != "__lobby__")
 		{
 			child_iter = m_store->append(iter->children());
 			(*child_iter)[*m_column] = "<empty>";

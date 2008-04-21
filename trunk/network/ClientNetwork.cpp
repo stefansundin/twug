@@ -11,7 +11,6 @@ ClientNetwork::~ClientNetwork()
 	disconnect();
 }
 
-
 int ClientNetwork::connect(std::string p_address, int p_port)
 {
 	struct sockaddr_in addr;
