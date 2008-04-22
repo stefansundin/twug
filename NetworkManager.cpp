@@ -20,6 +20,9 @@ NetworkManager::~NetworkManager ()
 
 void NetworkManager::run()
 {
+	m_events->pushEvent(UIEvent("NOTIFICATION", "Kaka", "En liten kaka."));
+	m_events->pushEvent(UIEvent("ERROR_MESSAGE", "ERROR", "kakan är snäll"));
+
 	bool last_connected_status = false;
 	while(true) // thread main loop
 	{
