@@ -2,8 +2,6 @@
 
 ClientNetwork::ClientNetwork()
 {
-	m_socket = socket(AF_INET, SOCK_STREAM, 0);
-
 	m_connected = false;
 }
 ClientNetwork::~ClientNetwork()
@@ -13,6 +11,13 @@ ClientNetwork::~ClientNetwork()
 
 int ClientNetwork::connect(std::string p_address, int p_port)
 {
+	if(m_connected)
+	{
+		disconnect();
+	}
+
+	m_socket = socket(AF_INET, SOCK_STREAM, 0);
+
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	inet_pton(addr.sin_family, p_address.c_str(), &addr.sin_addr);
