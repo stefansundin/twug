@@ -6,7 +6,10 @@ ClientNetwork::ClientNetwork()
 }
 ClientNetwork::~ClientNetwork()
 {
-	disconnect();
+	if(m_connected)
+	{
+		disconnect();
+	}
 }
 
 int ClientNetwork::connect(std::string p_address, int p_port)
@@ -34,7 +37,9 @@ int ClientNetwork::disconnect()
 {
 	int status = shutdown(m_socket, SHUT_RDWR);
 	if(status == 0)
+	{
 		m_connected = false;
+	}
 	return status;
 }
 
