@@ -9,6 +9,7 @@ install: install_server install_client
 install_client:
 	cp twug /usr/bin
 	cp gui/twug.png /usr/share/pixmaps
+	cp gui/twug.desktop /usr/share/applications
 
 install_server:
 	cp server /usr/bin/twug-server
@@ -18,6 +19,7 @@ uninstall: uninstall_server uninstall_client
 uninstall_client:
 	rm -f /usr/bin/twug
 	rm -f /usr/share/pixmaps/twug.png
+	rm -f /usr/share/applications/twug.desktop
 
 uninstall_server:
 	rm -f /usr/bin/twug-server
