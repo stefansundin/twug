@@ -148,7 +148,6 @@ void NetworkManager::processUIEvents()
 		} else if (event.getType() == "DISCONNECT") {
 			disconnect();
 		} else if (event.getType() == "I_START_TALKING") {
-			m_client_network.sendTextBroadcast("hej!");
 			m_data->setSending(true);
 		} else if (event.getType() == "I_STOP_TALKING") {
 			m_data->setSending(false);
