@@ -28,6 +28,7 @@ MainWindow::MainWindow(UIEvents* p_events)
 		sigc::mem_fun(*this,&MainWindow::on_addbutton_clicked));
 
 	Gtk::Button* broadcastbutton = new Gtk::Button(Gtk::Stock::COPY);
+	broadcastbutton->set_label("Broadcast");
 	broadcastbutton->signal_clicked().connect(
 		sigc::mem_fun(*this,&MainWindow::on_broadcastbutton_clicked));
 
