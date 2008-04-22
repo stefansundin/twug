@@ -41,7 +41,7 @@ bool Network::updateBuffer(int p_socket)
 		return false;
 	}
 
-	printf("HELLO!!!!! recv() got: \"%s\" (%d bytes)\n", recv_buffer, recv_length);
+	//printf("HELLO!!!!! recv() got: \"%s\" (%d bytes)\n", recv_buffer, recv_length);
 
 	//create a temp variable big enough to contain the new and old data
 	char *new_buffer = new char[m_buffers[p_socket].getLength()+recv_length];

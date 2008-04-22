@@ -41,6 +41,7 @@ public:
 protected:
 	virtual void on_button_released();
 	virtual void on_addbutton_clicked();
+	virtual void on_broadcastbutton_clicked();
 	virtual void on_button_pressed();
 	virtual void on_popup_changed();
 	void on_button_clicked();
@@ -64,6 +65,10 @@ protected:
 	void hack();
 	Gtk::MessageDialog* m_kaka;
 	Gtk::Entry* m_entry;
+
+	void hack2();
+	Gtk::MessageDialog* m_kaka2;
+	Gtk::Entry* m_entry2;
 };
 
 #endif //MainWindow_h
