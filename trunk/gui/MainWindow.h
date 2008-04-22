@@ -63,6 +63,7 @@ protected:
 
 	void hack();
 	Gtk::MessageDialog* m_kaka;
+	Gtk::Entry* m_entry;
 };
 
 #endif //MainWindow_h

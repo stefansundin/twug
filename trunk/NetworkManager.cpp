@@ -40,7 +40,7 @@ void NetworkManager::run()
 
 		if(!new_connection_status) // if we arent connected only select on readfd
 		{
-			tv.tv_sec = 60;
+			tv.tv_sec = 1024;
 			tv.tv_usec = 0;
 
 			print_me("selecting on readfd");
@@ -62,7 +62,7 @@ void NetworkManager::run()
 
 				// need to send audio data here, too
 			} else {
-				tv.tv_sec = 120;
+				tv.tv_sec = 1024;
 				tv.tv_usec = 0;
 			}		
 
