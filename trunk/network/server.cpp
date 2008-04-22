@@ -310,6 +310,37 @@ void handleMessage(Message p_message)
 		strip(sender);
 		printf("\"%s\" says \"%s\" to \"%s\"\n", sender.c_str(), message.c_str(), reciever.c_str());
 	}
+	else if(p_message.getData().getType() == CLIENT_TEXT_BROADCAST)
+	{
+		std::string sender = "";
+		if(!g_client_pool->socketToName(p_message.getSocket(), sender))
+		{
+			log_this("Could not get name from socket.");
+			return;
+		}
+
+		//checking privileges
+		int privs = PRIV_NONE;
+		if(!g_client_pool->getClientPrivileges(sender, privs))
+		{
+			log_this("Could not get privileges from name.");
+			return;
+		}
+
+		if(privs & PRIV_TEXT_BROADCAST)
+		{
+			//broadcast
+			fill(sender, MESSAGE_FILL);
+			std::string m = sender + data_str;
+			response = Data(SERVER_TEXT_DATA, m);
+			broadcastSend(response);
+		}
+		else
+		{
+			response = Data(SERVER_NOTIFY, "You are not allowed to broadcast text.");
+			g_network->sendData(p_message.getSocket(), response);
+		}
+	}
 	else if(p_message.getData().getType() == CLIENT_CHANNEL_CHANGE)
 	{
 		print_me("Got \"CLIENT_CHANNEL_CHANGE\".");

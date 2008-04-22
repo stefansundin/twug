@@ -2,12 +2,13 @@
 #define CLIENT_LOGOUT 1					//no message
 #define CLIENT_AUDIO_DATA 2				//message is audio data
 #define CLIENT_TEXT_DATA 3				//fill(to_user_name) + message_text
+#define CLIENT_TEXT_BROADCAST 4			//message_text
 
-#define CLIENT_CHANNEL_CHANGE 4			//fill(channel_name) + fill(password)
+#define CLIENT_CHANNEL_CHANGE 5			//fill(channel_name) + fill(password)
 
-#define CLIENT_ADMIN_CREATE_CHANNEL 5	//fill(channel_name)
-#define CLIENT_ADMIN_REMOVE_CHANNEL 6	//fill(channel_name)
-#define CLIENT_ADMIN_SET_PASSWORD 7		//fill(new_server_password)
+#define CLIENT_ADMIN_CREATE_CHANNEL 6	//fill(channel_name)
+#define CLIENT_ADMIN_REMOVE_CHANNEL 7	//fill(channel_name)
+#define CLIENT_ADMIN_SET_PASSWORD 8		//fill(new_server_password)
 
 
 #define SERVER_LOGIN_OK 0				//no message
@@ -24,6 +25,8 @@
 
 #define SERVER_ADD_CHANNEL 9			//fill("channel name")
 #define SERVER_REMOVE_CHANNEL 10		//fill("channel name")
+
+#define SERVER_NOTIFY 11				//message_text
 
 
 //this one is just to make deleting disconnected sockets fit in with the normal message system

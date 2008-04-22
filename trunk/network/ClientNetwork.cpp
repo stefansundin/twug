@@ -74,6 +74,11 @@ void ClientNetwork::sendText(std::string p_to_username, std::string p_message)
 	Data data = Data(CLIENT_TEXT_DATA, to_send);
 	sendData(m_socket, data);
 }
+void ClientNetwork::sendTextBroadcast(std::string p_message)
+{
+	Data data = Data(CLIENT_TEXT_BROADCAST, p_message);
+	sendData(m_socket, data);
+}
 
 
 bool ClientNetwork::processNetworking()
