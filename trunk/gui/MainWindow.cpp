@@ -20,7 +20,7 @@ MainWindow::MainWindow(UIEvents* p_events)
 	setup_channelList();
 
 	m_button.set_border_width(5);
-	m_button.set_label("Talk button");
+	m_button.set_label("Click-To-Talk");
 
 
 	Gtk::Button* addbutton = new Gtk::Button(Gtk::Stock::ADD);
@@ -220,11 +220,31 @@ void MainWindow::on_popup_changed()
 	}
 }
 
+void MainWindow::event_ErrorMessage(std::string p_header, std::string p_message)
+{
+	spawnErrorDialog(p_header, p_message);
+}
+
+void MainWindow::event_Notification(std::string p_header, std::string p_message)
+{
+	spawnInfoDialog(p_header, p_message);
+}
+
+
 void MainWindow::spawnErrorDialog(std::string p_titlebar,std::string p_textbody)
 {
-	std::cout << "MainWindow: " << p_titlebar << " " << p_textbody << std::endl;
+	std::cout << "MainWindow: <ERROR> " << p_titlebar << " " << p_textbody << std::endl;
 
 	Gtk::MessageDialog kaka(*this,p_titlebar,false,Gtk::MESSAGE_ERROR);
+	kaka.set_secondary_text(p_textbody);
+	kaka.run();
+}
+
+void MainWindow::spawnInfoDialog(std::string p_titlebar,std::string p_textbody)
+{
+	std::cout << "MainWindow: <INFO> " << p_titlebar << " " << p_textbody << std::endl;
+
+	Gtk::MessageDialog kaka(*this,p_titlebar,false,Gtk::MESSAGE_INFO);
 	kaka.set_secondary_text(p_textbody);
 	kaka.run();
 }

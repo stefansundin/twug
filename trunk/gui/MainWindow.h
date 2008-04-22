@@ -19,14 +19,14 @@
 #include "MessageHandler.h"
 #include "ChannelList.h"
 
-class Dialog : public Gtk::MessageDialog
+class EntryDialog : public Gtk::MessageDialog
 {
 public:
-	Dialog(std::string p_first,std::string p_secondary, UIEvents* p_events) : Gtk::MessageDialog(*this,p_first,false,Gtk::MESSAGE_QUESTION,Gtk::BUTTONS_OK_CANCEL)
+	EntryDialog(std::string p_first,std::string p_secondary, UIEvents* p_events) : Gtk::MessageDialog(*this,p_first,false,Gtk::MESSAGE_QUESTION,Gtk::BUTTONS_OK_CANCEL)
 	{
 		m_events = p_events;
 		set_secondary_text(p_secondary);
-		m_entry.signal_activate().connect(sigc::mem_fun(*this,&Dialog::hack));
+		m_entry.signal_activate().connect(sigc::mem_fun(*this,&EntryDialog::hack));
 		get_vbox()->add(m_entry);
 	}
 	void trigger()
@@ -57,10 +57,10 @@ protected:
 	}
 };
 
-class BroadcastDialog : public Dialog
+class BroadcastDialog : public EntryDialog
 {
 public:
-	BroadcastDialog(UIEvents* p_events) : Dialog("Broadcast message","Please type your message below.", p_events)
+	BroadcastDialog(UIEvents* p_events) : EntryDialog("Broadcast message","Please type your message below.", p_events)
 	{
 	}
 protected:
@@ -70,10 +70,10 @@ protected:
 	}
 };
 
-class AddChannelDialog : public Dialog
+class AddChannelDialog : public EntryDialog
 {
 public:
-	AddChannelDialog(UIEvents* p_events) : Dialog("Add new channel","What do you want to call the new channel?", p_events)
+	AddChannelDialog(UIEvents* p_events) : EntryDialog("Add new channel","What do you want to call the new channel?", p_events)
 	{
 	}
 protected:
@@ -103,6 +103,8 @@ public:
 	void event_disconnected ();
 	void event_connecting(std::string p_server);
 	void event_loggingIn(std::string p_server);
+	void event_ErrorMessage(std::string p_header, std::string p_message);
+	void event_Notification(std::string p_header, std::string p_message);
 protected:
 	virtual void on_button_released();
 	virtual void on_addbutton_clicked();
@@ -111,6 +113,7 @@ protected:
 	virtual void on_popup_changed();
 	void on_button_clicked();
 	void spawnErrorDialog(std::string p_titlebar,std::string p_textbody);
+	void spawnInfoDialog(std::string p_titlebar,std::string p_textbody);
 
 	std::string getServerIp(std::string text);
 

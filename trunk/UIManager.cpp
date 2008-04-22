@@ -79,6 +79,10 @@ void UIManager::processEvents()
 				m_prefs_window->show();
 		} else if (event.getType() == "SHOW_MSG_WINDOW") {
 				m_window->event_showMsgWindow(event.pop() );
+		} else if (event.getType() == "NOTIFICATION") {
+				m_window->event_Notification(event.pop(), event.pop() );
+		} else if (event.getType() == "ERROR_MESSAGE") {
+				m_window->event_ErrorMessage(event.pop(), event.pop() );
 		} else {
 				print_me("UIManager: Got invalid event");
 		}
