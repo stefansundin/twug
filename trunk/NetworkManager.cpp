@@ -20,9 +20,6 @@ NetworkManager::~NetworkManager ()
 
 void NetworkManager::run()
 {
-	m_events->pushEvent(UIEvent("NOTIFICATION", "Kaka", "En liten kaka."));
-	m_events->pushEvent(UIEvent("ERROR_MESSAGE", "ERROR", "kakan är snäll"));
-
 	bool last_connected_status = false;
 	while(true) // thread main loop
 	{
@@ -196,16 +193,23 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	{
 		printf("got \"SERVER_LOGIN_BAD\"\n");
 
-		int why = *((int*)data);
-		if(why == 1)
+		//check that the message is of proper length
+		if(data_str.size() != 1)
 		{
-			print_me("bad username");
+			print_me("Message not of proper length.");
+			return;
+		}
+
+		if(data_str == "1")
+		{
 			m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", "bad nickname" ) );
-		} else if(why == 2) {
-			print_me("bad password");
+		}
+		else if(data_str == "2")
+		{
 			m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", "ERR_IS_PASSWORD" ) );
-		} else if(why == 3) {
-			print_me("there is already a user with that name");
+		}
+		else if(data_str == "3")
+		{
 			m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", "Nickname busy" ) );
 		}
 	}
@@ -226,19 +230,19 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	else if(p_message.getData().getType() == SERVER_TEXT_DATA)
 	{
 		print_me("got \"SERVER_TEXT_DATA\"");
-		print_me("got message: ("+data_str+")");
-		printf("(%d long)\n", data_str.size());
+
+		//check that the message is of proper length
+		if(data_str.size() < MESSAGE_FILL)
+		{
+			print_me("Message not of proper length.");
+			return;
+		}
+
 		std::string sender = data_str.substr(0, MESSAGE_FILL);
 		strip(sender);
 		std::string message = data_str.substr(MESSAGE_FILL);
 
-		//remove this later, this is only for the dirty hack "pumping"
-		if (sender != "server") {
-			m_events->pushEvent(UIEvent("TEXT_MESSAGE", sender, message));
-			print_me(sender+": "+message);
-		} else {
-//			print_me("server pump");
-		}
+		m_events->pushEvent(UIEvent("TEXT_MESSAGE", sender, message));
 	}
 	else if(p_message.getData().getType() == SERVER_CHANNEL_CHANGE_RESPONSE)
 	{
@@ -278,11 +282,6 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		if(data_str.size() != MESSAGE_FILL*2)
 		{
 			print_me("Message not of proper length");
-			printf("data_str.size(): (%d)\n", data_str.size());
-			std::cout << "data_str: (" << data_str << ")" << std::endl;
-
-			printf("lengt: (%d)\n", length);
-			printf("printf: data: (%s)\n", data);
 			return;
 		}
 
@@ -314,8 +313,15 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	{
 		print_me("got \"SERVER_MOVE_CLIENT\"");
 
+		//check that the message is of proper length
+		if(data_str.size() != MESSAGE_FILL*2)
+		{
+			print_me("Message not of proper length.");
+			return;
+		}
+
 		std::string client_name = data_str.substr(0, MESSAGE_FILL);
-		std::string channel_name = data_str.substr(MESSAGE_FILL);
+		std::string channel_name = data_str.substr(MESSAGE_FILL, MESSAGE_FILL);
 		strip(client_name);
 		strip(channel_name);
 
@@ -325,6 +331,13 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	else if(p_message.getData().getType() == SERVER_REMOVE_CLIENT)
 	{
 		print_me("got \"SERVER_REMOVE_CLIENT\"");
+
+		//check that the message is of proper length
+		if(data_str.size() != MESSAGE_FILL)
+		{
+			print_me("Message not of proper length.");
+			return;
+		}
 
 		std::string client_name = data_str.substr(0, MESSAGE_FILL);
 		strip(client_name);
@@ -336,6 +349,13 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	else if(p_message.getData().getType() == SERVER_ADD_CHANNEL)
 	{
 		print_me("got \"SERVER_ADD_CHANNEL\"");
+
+		//check that the message is of proper length
+		if(data_str.size() != MESSAGE_FILL)
+		{
+			print_me("Message not of proper length.");
+			return;
+		}
 
 		std::string channel_name = data_str.substr(0, MESSAGE_FILL);
 		strip(channel_name);
@@ -353,6 +373,13 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	{
 		print_me("got \"SERVER_REMOVE_CHANNEL\"");
 
+		//check that the message is of proper length
+		if(data_str.size() != MESSAGE_FILL)
+		{
+			print_me("Message not of proper length.");
+			return;
+		}
+
 		std::string channel_name = data_str.substr(0, MESSAGE_FILL);
 		strip(channel_name);
 		if(!m_client_pool.removeChannel(channel_name))
@@ -364,6 +391,31 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 			print_me("Removed channel ("+channel_name+")");
 		}
 		channelListChanged();
+	}
+	else if(p_message.getData().getType() == SERVER_NOTIFY
+			|| p_message.getData().getType() == SERVER_ERROR_NOTIFY)
+	{
+		print_me("got \"SERVER_NOTIFY\" or \"SERVER_ERROR_NOTIFY\"");
+
+		//check that the message is of proper length
+		if(data_str.size() < MESSAGE_FILL)
+		{
+			print_me("Message not of proper length.");
+			return;
+		}
+
+		std::string title = data_str.substr(0, MESSAGE_FILL);
+		strip(title);
+		std::string message = data_str.substr(MESSAGE_FILL);
+
+		if(p_message.getData().getType() == SERVER_NOTIFY)
+		{
+			m_events->pushEvent(UIEvent("NOTIFICATION", title, message));
+		}
+		else
+		{
+			m_events->pushEvent(UIEvent("ERROR_MESSAGE", title, message));
+		}
 	}
 }
 

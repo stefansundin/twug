@@ -159,7 +159,6 @@ void handleMessage(Message p_message)
 		strip(username);
 		strip(password);
 
-		int why = 0;
 		int returned = checkLogin(username, password);
 		if(returned == 0)	//this client babba ok kk
 		{
@@ -186,22 +185,19 @@ void handleMessage(Message p_message)
 		}
 		else if(returned == -1)		//bad username
 		{
-			why = 1;
-			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
+			response = Data(SERVER_LOGIN_BAD, "1", 1);
 			g_network->sendData(p_message.getSocket(), response);
 			print_me("Bad username.");
 		}
 		else if(returned == -2)		//bad password
 		{
-			why = 2;
-			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
+			response = Data(SERVER_LOGIN_BAD, "2", 1);
 			g_network->sendData(p_message.getSocket(), response);
 			print_me("Bad password.");
 		}
 		else if(returned == -3)		//username already taken
 		{
-			why = 3;
-			response = Data(SERVER_LOGIN_BAD, &why, sizeof(why));
+			response = Data(SERVER_LOGIN_BAD, "3", 1);
 			g_network->sendData(p_message.getSocket(), response);
 			printf("Username already taken.");
 		}
@@ -306,9 +302,6 @@ void handleMessage(Message p_message)
 
 		response = Data(SERVER_TEXT_DATA, m);
 		g_network->sendData(recv_socket, response);
-
-		strip(sender);
-		printf("\"%s\" says \"%s\" to \"%s\"\n", sender.c_str(), message.c_str(), reciever.c_str());
 	}
 	else if(p_message.getData().getType() == CLIENT_TEXT_BROADCAST)
 	{
@@ -330,14 +323,17 @@ void handleMessage(Message p_message)
 		if(privs & PRIV_TEXT_BROADCAST)
 		{
 			//broadcast
-			fill(sender, MESSAGE_FILL);
-			std::string m = sender + data_str;
-			response = Data(SERVER_TEXT_DATA, m);
+			std::string title = "Broadcast";
+			fill(title, MESSAGE_FILL);
+			std::string message = title + data_str;
+			response = Data(SERVER_NOTIFY, message);
 			broadcastSend(response);
 		}
 		else
 		{
-			response = Data(SERVER_NOTIFY, "You are not allowed to broadcast text.");
+			std::string denied = "Permission Denied";
+			fill(denied, MESSAGE_FILL);
+			response = Data(SERVER_ERROR_NOTIFY, denied+"You are not allowed to broadcast text.");
 			g_network->sendData(p_message.getSocket(), response);
 		}
 	}
