@@ -138,29 +138,31 @@ void NetworkManager::processUIEvents()
 		if (event.getType() == "EMPTY") {
 			process = false;
 		} else if (event.getType() == "JOINCHANNEL") {
-				joinChannel(event.pop());
+			joinChannel(event.pop());
 		} else if (event.getType() == "NEWCHANNEL") {
-				m_client_network.sendCreateChannelRequest(event.pop());
+			m_client_network.sendCreateChannelRequest(event.pop());
 		} else if (event.getType() == "REMOVECHANNEL") {
-				m_client_network.sendRemoveChannelRequest(event.pop());
+			m_client_network.sendRemoveChannelRequest(event.pop());
 		} else if (event.getType() == "CONNECTTOSERVER") {
-				connectToServer( event.pop(), event.pop(), event.pop() );
+			connectToServer( event.pop(), event.pop(), event.pop() );
 		} else if (event.getType() == "DISCONNECT") {
-				disconnect();
+			disconnect();
 		} else if (event.getType() == "I_START_TALKING") {
-				m_data->setSending(true);
+			m_data->setSending(true);
 		} else if (event.getType() == "I_STOP_TALKING") {
-				m_data->setSending(false);
+			m_data->setSending(false);
 		} else if (event.getType() == "SEND_TEXT") {
-				std::string destination = event.pop_first();
-				std::string msg = event.pop_first();
-	
-				print_me("sending ("+msg+") to ("+destination+")");
-				printf("(%d long)\n", msg.size());
+			std::string destination = event.pop_first();
+			std::string msg = event.pop_first();
 
-				m_client_network.sendText(destination, msg);
+			print_me("sending ("+msg+") to ("+destination+")");
+			printf("(%d long)\n", msg.size());
+
+			m_client_network.sendText(destination, msg);
+		} else if (event.getType() == "BROADCAST_TEXT") {
+			m_client_network.sendTextBroadcast(event.pop());
 		} else {
-				print_me("NetworkManager: Got invalid event");
+			print_me("NetworkManager: Got invalid event");
 		}
 		
 	}
