@@ -19,6 +19,71 @@
 #include "MessageHandler.h"
 #include "ChannelList.h"
 
+class Dialog : public Gtk::MessageDialog
+{
+public:
+	Dialog(std::string p_first,std::string p_secondary, UIEvents* p_events) : Gtk::MessageDialog(*this,p_first,false,Gtk::MESSAGE_QUESTION,Gtk::BUTTONS_OK_CANCEL)
+	{
+		m_events = p_events;
+		set_secondary_text(p_secondary);
+		m_entry.signal_activate().connect(sigc::mem_fun(*this,&Dialog::hack));
+		get_vbox()->add(m_entry);
+	}
+	void trigger()
+	{
+		m_entry.set_text("");
+		set_focus(m_entry);
+		show_all();
+
+		int answer = run();
+
+		if ( m_entry.get_text() != "" && answer == Gtk::RESPONSE_OK )
+		{
+			doAction();
+		}
+		hide();
+	}
+protected:
+	UIEvents* m_events;
+	Gtk::Entry m_entry;
+	void hack()
+	{
+		response(Gtk::RESPONSE_OK);
+		hide();
+	}
+	virtual void doAction()
+	{
+		print_me("ERROR");
+	}
+};
+
+class BroadcastDialog : public Dialog
+{
+public:
+	BroadcastDialog(UIEvents* p_events) : Dialog("Broadcast message","Please type your message below.", p_events)
+	{
+	}
+protected:
+	virtual void doAction()
+	{
+		m_events->to_network->pushEvent( UIEvent ( "BROADCAST_TEXT", m_entry.get_text()  ) );
+	}
+};
+
+class AddChannelDialog : public Dialog
+{
+public:
+	AddChannelDialog(UIEvents* p_events) : Dialog("Add new channel","What do you want to call the new channel?", p_events)
+	{
+	}
+protected:
+	virtual void doAction()
+	{
+		m_events->to_network->pushEvent( UIEvent ( "NEWCHANNEL", m_entry.get_text()  ) );
+	}
+};
+
+
 class MainWindow : public Gtk::Window
 {
 public:
@@ -62,13 +127,9 @@ protected:
 	ChannelList *m_channellist;
 	void setup_channelList(); 
 
-	void hack();
-	Gtk::MessageDialog* m_kaka;
-	Gtk::Entry* m_entry;
-
-	void hack2();
-	Gtk::MessageDialog* m_kaka2;
-	Gtk::Entry* m_entry2;
+	AddChannelDialog* m_add_dialog;
+	BroadcastDialog* m_broadcast_dialog;
+	
 };
 
 #endif //MainWindow_h

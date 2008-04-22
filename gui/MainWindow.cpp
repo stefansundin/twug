@@ -51,66 +51,21 @@ MainWindow::MainWindow(UIEvents* p_events)
 	m_button.signal_released().connect(
 		sigc::mem_fun(*this,&MainWindow::on_button_released));
 
-	//setup add channel dialog
-	m_kaka = new Gtk::MessageDialog(*this,"Add new channel",false,Gtk::MESSAGE_QUESTION,Gtk::BUTTONS_OK_CANCEL);
-	m_kaka->set_secondary_text("What do you want to call the new channel?");
-	m_entry = new Gtk::Entry(); 
-	m_kaka->get_vbox()->add(*m_entry);
-	m_entry->signal_activate().connect(sigc::mem_fun(*this,&MainWindow::hack));
-
-	//setup broadcast dialog
-	m_kaka2 = new Gtk::MessageDialog(*this,"Broadcast message",false,Gtk::MESSAGE_QUESTION,Gtk::BUTTONS_OK_CANCEL);
-	m_kaka2->set_secondary_text("Please type your message below.");
-
-	m_entry2 = new Gtk::Entry(); 
-	m_kaka2->get_vbox()->add(*m_entry2);
-	m_entry2->signal_activate().connect(sigc::mem_fun(*this,&MainWindow::hack2));
-}
-
-void MainWindow::hack()
-{
-	m_kaka->response(Gtk::RESPONSE_OK);
-	m_kaka->hide();
-}
-
-void MainWindow::hack2()
-{
-	m_kaka2->response(Gtk::RESPONSE_OK);
-	m_kaka2->hide();
+	m_add_dialog = new AddChannelDialog(m_events);
+	m_broadcast_dialog = new BroadcastDialog(m_events);
 }
 
 
 void MainWindow::on_addbutton_clicked()
 {
-	m_entry->set_text("");
-	m_kaka->set_focus(*m_entry);
-	m_kaka->show_all();
-
-	int answer = m_kaka->run();
-
-	if ( m_entry->get_text() != "" && answer == Gtk::RESPONSE_OK )
-	{
-		m_events->to_network->pushEvent( UIEvent ( "NEWCHANNEL", m_entry->get_text()  ) );
-	}
-
-	m_kaka->hide();
+	m_add_dialog->trigger();
 }
 
 void MainWindow::on_broadcastbutton_clicked()
 {
-	m_entry2->set_text("");
-	m_kaka2->set_focus(*m_entry2);
-	m_kaka2->show_all();
-
-	int answer = m_kaka2->run();
-
-	if ( m_entry2->get_text() != "" && answer == Gtk::RESPONSE_OK )
-	{
-		m_events->to_network->pushEvent( UIEvent ( "BROADCAST_TEXT", m_entry2->get_text()  ) );
-	}
-
-	m_kaka2->hide();
+	m_broadcast_dialog->trigger();
 }
+
 
 void MainWindow::setup_channelList()
 {
