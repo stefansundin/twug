@@ -9,7 +9,7 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 
 	m_events = new EventsToUI(p_to_ui);
 
-	m_socket = m_client_network.getSocket(); // socket file descriptor 
+//	m_socket = m_client_network.getSocket(); // socket file descriptor 
 }
 
 NetworkManager::~NetworkManager ()
@@ -423,6 +423,7 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 	m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTING", m_last_requested_server, m_last_requested_nick ) );
 
 	int returned = m_client_network.connect(parsed_ip, parsed_port);
+	m_socket = m_client_network.getSocket(); // socket file descriptor 
 
 	if (returned == 0) {
 		m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "LOGGING_IN", m_last_requested_server, m_last_requested_nick ) );
