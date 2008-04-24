@@ -456,6 +456,8 @@ void NetworkManager::joinChannel(std::string p_channel_name)
 
 void NetworkManager::connectToServer(std::string p_address, std::string p_username, std::string p_password)
 {
+	m_client_pool.clear();
+
 	m_last_requested_nick = p_username;
 	m_last_requested_server = p_address;
 

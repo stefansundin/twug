@@ -435,3 +435,7 @@ bool ClientPool::setChannelPassword(std::string p_name, std::string p_password)
 	return false;
 }
 
+void ClientPool::clear()
+{
+	m_channel_list.clear();
+}

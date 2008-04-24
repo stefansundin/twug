@@ -44,6 +44,7 @@ public:
 
 	bool setChannelPassword(std::string p_name, std::string p_password);
 
+	void clear();
 private:
 	std::map<Channel*, std::vector<Client> > m_channel_list;
 };
