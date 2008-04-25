@@ -25,18 +25,39 @@
 #define FRAMES_PER_BUFFER (1024)
 #define NUM_CHANNELS    (1)
 
-#define PA_SAMPLE_TYPE  paUInt8
-typedef unsigned char SAMPLE;
-#define SAMPLE_SILENCE  (128)
+#if 0
+	#define PA_SAMPLE_TYPE  paFloat32
+	typedef float SAMPLE;
+	#define SAMPLE_SILENCE  (0.0f)
+#elif 0
+	#define PA_SAMPLE_TYPE  paInt16
+	typedef short SAMPLE;
+	#define SAMPLE_SILENCE  (0)
+#elif 0
+	#define PA_SAMPLE_TYPE  paInt8
+	typedef char SAMPLE;
+	#define SAMPLE_SILENCE  (0)
+#else
+	#define PA_SAMPLE_TYPE  paUInt8
+	typedef unsigned char SAMPLE;
+	#define SAMPLE_SILENCE  (128)
+#endif
 
-struct paBuffer {
+struct paBuffer
+{
     SAMPLE *samples;
-    //SAMPLE samples[220500];
     int frameIndex;
     int maxFrameIndex;
     int tx_pos;
     int size;
     int go;
+};
+
+struct paData
+{
+	paBuffer record_buffer;
+    paBuffer *play_buffers;
+    int num_play_buffers;
 };
 
 class EventsToUI : public UIEventQueueHolder
@@ -82,6 +103,12 @@ private:
 		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
 		void *userData );
+	
+	static int playCallback(const void *inputBuffer, void *outputBuffer,
+		unsigned long framesPerBuffer,
+		const PaStreamCallbackTimeInfo* timeInfo,
+		PaStreamCallbackFlags statusFlags,
+		void *userData);
 
 	int m_readfd;
 	int m_socket;
@@ -96,9 +123,10 @@ private:
 	ClientPool m_client_pool;
 	ClientNetwork m_client_network;
 	
-	PaStreamParameters inputParameters;
-	PaStream* stream;
-	paBuffer buffer;
+	PaStreamParameters m_streamParameters;
+	PaStream* m_inputStream;
+	PaStream* m_outputStream;
+	paData m_data;
 };
 
 #endif //NetworkManager_h

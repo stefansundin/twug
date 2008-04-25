@@ -16,6 +16,7 @@ public:
 	void logout();
 	void changeChannels(std::string p_channel, std::string p_password);
 
+	void sendAudioData(char *samples, int length);
 	void sendText(std::string p_to_username, std::string p_message);
 	void sendTextBroadcast(std::string p_message);
 	void sendCreateChannelRequest(std::string p_name);
@@ -23,7 +24,7 @@ public:
 
 	bool processNetworking();
 
-	int getSocket() const;		//this is usefull when one need to tell GTK to watch the socket
+	int getSocket() const;		//this is useful when one need to tell GTK to watch the socket
 	bool getConnectionStatus() const;
 
 private:

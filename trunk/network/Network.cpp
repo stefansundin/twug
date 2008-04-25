@@ -93,7 +93,7 @@ bool Network::updateBuffer(int p_socket)
 			//add the new message to the message queue
 			Message m;
 			m.setSocket(p_socket);
-			printf("Message is (%s) (%d bytes)\n", message, temp_header.message_length);
+			//printf("Message is (%s) (%d bytes)\n", message, temp_header.message_length);
 			m.setData(Data(temp_header.message_type, message, temp_header.message_length));
 			m_messages.push(m);
 		}
@@ -123,8 +123,8 @@ void Network::sendData(int p_socket, Data &p_data)
 		message.push_back((char)data[i]);
 	}
 
-	print_me("sending: ("+message+")");
-	printf("(%d long)\n", p_data.getLength());
+	//print_me("sending: ("+message+")");
+	//printf("(%d long)\n", p_data.getLength());
 
 	send(p_socket, (void*)&h, HEADER_SIZE, 0);
 	send(p_socket, p_data.getData(), p_data.getLength(), 0);
