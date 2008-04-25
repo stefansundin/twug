@@ -1,20 +1,50 @@
 #include "NetworkManager.h"
 
-NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network, DataKeeper* p_data)
+NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network)
 {
 	m_to_network = p_to_network;
-	m_data = p_data;
 
 	m_readfd = p_to_network->getReadFd();
+	m_sending = false;
 
 	m_events = new EventsToUI(p_to_ui);
 
 //	m_socket = m_client_network.getSocket(); // socket file descriptor 
+
+	buffer.frameIndex=0;
+	buffer.maxFrameIndex=60*SAMPLE_RATE;
+	buffer.tx_pos=0;
+	buffer.size=sizeof(SAMPLE)*NUM_CHANNELS*buffer.maxFrameIndex;
+	buffer.samples=new SAMPLE[buffer.size];
+	buffer.go=0;
+	
+	Pa_Initialize();
+
+	inputParameters.device = Pa_GetDefaultInputDevice();
+	inputParameters.channelCount = NUM_CHANNELS;
+	inputParameters.sampleFormat = PA_SAMPLE_TYPE;
+	inputParameters.suggestedLatency = Pa_GetDeviceInfo( inputParameters.device )->defaultLowInputLatency;
+	inputParameters.hostApiSpecificStreamInfo = NULL;
+
+	//Open stream
+	Pa_OpenStream(
+		&stream,
+		&inputParameters,
+		NULL,
+		SAMPLE_RATE,
+		FRAMES_PER_BUFFER,
+		paClipOff,
+		this->recordCallback,
+		this );
+	got_here();
+	Pa_StartStream( stream );
 }
 
 NetworkManager::~NetworkManager ()
 {
 	::close(m_readfd);
+	
+	delete[] buffer.samples;
 }
 
 
@@ -55,7 +85,7 @@ void NetworkManager::run()
 
 			FD_SET(m_socket, &read);
 
-			if(m_data->getSending()) // means we need to wake up more often and send audio data
+			if(m_sending) // means we need to wake up more often and send audio data
 			{
 				tv.tv_sec = 0;
 				tv.tv_usec = 10000;
@@ -148,9 +178,35 @@ void NetworkManager::processUIEvents()
 		} else if (event.getType() == "DISCONNECT") {
 			disconnect();
 		} else if (event.getType() == "I_START_TALKING") {
-			m_data->setSending(true);
+			m_sending=true;
+			buffer.go=1;
+			//while (Pa_IsStreamActive( stream )) { Pa_Sleep(10); }
+			//printf("Recording ended!\n"); fflush(stdout);
+			
+			/*PaError err;
+			while( ( err = Pa_IsStreamActive( stream ) ) == 1 )
+			{
+				Pa_Sleep(10);
+				if (sizeof(SAMPLE)*NUM_CHANNELS*buffer->frameIndex+sizeof(SAMPLE)*NUM_CHANNELS*SAMPLE_RATE > buffer->size) {
+					//We have to realloc, add size for 1 second
+					buffer->maxFrameIndex+=SAMPLE_RATE;
+					//buffer->maxFrameIndex=(buffer->maxFrameIndex > 44100*10?44100*10:buffer->maxFrameIndex);
+					buffer->size=sizeof(SAMPLE)*NUM_CHANNELS*buffer->maxFrameIndex;
+					printf("Realloc buffer, new size: %d bytes.\n",buffer->size);
+					buffer->samples=(SAMPLE*)realloc(buffer->samples,buffer->size);
+				}
+			}*/
 		} else if (event.getType() == "I_STOP_TALKING") {
-			m_data->setSending(false);
+			m_sending=false;
+			buffer.go=0;
+			//Write to file
+			printf("Writing recorded data to recording-client.raw (frameIndex: %d)\n",buffer.frameIndex); fflush(stdout);
+			FILE *f;
+			f=fopen("recording-client.raw","wb");
+			fwrite(buffer.samples,1,sizeof(SAMPLE)*NUM_CHANNELS*buffer.frameIndex,f);
+			fclose(f);
+			//Reset buffer
+			buffer.frameIndex=0;
 		} else if (event.getType() == "SEND_TEXT") {
 			std::string destination = event.pop_first();
 			std::string msg = event.pop_first();
@@ -504,5 +560,39 @@ void NetworkManager::disconnect()
 	print_me("Disconnected");
 
 	m_events->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "DISCONNECTED"));
+}
+
+int NetworkManager::recordCallback( const void *inputBuffer,
+	void *outputBuffer,
+	unsigned long framesPerBuffer,
+	const PaStreamCallbackTimeInfo* timeInfo,
+	PaStreamCallbackFlags statusFlags,
+	void *userData )
+{
+	paBuffer *buffer = &static_cast<NetworkManager*>(userData)->buffer;
+	
+	unsigned int i=0;
+
+	if (buffer->go && inputBuffer != NULL) {
+		const SAMPLE *rptr = (const SAMPLE*)inputBuffer;
+		SAMPLE *wptr = &buffer->samples[buffer->frameIndex * NUM_CHANNELS];
+		unsigned int framesLeft = buffer->maxFrameIndex-buffer->frameIndex;
+		unsigned int framesToRecord = (framesLeft < framesPerBuffer?framesLeft:framesPerBuffer);
+		//We got some audio to record
+		for(i=0; i < framesToRecord; i++ )
+		{
+			*wptr++ = *rptr++;  // left
+			if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  // right
+		}
+		buffer->frameIndex += framesToRecord;
+	}
+
+	/*if (buffer->go && buffer->frameIndex == buffer->maxFrameIndex) {
+		return paComplete;
+	}
+	else {
+		return paContinue;
+	}*/
+	return paContinue;
 }
 
