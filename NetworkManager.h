@@ -17,7 +17,7 @@
 #include "network/ClientNetwork.h"
 #include "network/ClientPool.h"
 
-#include "portaudio.h"
+#include "test_record_network/portaudio.h"
 
 #define STANDARD_PORT 6789
 
