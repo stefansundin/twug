@@ -97,14 +97,8 @@ private:
 
 	void disconnect();
 	
-	static int recordCallback( const void *inputBuffer,
+	static int audioCallback(const void *inputBuffer,
 		void *outputBuffer,
-		unsigned long framesPerBuffer,
-		const PaStreamCallbackTimeInfo* timeInfo,
-		PaStreamCallbackFlags statusFlags,
-		void *userData );
-	
-	static int playCallback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
@@ -124,8 +118,7 @@ private:
 	ClientNetwork m_client_network;
 	
 	PaStreamParameters m_streamParameters;
-	PaStream* m_inputStream;
-	PaStream* m_outputStream;
+	PaStream* m_stream;
 	paData m_data;
 };
 

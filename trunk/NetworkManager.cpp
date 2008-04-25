@@ -29,45 +29,42 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 		m_data.play_buffers[i].samples=new SAMPLE[m_data.play_buffers[i].size];
 	}
 	
-	PaError err = Pa_Initialize();
+	//Start portaudio
+	PaError err;
+	err = Pa_Initialize();
 	if (err != paNoError) fprintf(stderr,"Pa_Initialize() error: %d\n",err);
-
-	//inputStream
+	
 	m_streamParameters.device = Pa_GetDefaultInputDevice();
 	m_streamParameters.channelCount = NUM_CHANNELS;
 	m_streamParameters.sampleFormat = PA_SAMPLE_TYPE;
 	m_streamParameters.suggestedLatency = Pa_GetDeviceInfo(m_streamParameters.device)->defaultLowInputLatency;
 	m_streamParameters.hostApiSpecificStreamInfo = NULL;
-	Pa_OpenStream(
-		&m_inputStream,
+	err = Pa_OpenStream(
+		&m_stream,
 		&m_streamParameters,
-		NULL,
-		SAMPLE_RATE,
-		FRAMES_PER_BUFFER,
-		paClipOff,
-		this->recordCallback,
-		this);
-	Pa_StartStream(m_inputStream);
-	//outputStream
-	Pa_OpenStream(
-		&m_outputStream,
-		NULL,
 		&m_streamParameters,
 		SAMPLE_RATE,
 		FRAMES_PER_BUFFER,
 		paClipOff,
-		this->playCallback,
+		this->audioCallback,
 		this);
-	Pa_StartStream(m_outputStream);
+	if (err != paNoError) fprintf(stderr,"Pa_OpenStream() error: %d\n",err);
+	
+	err = Pa_StartStream(m_stream);
+	if (err != paNoError) fprintf(stderr,"Pa_StartStream() error: %d\n",err);
 }
 
 NetworkManager::~NetworkManager ()
 {
 	::close(m_readfd);
 	
-	Pa_CloseStream(m_outputStream);
-	Pa_CloseStream(m_inputStream);
-	Pa_Terminate();
+	PaError err;
+	err = Pa_CloseStream(m_stream);
+	if (err != paNoError) fprintf(stderr,"Pa_CloseStream() error: %d\n",err);
+	
+	err = Pa_Terminate();
+	if (err != paNoError) fprintf(stderr,"Pa_Terminate() error: %d\n",err);
+	
 	delete[] m_data.record_buffer.samples;
 	for (int i=0; i < m_data.num_play_buffers; i++) {
 		delete[] m_data.play_buffers[i].samples;
@@ -215,11 +212,11 @@ void NetworkManager::processUIEvents()
 		} else if (event.getType() == "I_START_TALKING") {
 			m_sending=true;
 			m_data.record_buffer.go=1;
-			//while (Pa_IsStreamActive( inputStream )) { Pa_Sleep(10); }
+			//while (Pa_IsStreamActive( m_stream )) { Pa_Sleep(10); }
 			//printf("Recording ended!\n"); fflush(stdout);
 			
 			/*PaError err;
-			while( ( err = Pa_IsStreamActive( inputStream ) ) == 1 )
+			while( ( err = Pa_IsStreamActive( m_stream ) ) == 1 )
 			{
 				Pa_Sleep(10);
 				if (sizeof(SAMPLE)*NUM_CHANNELS*buffer->frameIndex+sizeof(SAMPLE)*NUM_CHANNELS*SAMPLE_RATE > buffer->size) {
@@ -336,7 +333,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		
 		buffer->tx_pos+=length;
 		buffer->maxFrameIndex=buffer->tx_pos/(sizeof(SAMPLE)*NUM_CHANNELS);
-		if (!buffer->go && buffer->maxFrameIndex > 10*FRAMES_PER_BUFFER) {
+		if (!buffer->go && buffer->maxFrameIndex > 20*FRAMES_PER_BUFFER) {
 			buffer->go=1;
 		}
 	}
@@ -619,52 +616,18 @@ void NetworkManager::disconnect()
 	m_events->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "DISCONNECTED"));
 }
 
-int NetworkManager::recordCallback(const void *inputBuffer,
+int NetworkManager::audioCallback(const void *inputBuffer,
 	void *outputBuffer,
 	unsigned long framesPerBuffer,
 	const PaStreamCallbackTimeInfo* timeInfo,
 	PaStreamCallbackFlags statusFlags,
 	void *userData)
 {
-	paBuffer *buffer = &static_cast<NetworkManager*>(userData)->m_data.record_buffer;
-	
 	unsigned int i=0;
-
-	if (buffer->go && inputBuffer != NULL)
-	{
-		const SAMPLE *rptr = (const SAMPLE*)inputBuffer;
-		SAMPLE *wptr = &buffer->samples[buffer->frameIndex * NUM_CHANNELS];
-		unsigned int framesLeft = buffer->maxFrameIndex-buffer->frameIndex;
-		unsigned int framesToRecord = (framesLeft < framesPerBuffer?framesLeft:framesPerBuffer);
-		//We got some audio to record
-		for(i=0; i < framesToRecord; i++ )
-		{
-			*wptr++ = *rptr++;  // left
-			if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  // right
-		}
-		buffer->frameIndex += framesToRecord;
-	}
-
-	/*if (buffer->go && buffer->frameIndex == buffer->maxFrameIndex) {
-		return paComplete;
-	}
-	else {
-		return paContinue;
-	}*/
-	return paContinue;
-}
-
-int NetworkManager::playCallback(const void *inputBuffer, void *outputBuffer,
-	unsigned long framesPerBuffer,
-	const PaStreamCallbackTimeInfo* timeInfo,
-	PaStreamCallbackFlags statusFlags,
-	void *userData)
-{
+	
+	//Got anything to play?
 	paBuffer *buffer = &static_cast<NetworkManager*>(userData)->m_data.play_buffers[0];
-	
 	SAMPLE *wptr = (SAMPLE*)outputBuffer;
-	unsigned int i=0;
-	
 	if (buffer->go)
 	{
 		SAMPLE *rptr = &buffer->samples[buffer->frameIndex * NUM_CHANNELS];
@@ -684,7 +647,6 @@ int NetworkManager::playCallback(const void *inputBuffer, void *outputBuffer,
 		*wptr++ = 0;  // left
 		if( NUM_CHANNELS == 2 ) *wptr++ = 0;  // right
 	}
-	
 	//Reset buffer if we've reached the end
 	if (buffer->go && buffer->frameIndex == buffer->maxFrameIndex) {
 		buffer->go=0;
@@ -693,12 +655,23 @@ int NetworkManager::playCallback(const void *inputBuffer, void *outputBuffer,
 		buffer->tx_pos=0;
 	}
 	
-	/*if (buffer->go && buffer->frameIndex == buffer->maxFrameIndex) {
-		return paComplete;
+	//Record anything?
+	buffer = &static_cast<NetworkManager*>(userData)->m_data.record_buffer;
+	if (buffer->go && inputBuffer != NULL)
+	{
+		const SAMPLE *rptr = (const SAMPLE*)inputBuffer;
+		SAMPLE *wptr = &buffer->samples[buffer->frameIndex * NUM_CHANNELS];
+		unsigned int framesLeft = buffer->maxFrameIndex-buffer->frameIndex;
+		unsigned int framesToRecord = (framesLeft < framesPerBuffer?framesLeft:framesPerBuffer);
+		//We got some audio to record
+		for(i=0; i < framesToRecord; i++ )
+		{
+			*wptr++ = *rptr++;  // left
+			if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  // right
+		}
+		buffer->frameIndex += framesToRecord;
 	}
-	else {
-		return paContinue;
-	}*/
+	
 	return paContinue;
 }
 
