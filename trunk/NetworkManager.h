@@ -17,9 +17,27 @@
 #include "network/ClientNetwork.h"
 #include "network/ClientPool.h"
 
-#include "DataKeeper.h"
+#include "portaudio.h"
 
 #define STANDARD_PORT 6789
+
+#define SAMPLE_RATE  (44100)
+#define FRAMES_PER_BUFFER (1024)
+#define NUM_CHANNELS    (1)
+
+#define PA_SAMPLE_TYPE  paUInt8
+typedef unsigned char SAMPLE;
+#define SAMPLE_SILENCE  (128)
+
+struct paBuffer {
+    SAMPLE *samples;
+    //SAMPLE samples[220500];
+    int frameIndex;
+    int maxFrameIndex;
+    int tx_pos;
+    int size;
+    int go;
+};
 
 class EventsToUI : public UIEventQueueHolder
 {
@@ -42,7 +60,7 @@ private:
 class NetworkManager
 {
 public:
-	NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network, DataKeeper* p_data);
+	NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network);
 	~NetworkManager();
 
 	void run(); //main loop
@@ -57,11 +75,19 @@ private:
 	void connectToServer(std::string p_address, std::string p_username, std::string p_password);
 
 	void disconnect();
+	
+	static int recordCallback( const void *inputBuffer,
+		void *outputBuffer,
+		unsigned long framesPerBuffer,
+		const PaStreamCallbackTimeInfo* timeInfo,
+		PaStreamCallbackFlags statusFlags,
+		void *userData );
 
 	int m_readfd;
 	int m_socket;
 	EventsToUI* m_events;
 	UIEventQueue* m_to_network;
+	bool m_sending;
 
 	std::string m_connected_to;
 	std::string m_last_requested_nick;
@@ -69,8 +95,10 @@ private:
 
 	ClientPool m_client_pool;
 	ClientNetwork m_client_network;
-
-	DataKeeper* m_data;
+	
+	PaStreamParameters inputParameters;
+	PaStream* stream;
+	paBuffer buffer;
 };
 
 #endif //NetworkManager_h
