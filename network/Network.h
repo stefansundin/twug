@@ -9,7 +9,7 @@
 #ifdef __linux__
 #include <sys/socket.h>		//for connect, recv, send, CONSTANTS etc.
 //#include <unistd.h>		//dunno why this is here
-#include <arpa/inet.h>		//for htons() (atleast, maybe more :P)
+#include <arpa/inet.h>		//for htons() (at least, maybe more :P)
 #endif
 
 #include <fcntl.h>

@@ -76,6 +76,12 @@ void ClientNetwork::changeChannels(std::string p_channel, std::string p_password
 	sendData(m_socket, data);
 }
 
+void ClientNetwork::sendAudioData(char *samples, int length)
+{
+	Data data(CLIENT_AUDIO_DATA, samples, length);
+	sendData(m_socket, data);
+}
+
 void ClientNetwork::sendText(std::string p_to_username, std::string p_message)
 {
 	fill(p_to_username, MESSAGE_FILL);

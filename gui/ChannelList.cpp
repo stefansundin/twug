@@ -138,7 +138,7 @@ void ChannelList::createChannelListMenu(std::string p_entry)
 
 void ChannelList::giveChannelList(std::vector<std::string> channels)
 {
-	print_me("Recieved new channel list");
+	print_me("Received new channel list");
 
 	m_lastchannellist = channels;
 

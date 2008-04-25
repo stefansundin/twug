@@ -11,40 +11,68 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 
 //	m_socket = m_client_network.getSocket(); // socket file descriptor 
 
-	buffer.frameIndex=0;
-	buffer.maxFrameIndex=60*SAMPLE_RATE;
-	buffer.tx_pos=0;
-	buffer.size=sizeof(SAMPLE)*NUM_CHANNELS*buffer.maxFrameIndex;
-	buffer.samples=new SAMPLE[buffer.size];
-	buffer.go=0;
+    m_data.record_buffer.frameIndex=0;
+    m_data.record_buffer.maxFrameIndex=60*SAMPLE_RATE;
+	m_data.record_buffer.tx_pos=0;
+	m_data.record_buffer.size=sizeof(SAMPLE)*NUM_CHANNELS*m_data.record_buffer.maxFrameIndex;
+	m_data.record_buffer.go=0;
+	m_data.record_buffer.samples=new SAMPLE[m_data.record_buffer.size];
 	
-	Pa_Initialize();
+    m_data.num_play_buffers=2;
+	m_data.play_buffers=new paBuffer[m_data.num_play_buffers];
+	for (int i=0; i < m_data.num_play_buffers; i++) {
+		m_data.play_buffers[i].frameIndex=0;
+		m_data.play_buffers[i].maxFrameIndex=0;
+		m_data.play_buffers[i].tx_pos=0;
+		m_data.play_buffers[i].size=60*sizeof(SAMPLE)*NUM_CHANNELS*SAMPLE_RATE;
+		m_data.play_buffers[i].go=0;
+		m_data.play_buffers[i].samples=new SAMPLE[m_data.play_buffers[i].size];
+	}
+	
+	PaError err = Pa_Initialize();
+	if (err != paNoError) fprintf(stderr,"Pa_Initialize() error: %d\n",err);
 
-	inputParameters.device = Pa_GetDefaultInputDevice();
-	inputParameters.channelCount = NUM_CHANNELS;
-	inputParameters.sampleFormat = PA_SAMPLE_TYPE;
-	inputParameters.suggestedLatency = Pa_GetDeviceInfo( inputParameters.device )->defaultLowInputLatency;
-	inputParameters.hostApiSpecificStreamInfo = NULL;
-
-	//Open stream
+	//inputStream
+	m_streamParameters.device = Pa_GetDefaultInputDevice();
+	m_streamParameters.channelCount = NUM_CHANNELS;
+	m_streamParameters.sampleFormat = PA_SAMPLE_TYPE;
+	m_streamParameters.suggestedLatency = Pa_GetDeviceInfo(m_streamParameters.device)->defaultLowInputLatency;
+	m_streamParameters.hostApiSpecificStreamInfo = NULL;
 	Pa_OpenStream(
-		&stream,
-		&inputParameters,
+		&m_inputStream,
+		&m_streamParameters,
 		NULL,
 		SAMPLE_RATE,
 		FRAMES_PER_BUFFER,
 		paClipOff,
 		this->recordCallback,
-		this );
-	got_here();
-	Pa_StartStream( stream );
+		this);
+	Pa_StartStream(m_inputStream);
+	//outputStream
+	Pa_OpenStream(
+		&m_outputStream,
+		NULL,
+		&m_streamParameters,
+		SAMPLE_RATE,
+		FRAMES_PER_BUFFER,
+		paClipOff,
+		this->playCallback,
+		this);
+	Pa_StartStream(m_outputStream);
 }
 
 NetworkManager::~NetworkManager ()
 {
 	::close(m_readfd);
 	
-	delete[] buffer.samples;
+	Pa_CloseStream(m_outputStream);
+	Pa_CloseStream(m_inputStream);
+	Pa_Terminate();
+	delete[] m_data.record_buffer.samples;
+	for (int i=0; i < m_data.num_play_buffers; i++) {
+		delete[] m_data.play_buffers[i].samples;
+	}
+	delete[] m_data.play_buffers;
 }
 
 
@@ -89,8 +117,15 @@ void NetworkManager::run()
 			{
 				tv.tv_sec = 0;
 				tv.tv_usec = 10000;
-
-				// need to send audio data here, too
+				
+				//send audio
+				paBuffer *buffer=&m_data.record_buffer;
+				int bytestosend=sizeof(SAMPLE)*NUM_CHANNELS*buffer->frameIndex-buffer->tx_pos;
+				if (bytestosend > 0)
+				{
+					m_client_network.sendAudioData((char*)buffer->samples+buffer->tx_pos, bytestosend);
+					buffer->tx_pos+=bytestosend;
+				}
 			} else {
 				tv.tv_sec = 1024;
 				tv.tv_usec = 0;
@@ -179,12 +214,12 @@ void NetworkManager::processUIEvents()
 			disconnect();
 		} else if (event.getType() == "I_START_TALKING") {
 			m_sending=true;
-			buffer.go=1;
-			//while (Pa_IsStreamActive( stream )) { Pa_Sleep(10); }
+			m_data.record_buffer.go=1;
+			//while (Pa_IsStreamActive( inputStream )) { Pa_Sleep(10); }
 			//printf("Recording ended!\n"); fflush(stdout);
 			
 			/*PaError err;
-			while( ( err = Pa_IsStreamActive( stream ) ) == 1 )
+			while( ( err = Pa_IsStreamActive( inputStream ) ) == 1 )
 			{
 				Pa_Sleep(10);
 				if (sizeof(SAMPLE)*NUM_CHANNELS*buffer->frameIndex+sizeof(SAMPLE)*NUM_CHANNELS*SAMPLE_RATE > buffer->size) {
@@ -198,15 +233,17 @@ void NetworkManager::processUIEvents()
 			}*/
 		} else if (event.getType() == "I_STOP_TALKING") {
 			m_sending=false;
-			buffer.go=0;
+			paBuffer *buffer=&m_data.record_buffer;
+			buffer->go=0;
 			//Write to file
-			printf("Writing recorded data to recording-client.raw (frameIndex: %d)\n",buffer.frameIndex); fflush(stdout);
+			printf("Writing recorded data to recording-client.raw (frameIndex: %d)\n",buffer->frameIndex); fflush(stdout);
 			FILE *f;
 			f=fopen("recording-client.raw","wb");
-			fwrite(buffer.samples,1,sizeof(SAMPLE)*NUM_CHANNELS*buffer.frameIndex,f);
+			fwrite(buffer->samples,1,sizeof(SAMPLE)*NUM_CHANNELS*buffer->frameIndex,f);
 			fclose(f);
 			//Reset buffer
-			buffer.frameIndex=0;
+			buffer->frameIndex=0;
+			buffer->tx_pos=0;
 		} else if (event.getType() == "SEND_TEXT") {
 			std::string destination = event.pop_first();
 			std::string msg = event.pop_first();
@@ -282,6 +319,26 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	else if(p_message.getData().getType() == SERVER_AUDIO_DATA)
 	{
 		print_me("got \"SERVER_AUDIO_DATA\"");
+		
+		//Add check here so we don't write out-of-bounds
+		paBuffer *buffer=&m_data.play_buffers[0];
+		memcpy(buffer->samples+buffer->tx_pos, data, length);
+		//Write to file
+		printf("Writing recorded data to recording-server.raw (length: %d)\n",length); fflush(stdout);
+		FILE *f;
+		f=fopen("recording-server.raw","ab");
+		fwrite(data,1,length,f);
+		fclose(f);
+		//Write log
+		/*f=fopen("recording-server.log","ab");
+		fprintf(f,"play_buffer[0] tx_pos: %d frameIndex: %d maxFrameIndex: %d go: %d\n",buffer->tx_pos,buffer->frameIndex,buffer->maxFrameIndex,buffer->go);
+		fclose(f);*/
+		
+		buffer->tx_pos+=length;
+		buffer->maxFrameIndex=buffer->tx_pos/(sizeof(SAMPLE)*NUM_CHANNELS);
+		if (!buffer->go && buffer->maxFrameIndex > 10*FRAMES_PER_BUFFER) {
+			buffer->go=1;
+		}
 	}
 	else if(p_message.getData().getType() == SERVER_TEXT_DATA)
 	{
@@ -562,18 +619,19 @@ void NetworkManager::disconnect()
 	m_events->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "DISCONNECTED"));
 }
 
-int NetworkManager::recordCallback( const void *inputBuffer,
+int NetworkManager::recordCallback(const void *inputBuffer,
 	void *outputBuffer,
 	unsigned long framesPerBuffer,
 	const PaStreamCallbackTimeInfo* timeInfo,
 	PaStreamCallbackFlags statusFlags,
-	void *userData )
+	void *userData)
 {
-	paBuffer *buffer = &static_cast<NetworkManager*>(userData)->buffer;
+	paBuffer *buffer = &static_cast<NetworkManager*>(userData)->m_data.record_buffer;
 	
 	unsigned int i=0;
 
-	if (buffer->go && inputBuffer != NULL) {
+	if (buffer->go && inputBuffer != NULL)
+	{
 		const SAMPLE *rptr = (const SAMPLE*)inputBuffer;
 		SAMPLE *wptr = &buffer->samples[buffer->frameIndex * NUM_CHANNELS];
 		unsigned int framesLeft = buffer->maxFrameIndex-buffer->frameIndex;
@@ -587,6 +645,54 @@ int NetworkManager::recordCallback( const void *inputBuffer,
 		buffer->frameIndex += framesToRecord;
 	}
 
+	/*if (buffer->go && buffer->frameIndex == buffer->maxFrameIndex) {
+		return paComplete;
+	}
+	else {
+		return paContinue;
+	}*/
+	return paContinue;
+}
+
+int NetworkManager::playCallback(const void *inputBuffer, void *outputBuffer,
+	unsigned long framesPerBuffer,
+	const PaStreamCallbackTimeInfo* timeInfo,
+	PaStreamCallbackFlags statusFlags,
+	void *userData)
+{
+	paBuffer *buffer = &static_cast<NetworkManager*>(userData)->m_data.play_buffers[0];
+	
+	SAMPLE *wptr = (SAMPLE*)outputBuffer;
+	unsigned int i=0;
+	
+	if (buffer->go)
+	{
+		SAMPLE *rptr = &buffer->samples[buffer->frameIndex * NUM_CHANNELS];
+		unsigned int framesLeft = buffer->maxFrameIndex-buffer->frameIndex;
+		unsigned int framesToPlay = (framesLeft < framesPerBuffer?framesLeft:framesPerBuffer);
+		//We got some audio to play
+		for(; i < framesToPlay; i++ )
+		{
+			*wptr++ = *rptr++;  // left
+			if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  // right
+		}
+		buffer->frameIndex += framesToPlay;
+	}
+	//Fill the rest of the buffer with silence
+	for(; i<framesPerBuffer; i++ )
+	{
+		*wptr++ = 0;  // left
+		if( NUM_CHANNELS == 2 ) *wptr++ = 0;  // right
+	}
+	
+	//Reset buffer if we've reached the end
+	if (buffer->go && buffer->frameIndex == buffer->maxFrameIndex) {
+		buffer->go=0;
+		buffer->frameIndex=0;
+		buffer->maxFrameIndex=0;
+		buffer->tx_pos=0;
+	}
+	
 	/*if (buffer->go && buffer->frameIndex == buffer->maxFrameIndex) {
 		return paComplete;
 	}
