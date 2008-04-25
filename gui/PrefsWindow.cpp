@@ -40,11 +40,12 @@ PrefsWindow::PrefsWindow(UIEvents* p_events)
 	namebox->add(*label2);
 	namebox->add(*m_nameEntry);
 
+	//vbox->add(*m_chkbtn_blinking);
+	vbox->add(*namebox);
 	vbox->add(*label); 
 	vbox->add(*m_serverlist);
 	vbox->add(*buttonbox);
-	vbox->add(*m_chkbtn_blinking);
-	vbox->add(*namebox);	
+	
 	vbox->show_all();
 	add(*vbox);
 
