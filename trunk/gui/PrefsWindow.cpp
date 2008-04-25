@@ -122,8 +122,8 @@ void PrefsWindow::reloadServers()
 	
 	for(int i=0;i<servers.size();i+=2)
 	{
-		temp.push_back(servers.at(i)); //temp hack
-		temp.push_back(servers.at(i+1)); //temp hack
+		temp.push_back(servers.at(i));
+		temp.push_back(servers.at(i+1));
 
 		iter = m_serverstore->append();
 		(*iter)[m_columns->name] = servers.at(i);
@@ -176,14 +176,14 @@ void PrefsWindow::on_buttonRemove_clicked()
 
 void PrefsWindow::loadSettings()
 {
-	std::cout << "PrefsWindow: Loading settings...\n";
+	print_me("Loading settings...");
 	reloadServers();
 
 	m_chkbtn_blinking->set_active( m_gconf->get_bool("/apps/twug/autoopen_enabled") );
 
 	m_nameEntry->set_text( m_gconf->get_string("/apps/twug/nickname") ) ;
 	
-	std::cout << "PrefsWindow: Loaded settings\n";
+	print_me("Loaded settings");
 }
 
 

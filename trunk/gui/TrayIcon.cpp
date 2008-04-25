@@ -53,5 +53,8 @@ void TrayIcon::on_action_quit()
 
 void TrayIcon::on_action_about()
 {
-	m_about->show();	
+	//m_about->show();
+	//m_about->present();
+	m_about->run();
+	m_about->hide();
 }

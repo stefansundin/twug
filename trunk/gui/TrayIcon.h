@@ -28,6 +28,7 @@ public:
 		set_website("http://code.google.com/p/twug");
 		set_version("0.1");
 	}
+
 };
 
 class TrayIcon : public Gtk::StatusIcon

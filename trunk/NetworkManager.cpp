@@ -158,7 +158,7 @@ void NetworkManager::processNetworkEvents()
 }
 void NetworkManager::processUIEvents()
 {
-	print_me("NetworkManager: Processing events from UI");
+	print_me("Processing events from UI");
 
 	bool process = true;
 	while(process)

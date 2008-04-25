@@ -1,7 +1,7 @@
 #ifndef Lock_h
 #define Lock_h
 
-//class for keeping data shared between network and audio threads ( audio data )
+//class for mutex locking (needed to share data between threads)
 
 #include <pthread.h>
 
