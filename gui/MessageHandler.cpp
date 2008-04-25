@@ -27,7 +27,7 @@ void MessageHandler::handleMessage(std::string p_sendername, std::string p_msg)
 
 void MessageHandler::showWindow(std::string p_name)
 {
-	bool found=0;
+	bool found=false;
 
 	std::vector<MessageWindow*>::iterator iter;
 
@@ -43,7 +43,9 @@ void MessageHandler::showWindow(std::string p_name)
 	if (found)
 	{
 		if (!(*iter)->is_visible())
-			(*iter)->show();	
+			(*iter)->show();
+		else
+			(*iter)->present();	
 	} else {
 		m_windows.push_back( new MessageWindow(p_name,m_events,m_nameptr) );
 	}

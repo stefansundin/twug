@@ -77,6 +77,7 @@ void UIManager::processEvents()
 				event_toggleTwugVisibility();
 		} else if (event.getType() == "SHOW_PREFSWINDOW") {
 				m_prefs_window->show();
+				m_prefs_window->present();
 		} else if (event.getType() == "SHOW_MSG_WINDOW") {
 				m_window->event_showMsgWindow(event.pop() );
 		} else if (event.getType() == "NOTIFICATION") {
