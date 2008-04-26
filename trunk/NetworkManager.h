@@ -21,7 +21,7 @@
 
 #define STANDARD_PORT 6789
 
-#define SAMPLE_RATE  (44100)
+#define SAMPLE_RATE  (44800)
 #define FRAMES_PER_BUFFER (1024)
 #define NUM_CHANNELS    (1)
 
