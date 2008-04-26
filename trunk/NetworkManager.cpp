@@ -233,11 +233,11 @@ void NetworkManager::processUIEvents()
 			paBuffer *buffer=&m_data.record_buffer;
 			buffer->go=0;
 			//Write to file
-			printf("Writing recorded data to recording-client.raw (frameIndex: %d)\n",buffer->frameIndex); fflush(stdout);
+			/*printf("Writing recorded data to recording-client.raw (frameIndex: %d)\n",buffer->frameIndex); fflush(stdout);
 			FILE *f;
 			f=fopen("recording-client.raw","wb");
 			fwrite(buffer->samples,1,sizeof(SAMPLE)*NUM_CHANNELS*buffer->frameIndex,f);
-			fclose(f);
+			fclose(f);*/
 			//Reset buffer
 			buffer->frameIndex=0;
 			buffer->tx_pos=0;
@@ -321,11 +321,11 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		paBuffer *buffer=&m_data.play_buffers[0];
 		memcpy(buffer->samples+buffer->tx_pos, data, length);
 		//Write to file
-		printf("Writing recorded data to recording-server.raw (length: %d)\n",length); fflush(stdout);
+		/*printf("Writing recorded data to recording-server.raw (length: %d)\n",length); fflush(stdout);
 		FILE *f;
 		f=fopen("recording-server.raw","ab");
 		fwrite(data,1,length,f);
-		fclose(f);
+		fclose(f);*/
 		//Write log
 		/*f=fopen("recording-server.log","ab");
 		fprintf(f,"play_buffer[0] tx_pos: %d frameIndex: %d maxFrameIndex: %d go: %d\n",buffer->tx_pos,buffer->frameIndex,buffer->maxFrameIndex,buffer->go);
@@ -333,7 +333,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		
 		buffer->tx_pos+=length;
 		buffer->maxFrameIndex=buffer->tx_pos/(sizeof(SAMPLE)*NUM_CHANNELS);
-		if (!buffer->go && buffer->maxFrameIndex > 20*FRAMES_PER_BUFFER) {
+		if (!buffer->go && buffer->maxFrameIndex > SAMPLE_RATE/2) {
 			buffer->go=1;
 		}
 	}
