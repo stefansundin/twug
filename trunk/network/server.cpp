@@ -250,17 +250,20 @@ void handleMessage(Message p_message)
 		int s;
 		for(i = 0; i < channel_client_names.size(); i++)
 		{
-			if(!g_client_pool->nameToSocket(channel_client_names.at(i), s))
+			if (client_name != channel_client_names.at(i))
 			{
-				log_this("Could not get socket from name.");
-				return;
-			}
-			response = Data(SERVER_AUDIO_DATA, data, length);
-			g_network->sendData(s, response);
+				if(!g_client_pool->nameToSocket(channel_client_names.at(i), s))
+				{
+					log_this("Could not get socket from name.");
+					return;
+				}
+				response = Data(SERVER_AUDIO_DATA, data, length);
+				g_network->sendData(s, response);
 
-			std::string to;
-			g_client_pool->socketToName(s, to);
-			printf("Sent: type=SERVER_AUDIO_DATA to (%s)\n", to.c_str());
+				std::string to;
+				g_client_pool->socketToName(s, to);
+				printf("Sent: type=SERVER_AUDIO_DATA to (%s)\n", to.c_str());
+			}
 		}
 	}
 	else if(p_message.getData().getType() == CLIENT_TEXT_DATA)
