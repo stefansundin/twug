@@ -18,7 +18,7 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 	m_data.record_buffer.go=0;
 	m_data.record_buffer.samples=new SAMPLE[m_data.record_buffer.size];
 	
-    m_data.num_play_buffers=2;
+    m_data.num_play_buffers=1;
 	m_data.play_buffers=new paBuffer[m_data.num_play_buffers];
 	for (int i=0; i < m_data.num_play_buffers; i++) {
 		m_data.play_buffers[i].frameIndex=0;
