@@ -32,12 +32,23 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 	//Start portaudio
 	PaError err;
 	err = Pa_Initialize();
-	if (err != paNoError) fprintf(stderr,"Pa_Initialize() error: %d\n",err);
+	if (err != paNoError)
+	{
+		fprintf(stderr,"Pa_Initialize() error: %d\n",err);
+		m_events->pushEvent(UIEvent("NOTIFICATION", "Audio", "Initialization failed\nPa_Initialize() failed"));
+		return;
+	}
 	
-	m_streamParameters.device = Pa_GetDefaultInputDevice();
+	PaDeviceIndex device = Pa_GetDefaultInputDevice();
+	if (device == paNoDevice) {
+		fprintf(stderr,"Pa_GetDefaultInputDevice() error: paNoDevice\n");
+		m_events->pushEvent(UIEvent("NOTIFICATION", "Audio", "Initialization failed\nPa_GetDefaultInputDevice() returned paNoDevice"));
+		return;
+	}
+	m_streamParameters.device = device;
 	m_streamParameters.channelCount = NUM_CHANNELS;
 	m_streamParameters.sampleFormat = PA_SAMPLE_TYPE;
-	m_streamParameters.suggestedLatency = Pa_GetDeviceInfo(m_streamParameters.device)->defaultLowInputLatency;
+	m_streamParameters.suggestedLatency = Pa_GetDeviceInfo(device)->defaultLowInputLatency;
 	m_streamParameters.hostApiSpecificStreamInfo = NULL;
 	err = Pa_OpenStream(
 		&m_stream,
@@ -48,10 +59,20 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 		paClipOff,
 		this->audioCallback,
 		this);
-	if (err != paNoError) fprintf(stderr,"Pa_OpenStream() error: %d\n",err);
+	if (err != paNoError)
+	{
+		fprintf(stderr,"Pa_OpenStream() error: %d\n",err);
+		m_events->pushEvent(UIEvent("NOTIFICATION", "Audio", "Initialization failed\nPa_OpenStream() failed"));
+		return;
+	}
 	
 	err = Pa_StartStream(m_stream);
-	if (err != paNoError) fprintf(stderr,"Pa_StartStream() error: %d\n",err);
+	if (err != paNoError)
+	{
+		fprintf(stderr,"Pa_StartStream() error: %d\n",err);
+		m_events->pushEvent(UIEvent("NOTIFICATION", "Audio", "Initialization failed\nPa_StartStream() failed"));
+		return;
+	}
 }
 
 NetworkManager::~NetworkManager ()
@@ -113,7 +134,7 @@ void NetworkManager::run()
 			if(m_sending) // means we need to wake up more often and send audio data
 			{
 				tv.tv_sec = 0;
-				tv.tv_usec = 10000;
+				tv.tv_usec = (int)1e6/(SAMPLE_RATE/FRAMES_PER_BUFFER);
 				
 				//send audio
 				paBuffer *buffer=&m_data.record_buffer;
@@ -644,8 +665,8 @@ int NetworkManager::audioCallback(const void *inputBuffer,
 	//Fill the rest of the buffer with silence
 	for(; i<framesPerBuffer; i++ )
 	{
-		*wptr++ = 0;  // left
-		if( NUM_CHANNELS == 2 ) *wptr++ = 0;  // right
+		*wptr++ = SAMPLE_SILENCE;  // left
+		if( NUM_CHANNELS == 2 ) *wptr++ = SAMPLE_SILENCE;  // right
 	}
 	//Reset buffer if we've reached the end
 	if (buffer->go && buffer->frameIndex == buffer->maxFrameIndex) {
