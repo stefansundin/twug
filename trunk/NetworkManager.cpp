@@ -99,7 +99,7 @@ void NetworkManager::run()
 	bool last_connected_status = false;
 	while(true) // thread main loop
 	{
-//		print_me("start of network thread loop");
+//		//print_me("start of network thread loop");
 
 		bool new_connection_status = m_client_network.getConnectionStatus();
 
@@ -119,9 +119,9 @@ void NetworkManager::run()
 			tv.tv_sec = 1024;
 			tv.tv_usec = 0;
 
-			print_me("selecting on readfd");
+			//print_me("selecting on readfd");
 			int select_returned = select(m_readfd+1, &read, NULL, NULL, &tv);
-			print_me("selected on readfd");
+			//print_me("selected on readfd");
 			if(select_returned == -1)
 			{
 				report_error(strerror(errno));
@@ -156,34 +156,34 @@ void NetworkManager::run()
 				highest = m_readfd+1;
 			}
 
-			print_me("selecting on both fds");
+			//print_me("selecting on both fds");
 			int select_returned = select(highest, &read, NULL, NULL, &tv);
 			if(select_returned == -1)
 			{
 				report_error(strerror(errno));
 			}
-			print_me("selected on both fds");
+			//print_me("selected on both fds");
 
 			if(FD_ISSET(m_socket, &read))
 			{
-				print_me("got network data");
+				//print_me("got network data");
 				processNetworkEvents();
-				print_me("processed network data");
+				//print_me("processed network data");
 			}
 			else
 			{
-				print_me("not set, reading anyway");
+				//print_me("not set, reading anyway");
 				processNetworkEvents();
 			}
 		}
 
 		if(FD_ISSET(m_readfd, &read))
 		{
-			print_me("got pipe data");
+			//print_me("got pipe data");
 			char buf[100];
 			::read(m_readfd, buf, 100);
 			processUIEvents();
-			print_me("processed UI events");
+			//print_me("processed UI events");
 		}
 
 		last_connected_status = new_connection_status;	
@@ -194,24 +194,24 @@ void NetworkManager::processNetworkEvents()
 {
 	if(!m_client_network.processNetworking())
 	{
-		print_me("Got disconnected");
+		//print_me("Got disconnected");
 	}
 	else
 	{
-		print_me("Processed networking");
+		//print_me("Processed networking");
 	}
 
 	Message incoming_message;
 	while(m_client_network.getMessage(incoming_message))
 	{
 		handleNetworkMessage(incoming_message);
-		print_me("Got Message");
+		//print_me("Got Message");
 	}
-	print_me("Got all available messages");
+	//print_me("Got all available messages");
 }
 void NetworkManager::processUIEvents()
 {
-	print_me("Processing events from UI");
+	//print_me("Processing events from UI");
 
 	bool process = true;
 	while(process)
@@ -266,14 +266,14 @@ void NetworkManager::processUIEvents()
 			std::string destination = event.pop_first();
 			std::string msg = event.pop_first();
 
-			print_me("sending ("+msg+") to ("+destination+")");
+			//print_me("sending ("+msg+") to ("+destination+")");
 			printf("(%d long)\n", msg.size());
 
 			m_client_network.sendText(destination, msg);
 		} else if (event.getType() == "BROADCAST_TEXT") {
 			m_client_network.sendTextBroadcast(event.pop());
 		} else {
-			print_me("NetworkManager: Got invalid event");
+			//print_me("NetworkManager: Got invalid event");
 		}
 		
 	}
@@ -294,7 +294,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 
 	if(p_message.getData().getType() == SERVER_LOGIN_OK)
 	{
-			print_me("got \"SERVER_LOGIN_OK\"");
+			//print_me("got \"SERVER_LOGIN_OK\"");
 			m_connected_to = m_last_requested_server;
 			m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTED", m_last_requested_server, m_last_requested_nick ) );
 			channelListChanged();
@@ -307,7 +307,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		//check that the message is of proper length
 		if(data_str.size() != 1)
 		{
-			print_me("Message not of proper length.");
+			//print_me("Message not of proper length.");
 			return;
 		}
 
@@ -326,17 +326,17 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	}
 	else if(p_message.getData().getType() == SERVER_DISCONNECT)
 	{
-		print_me("got \"SERVER_DISCONNECT\"");
+		//print_me("got \"SERVER_DISCONNECT\"");
 		m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "CONNECTION_LOST", m_connected_to ) );
 
 		if(m_client_network.disconnect() != 0)
 		{
-			print_me("Disconnection failed!");
+			//print_me("Disconnection failed!");
 		}
 	}
 	else if(p_message.getData().getType() == SERVER_AUDIO_DATA)
 	{
-		print_me("got \"SERVER_AUDIO_DATA\"");
+		//print_me("got \"SERVER_AUDIO_DATA\"");
 		
 		//Add check here so we don't write out-of-bounds
 		paBuffer *buffer=&m_data.play_buffers[0];
@@ -360,12 +360,12 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	}
 	else if(p_message.getData().getType() == SERVER_TEXT_DATA)
 	{
-		print_me("got \"SERVER_TEXT_DATA\"");
+		//print_me("got \"SERVER_TEXT_DATA\"");
 
 		//check that the message is of proper length
 		if(data_str.size() < MESSAGE_FILL)
 		{
-			print_me("Message not of proper length.");
+			//print_me("Message not of proper length.");
 			return;
 		}
 
@@ -377,16 +377,16 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	}
 	else if(p_message.getData().getType() == SERVER_CHANNEL_CHANGE_RESPONSE)
 	{
-		print_me("got \"SERVER_CHANNEL_CHANGE_RESPONSE\"");
+		//print_me("got \"SERVER_CHANNEL_CHANGE_RESPONSE\"");
 
 		if(data_str.size() != 1)
 		{
-			print_me("Message not of proper length");
+			//print_me("Message not of proper length");
 		}
 
 		if(data_str == "0")
 		{
-			print_me("Channel change successful");
+			//print_me("Channel change successful");
 		}
 		else if(data_str == "1")
 		{
@@ -394,8 +394,8 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		}
 		else if(data_str == "2")
 		{
-			print_me("<OPEN A DIALOG HERE NOTIFYING THE USER>");
-			print_me("bad password");
+			//print_me("<OPEN A DIALOG HERE NOTIFYING THE USER>");
+			//print_me("bad password");
 		}
 		else if(data_str == "3")
 		{
@@ -408,11 +408,11 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 	}
 	else if(p_message.getData().getType() == SERVER_ADD_CLIENT)
 	{
-		print_me("got \"SERVER_ADD_CLIENT\"");
+		//print_me("got \"SERVER_ADD_CLIENT\"");
 
 		if(data_str.size() != MESSAGE_FILL*2)
 		{
-			print_me("Message not of proper length");
+			//print_me("Message not of proper length");
 			return;
 		}
 
@@ -424,30 +424,30 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		int returned = m_client_pool.addClient(client_name, channel_name, 0);
 		if(returned == 0)
 		{
-			print_me("Added ("+client_name+") to ("+channel_name+")");
+			//print_me("Added ("+client_name+") to ("+channel_name+")");
 			channelListChanged();
 		}
 		else if(returned == -1)
 		{
-			print_me("Could not find channel ("+channel_name+")");
+			//print_me("Could not find channel ("+channel_name+")");
 		}
 		else if(returned == -2)
 		{
-			print_me("Client with name ("+client_name+") already exists");
+			//print_me("Client with name ("+client_name+") already exists");
 		}
 		else if(returned == -3)
 		{
-			print_me("Client with the same socket already exists");
+			//print_me("Client with the same socket already exists");
 		}
 	}
 	else if(p_message.getData().getType() == SERVER_MOVE_CLIENT)
 	{
-		print_me("got \"SERVER_MOVE_CLIENT\"");
+		//print_me("got \"SERVER_MOVE_CLIENT\"");
 
 		//check that the message is of proper length
 		if(data_str.size() != MESSAGE_FILL*2)
 		{
-			print_me("Message not of proper length.");
+			//print_me("Message not of proper length.");
 			return;
 		}
 
@@ -456,17 +456,17 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		strip(client_name);
 		strip(channel_name);
 
-		print_me("should move \""+client_name+"\" to channel \""+channel_name+"\"");
+		//print_me("should move \""+client_name+"\" to channel \""+channel_name+"\"");
 		channelListChanged();
 	}
 	else if(p_message.getData().getType() == SERVER_REMOVE_CLIENT)
 	{
-		print_me("got \"SERVER_REMOVE_CLIENT\"");
+		//print_me("got \"SERVER_REMOVE_CLIENT\"");
 
 		//check that the message is of proper length
 		if(data_str.size() != MESSAGE_FILL)
 		{
-			print_me("Message not of proper length.");
+			//print_me("Message not of proper length.");
 			return;
 		}
 
@@ -474,17 +474,17 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		strip(client_name);
 
 		m_client_pool.removeClient(client_name);
-		print_me("removed \""+client_name+"\"");
+		//print_me("removed \""+client_name+"\"");
 		channelListChanged();
 	}
 	else if(p_message.getData().getType() == SERVER_ADD_CHANNEL)
 	{
-		print_me("got \"SERVER_ADD_CHANNEL\"");
+		//print_me("got \"SERVER_ADD_CHANNEL\"");
 
 		//check that the message is of proper length
 		if(data_str.size() != MESSAGE_FILL)
 		{
-			print_me("Message not of proper length.");
+			//print_me("Message not of proper length.");
 			return;
 		}
 
@@ -492,22 +492,22 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		strip(channel_name);
 		if(!m_client_pool.addChannel(channel_name, ""))
 		{
-			print_me("Could not add channel ("+channel_name+")");
+			//print_me("Could not add channel ("+channel_name+")");
 		}
 		else
 		{
-			print_me("Added channel ("+channel_name+")");
+			//print_me("Added channel ("+channel_name+")");
 		}
 		channelListChanged();
 	}
 	else if(p_message.getData().getType() == SERVER_REMOVE_CHANNEL)
 	{
-		print_me("got \"SERVER_REMOVE_CHANNEL\"");
+		//print_me("got \"SERVER_REMOVE_CHANNEL\"");
 
 		//check that the message is of proper length
 		if(data_str.size() != MESSAGE_FILL)
 		{
-			print_me("Message not of proper length.");
+			//print_me("Message not of proper length.");
 			return;
 		}
 
@@ -515,23 +515,23 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		strip(channel_name);
 		if(!m_client_pool.removeChannel(channel_name))
 		{
-			print_me("Could not remove channel ("+channel_name+")");
+			//print_me("Could not remove channel ("+channel_name+")");
 		}
 		else
 		{
-			print_me("Removed channel ("+channel_name+")");
+			//print_me("Removed channel ("+channel_name+")");
 		}
 		channelListChanged();
 	}
 	else if(p_message.getData().getType() == SERVER_NOTIFY
 			|| p_message.getData().getType() == SERVER_ERROR_NOTIFY)
 	{
-		print_me("got \"SERVER_NOTIFY\" or \"SERVER_ERROR_NOTIFY\"");
+		//print_me("got \"SERVER_NOTIFY\" or \"SERVER_ERROR_NOTIFY\"");
 
 		//check that the message is of proper length
 		if(data_str.size() < MESSAGE_FILL)
 		{
-			print_me("Message not of proper length.");
+			//print_me("Message not of proper length.");
 			return;
 		}
 
@@ -552,7 +552,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 
 void NetworkManager::channelListChanged()
 {
-	print_me("NetworkManager: Giving new channel list to UI");
+	//print_me("NetworkManager: Giving new channel list to UI");
 
 	std::vector<std::string> new_list;
 	std::vector<std::string> channels = m_client_pool.getChannelNames();
@@ -561,14 +561,14 @@ void NetworkManager::channelListChanged()
 		new_list.push_back(channels.at(i));
 
 		std::vector<std::string> members;
-		print_me("channel: ("+channels.at(i)+")");
+		//print_me("channel: ("+channels.at(i)+")");
 		if(!m_client_pool.getChannelClientNames(channels.at(i), members))
 		{
 			log_this("could not get channel's client names");
 		}
 		for(int j=0;j<members.size();j++)
 		{
-			print_me("member: ("+members.at(j)+")");
+			//print_me("member: ("+members.at(j)+")");
 			new_list.push_back(members.at(j));
 		}
 	
@@ -580,7 +580,7 @@ void NetworkManager::channelListChanged()
 
 void NetworkManager::joinChannel(std::string p_channel_name)
 {
-	print_me("NetworkManager::joinChannel() trying to join "+p_channel_name);
+	//print_me("NetworkManager::joinChannel() trying to join "+p_channel_name);
 
 	m_client_network.changeChannels(p_channel_name, "");		//FIXME: this is hack
 }
@@ -615,9 +615,9 @@ void NetworkManager::connectToServer(std::string p_address, std::string p_userna
 
 	if (returned == 0) {
 		m_events->pushEvent( UIEvent ("NEW_CONNECTION_STATUS", "LOGGING_IN", m_last_requested_server, m_last_requested_nick ) );
-		print_me("Sending login request");
+		//print_me("Sending login request");
 		m_client_network.loginRequest(m_last_requested_nick, p_password);
-		print_me("Sent login request");
+		//print_me("Sent login request");
 	} else {
 		m_events->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "ERROR_CONNECTING", m_last_requested_server));
 	}
@@ -630,9 +630,9 @@ void NetworkManager::disconnect()
 
 	if(m_client_network.disconnect() != 0)
 	{
-		print_me("Disconnection failed!");
+		//print_me("Disconnection failed!");
 	}
-	print_me("Disconnected");
+	//print_me("Disconnected");
 
 	m_events->pushEvent(UIEvent("NEW_CONNECTION_STATUS", "DISCONNECTED"));
 }
