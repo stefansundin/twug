@@ -112,12 +112,12 @@ void ServerNetwork::processNetworking()
 			}
 			else	//this is a client sending us data, update its buffer
 			{
-				print_me("updating buffer");
+				//print_me("updating buffer");
 				if(!updateBuffer(i))
 				{
 					disconnectClient(i);
 				}
-				print_me("updated buffer");
+				//print_me("updated buffer");
 			}
 		}
 	}
