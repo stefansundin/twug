@@ -6,6 +6,7 @@
 
 class Data
 {
+static int m_mem_leaked;
 public:
 	Data();
 	Data(int p_type, std::string p_str_data);
