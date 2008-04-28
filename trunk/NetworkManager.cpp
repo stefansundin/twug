@@ -354,7 +354,7 @@ void NetworkManager::handleNetworkMessage(Message p_message)
 		
 		buffer->tx_pos+=length;
 		buffer->maxFrameIndex=buffer->tx_pos/(sizeof(SAMPLE)*NUM_CHANNELS);
-		if (!buffer->go && buffer->maxFrameIndex > SAMPLE_RATE/2) {
+		if (!buffer->go && buffer->maxFrameIndex >= 0.2*SAMPLE_RATE) {
 			buffer->go=1;
 		}
 	}

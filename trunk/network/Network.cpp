@@ -50,7 +50,8 @@ bool Network::updateBuffer(int p_socket)
 
 	//update the buffer
 	m_buffers[p_socket].setBuffer(new_buffer, m_buffers[p_socket].getLength() + recv_length);
-
+	delete [] new_buffer;
+	
 //	printf("Buffer is now (%s) (%d bytes)\n", m_buffers[p_socket].getBuffer(), m_buffers[p_socket].getLength());
 
 	if(m_buffers[p_socket].getLength() >= HEADER_SIZE)
@@ -96,6 +97,7 @@ bool Network::updateBuffer(int p_socket)
 			//printf("Message is (%s) (%d bytes)\n", message, temp_header.message_length);
 			m.setData(Data(temp_header.message_type, message, temp_header.message_length));
 			m_messages.push(m);
+			delete [] message;
 		}
 	}
 	return true;
