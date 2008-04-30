@@ -6,8 +6,12 @@ UIManager::UIManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network, void (*p
 
 	m_restore_prefs_window = false;
 
+	#ifndef _WIN32 
 	m_iochannel = Glib::IOChannel::create_from_fd(m_events->to_ui->getReadFd());
  	Glib::signal_io().connect(sigc::mem_fun(*this,&UIManager::on_fd_readable), m_iochannel, Glib::IO_IN);
+	#else
+	Glib::signal_timeout().connect(sigc::mem_fun(*this,&UIManager::processEvents), 100);
+	#endif
 }
 
 void UIManager::trigger()
@@ -42,7 +46,7 @@ void UIManager::processEvents()
 	while(process)
 	{
 		UIEvent event = m_events->to_ui->popEvent();
-		std::cout << "event type: " << event.getType() << std::endl;
+		//std::cout << "event type: " << event.getType() << std::endl;
 
 		if (event.getType() == "EMPTY") {
 			process = false;
@@ -59,9 +63,7 @@ void UIManager::processEvents()
 			} else if (s == "LOGGING_IN") {
 				m_window->event_loggingIn(event.pop_first());
 			} else if (s == "ERROR_CONNECTING") {	
-				got_here();
 				m_window->event_errorConnecting(event.pop_first() );
-				got_here();
 			} else if (s == "DISCONNECTED") {
 				m_window->event_disconnected();
 			}
@@ -85,7 +87,7 @@ void UIManager::processEvents()
 		} else if (event.getType() == "ERROR_MESSAGE") {
 				m_window->event_ErrorMessage(event.pop(), event.pop() );
 		} else {
-				print_me("UIManager: Got invalid event");
+				print_me("Got invalid event");
 		}
 	}
 }
