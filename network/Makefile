@@ -2,7 +2,7 @@ OLD_OBJECTS = Channel.o ChannelList.o Client.o ClientNetwork.o Data.o Network.o 
 
 COMMON_OBJECTS = Network.o Data.o strip.o fill.o ClientPool.o Channel.o Client.o Buffer.o Message.o
 SERVER_OBJECTS = ServerNetwork.o server.o
-CLIENT_OBJECTS = ClientNetwork.o client.o
+CLIENT_OBJECTS = ClientNetwork.o old-client.o
 
 CFLAGS = -g -O0 -Wall
 
@@ -13,8 +13,8 @@ server : $(COMMON_OBJECTS) $(SERVER_OBJECTS) debug
 
 client_objects : $(COMMON_OBJECTS) ClientNetwork.o
 
-client : $(COMMON_OBJECTS) $(CLIENT_OBJECTS) debug
-	g++ $(CFLAGS) -o client $(COMMON_OBJECTS) $(CLIENT_OBJECTS) debug.o
+old-client : $(COMMON_OBJECTS) $(CLIENT_OBJECTS) debug
+	g++ $(CFLAGS) -o old-client $(COMMON_OBJECTS) $(CLIENT_OBJECTS) debug.o
 
 debug : ../debug.cpp
 	g++ -c $(CFLAGS) -o debug.o ../debug.cpp
@@ -24,5 +24,5 @@ debug : ../debug.cpp
 
 clean :
 	@echo "#\n# Cleaning network\n#"
-	-rm *.o client server
+	-rm *.o old-client server
 
