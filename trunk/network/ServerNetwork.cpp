@@ -1,5 +1,7 @@
 #include "ServerNetwork.h"
 
+#ifndef _WIN32
+
 ServerNetwork::ServerNetwork()
 {
 	m_accepting_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -137,3 +139,4 @@ void ServerNetwork::disconnectClient(int p_socket)
 	shutdown(p_socket, SHUT_RDWR);		//we dont care if this fails since (AFAIK) it only does if the socket is already disconnect (or if it's not a socket, which it should be :P)
 }
 
+#endif

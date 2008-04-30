@@ -8,7 +8,10 @@ MainWindow::MainWindow(UIEvents* p_events)
 	m_nameptr = new std::string();
 
 	set_title("Twug");
+#ifndef _WIN32
 	set_default_icon_from_file("/usr/share/pixmaps/twug.png");
+#endif
+
 	//set_border_width(10);
 
 	m_dont_do_shit = false;

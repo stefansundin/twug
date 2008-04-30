@@ -20,7 +20,7 @@ void UIManager::trigger()
 	m_prefs_window = new PrefsWindow(m_events);
 	m_icon = new TrayIcon(m_events);
 
-	m_prefs_window->loadSettings();
+	//m_prefs_window->loadSettings();
 	m_window->show();
 }
 
@@ -40,7 +40,7 @@ bool UIManager::on_fd_readable(Glib::IOCondition condition)
 	return true;
 }
 
-void UIManager::processEvents()
+bool UIManager::processEvents()
 {
 	bool process = true;
 	while(process)
@@ -90,6 +90,7 @@ void UIManager::processEvents()
 				print_me("Got invalid event");
 		}
 	}
+  return true;
 }
 
 

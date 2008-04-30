@@ -23,7 +23,11 @@ int ClientNetwork::connect(std::string p_address, int p_port)
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
+	#ifndef _WIN32
 	inet_pton(addr.sin_family, p_address.c_str(), &addr.sin_addr);
+	#else
+	addr.sin_addr.S_un.S_addr = inet_addr(p_address.c_str());
+	#endif
 	addr.sin_port = htons(p_port);
 	int status = ::connect(m_socket, (struct sockaddr*)&addr, sizeof(addr));
 	if(status == 0)
@@ -35,7 +39,11 @@ int ClientNetwork::connect(std::string p_address, int p_port)
 }
 int ClientNetwork::disconnect()
 {
+#ifndef _WIN32
 	int status = shutdown(m_socket, SHUT_RDWR);
+#else
+  int status = shutdown(m_socket, SD_BOTH);
+#endif
 	if(status == 0)
 	{
 		m_connected = false;

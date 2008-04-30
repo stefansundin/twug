@@ -1,6 +1,6 @@
-OBJECTS = MainWindow.o MessageHandler.o MessageWindow.o TrayIcon.o PrefsWindow.o MessageWindow.o UIEventQueueHolder_ToUI.o UIEventQueueHolder_ToNetwork.o UIEvents.o ChannelList.o
+OBJECTS = MainWindow.o MessageHandler.o MessageWindow.o TrayIcon.o PrefsWindow.o MessageWindow.o UIEventQueueHolder_ToUI.o UIEventQueueHolder_ToNetwork.o UIEvents.o ChannelList.o ClientSettings.o
 
-CFLAGS = -g `pkg-config gtkmm-2.4 gconfmm-2.6 --cflags`
+CFLAGS = -g `pkg-config gtkmm-2.4 --cflags`
 
 all: $(OBJECTS)
 
