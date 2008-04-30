@@ -23,10 +23,11 @@ void *network_code(void *ptr)
 	network->run();
 }
 
+
 int main (int argc, char *argv[])
+
 {
 	Gtk::Main kit(argc, argv);
-
 	#ifndef _WIN32 
 	//set up event queues
 	int to_network_pipes[2];
