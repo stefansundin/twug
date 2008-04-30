@@ -6,10 +6,12 @@
 #include <string>
 #include <queue>
 
-#ifdef __linux__
+#ifndef _WIN32
 #include <sys/socket.h>		//for connect, recv, send, CONSTANTS etc.
 //#include <unistd.h>		//dunno why this is here
 #include <arpa/inet.h>		//for htons() (at least, maybe more :P)
+#else
+#include <winsock2.h>
 #endif
 
 #include <fcntl.h>

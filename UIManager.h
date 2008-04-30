@@ -22,7 +22,7 @@ public:
 	UIManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network, void (*p_funptr)());
 
 	bool on_fd_readable(Glib::IOCondition condition);
-	void processEvents();
+	bool processEvents();
 	void trigger();
 
 private:

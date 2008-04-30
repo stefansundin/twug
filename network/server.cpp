@@ -1,5 +1,4 @@
-//kill me now
-#define SERVER
+#ifndef _WIN32
 
 #include <vector>
 
@@ -569,3 +568,11 @@ int main()
 	}
 }
 
+#else
+
+int main()
+{
+  return 0;
+}
+
+#endif

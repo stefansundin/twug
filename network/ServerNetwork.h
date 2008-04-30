@@ -1,3 +1,4 @@
+#ifndef _WIN32
 #ifndef SERVERNETWORK_H_
 #define SERVERNETWORK_H_
 
@@ -25,4 +26,5 @@ private:
 };
 
 #endif //SERVERNETWORK_H_
+#endif //Win32
 

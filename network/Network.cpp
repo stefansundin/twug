@@ -28,7 +28,11 @@ bool Network::updateBuffer(int p_socket)
 {
 	//recived data
 	char *recv_buffer = new char[RECV_LENGTH];
+	#ifndef _WIN32
 	int recv_length = recv(p_socket, (void*)recv_buffer, RECV_LENGTH, 0);
+	#else
+	int recv_length = recv(p_socket, recv_buffer, RECV_LENGTH, 0);
+	#endif
 	if(recv_length == -1)
 	{
 		report_error(strerror(errno));
@@ -128,6 +132,11 @@ void Network::sendData(int p_socket, Data &p_data)
 	//print_me("sending: ("+message+")");
 	//printf("(%d long)\n", p_data.getLength());
 
+#ifndef _WIN32
 	send(p_socket, (void*)&h, HEADER_SIZE, 0);
 	send(p_socket, p_data.getData(), p_data.getLength(), 0);
+#else
+	send(p_socket, (const char*)&h, HEADER_SIZE, 0);
+	send(p_socket, (const char*)p_data.getData(), p_data.getLength(), 0);
+#endif
 }

@@ -7,14 +7,8 @@ PrefsWindow::PrefsWindow(UIEvents* p_events)
 	set_title("Twug Preferences");
 	set_border_width(10);
 
-	Gnome::Conf::init();
-	m_gconf = Gnome::Conf::Client::get_default_client();
-	m_gconf->add_dir("/apps/twug", Gnome::Conf::CLIENT_PRELOAD_RECURSIVE);
-
 	Gtk::VBox *vbox = new Gtk::VBox;
 	Gtk::Label *label = new Gtk::Label("Server list:");
-	m_chkbtn_blinking = new Gtk::CheckButton(
-		"Open chat windows with everyone upon connected :)");
 	m_columns = new Columns();
 	m_serverstore = Gtk::ListStore::create(*m_columns);
 	m_serverlist = new Gtk::TreeView(m_serverstore);
@@ -40,7 +34,6 @@ PrefsWindow::PrefsWindow(UIEvents* p_events)
 	namebox->add(*label2);
 	namebox->add(*m_nameEntry);
 
-	//vbox->add(*m_chkbtn_blinking);
 	vbox->add(*namebox);
 	vbox->add(*label); 
 	vbox->add(*m_serverlist);
@@ -60,19 +53,33 @@ PrefsWindow::PrefsWindow(UIEvents* p_events)
 		sigc::mem_fun(*this,&PrefsWindow::on_tree_changed));
 
 
-	m_gconf->signal_value_changed().connect(
-		sigc::mem_fun(*this,&PrefsWindow::onGConfChanged));
-
 	m_buttonAdd.signal_clicked().connect(
 		sigc::mem_fun(*this,&PrefsWindow::on_buttonAdd_clicked));
 	m_buttonRemove.signal_clicked().connect(
-		sigc::mem_fun(*this,&PrefsWindow::on_buttonRemove_clicked));
-
-	m_chkbtn_blinking->signal_clicked().connect(
-		sigc::mem_fun(*this,&PrefsWindow::on_button_clicked));	
+		sigc::mem_fun(*this,&PrefsWindow::on_buttonRemove_clicked));	
 
 	m_nameEntry->signal_changed().connect(
 		sigc::mem_fun(*this,&PrefsWindow::on_name_changed));	
+
+
+
+
+//new stuff
+	m_nameEntry->set_text( m_settings.getNick() );
+	
+	std::vector<std::string> servers = m_settings.getServerList();
+
+	Gtk::TreeModel::iterator iter;
+
+	for (int i=0;i<servers.size();i+=2)
+	{
+		iter = m_serverstore->append();
+		(*iter)[m_columns->name] = servers.at(i);
+		(*iter)[m_columns->ip] = servers.at(i+1);		
+	}
+
+	saveServerList();
+//end new stuff
 }
 
 
@@ -80,8 +87,7 @@ void PrefsWindow::on_name_changed()
 {
 	std::string name = m_nameEntry->get_text();
 
-	m_gconf->set("/apps/twug/nickname",name);	
-	//m_window->m_newname=name;	
+	m_settings.setNick ( m_nameEntry->get_text() );
 	m_events->to_ui->pushEvent( UIEvent("NEW_NEWNAME", name) );
 }
 
@@ -91,67 +97,25 @@ void PrefsWindow::on_tree_changed(const Glib::ustring&, const Glib::ustring&)
 	saveServerList();
 }
 
-
-std::vector<Glib::ustring> PrefsWindow::getServerList()
-{
-	std::cout << "PrefsWindow: Fetching server list from GConf" << std::endl;
-
-	std::vector<Glib::ustring> servers;
-
-	std::vector<Gnome::Conf::Entry> entries = m_gconf->all_entries("/apps/twug/servers");
-
-	for(int i=0;i<entries.size();i++)
-	{
-		if (entries.at(i).get_value().get_type() != Gnome::Conf::VALUE_INVALID)
-		{
-			servers.push_back(entries.at(i).get_key().substr(19));
-			servers.push_back(entries.at(i).get_value().get_string());
-		}
-	}
-	return servers;
-}
-
-void PrefsWindow::reloadServers()
-{
-	m_serverstore->clear();
-
-	std::vector<Glib::ustring> servers = getServerList();
-	std::vector<std::string> temp;
-
-	Gtk::TreeModel::iterator iter;
-	
-	for(int i=0;i<servers.size();i+=2)
-	{
-		temp.push_back(servers.at(i));
-		temp.push_back(servers.at(i+1));
-
-		iter = m_serverstore->append();
-		(*iter)[m_columns->name] = servers.at(i);
-		(*iter)[m_columns->ip] = servers.at(i+1);
-	}
-
-	m_events->to_ui->pushEvent( UIEvent("NEW_SERVER_LIST", temp) );
-}
-
 void PrefsWindow::saveServerList()
 {
-	std::vector<Gnome::Conf::Entry> entries = m_gconf->all_entries("/apps/twug/servers");
-	
-	for(int i=0;i<entries.size();i++)
-	{
-		m_gconf->unset ( entries.at(i).get_key() );
-	}
+	std::vector<std::string> temp;
 
-	
 	Gtk::TreeModel::Children::iterator iter;
 	for(iter = m_serverstore->children().begin();
 		iter != m_serverstore->children().end();
 			iter++)
 	{
-		m_gconf->set( "/apps/twug/servers/" + (*iter)[m_columns->name],
-	(*iter)[m_columns->ip] );	
+		Glib::ustring name = (*iter)[m_columns->name];
+		Glib::ustring ip = (*iter)[m_columns->ip];	
+		
+   		temp.push_back(name);
+    		temp.push_back(ip);
 	}
-	
+
+
+	m_settings.setServerList(temp);	
+	m_events->to_ui->pushEvent( UIEvent("NEW_SERVER_LIST", temp) );
 }
 
 void PrefsWindow::on_buttonAdd_clicked()
@@ -174,36 +138,8 @@ void PrefsWindow::on_buttonRemove_clicked()
 	saveServerList();
 }
 
-void PrefsWindow::loadSettings()
-{
-	print_me("Loading settings...");
-	reloadServers();
-
-	m_chkbtn_blinking->set_active( m_gconf->get_bool("/apps/twug/autoopen_enabled") );
-
-	m_nameEntry->set_text( m_gconf->get_string("/apps/twug/nickname") ) ;
-	
-	print_me("Loaded settings");
-}
 
 
-void PrefsWindow::onGConfChanged(const Glib::ustring&, const Gnome::Conf::Value&)
-{
-	loadSettings();
-}
-
-
-PrefsWindow::~PrefsWindow()
-{
-}
-
-void PrefsWindow::on_button_clicked()
-{
-	bool active = m_chkbtn_blinking->get_active();
-
-	//m_gconf->set("/apps/twug/autoopen_enabled",active);	
-	//m_window->m_autoopen=active;	
-}
 
 void PrefsWindow::toggleVisibility()
 {

@@ -1,9 +1,14 @@
 #ifndef NetworkManager_h
 #define NetworkManager_h
 
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <sys/select.h>
+#ifndef _WIN32
+  #include <sys/socket.h>
+  #include <arpa/inet.h>
+  #include <sys/select.h>
+#else
+  #include <winsock2.h>
+#endif
+
 #include <cstdio>
 #include <iostream>
 #include "UIEventQueueHolder.h"
