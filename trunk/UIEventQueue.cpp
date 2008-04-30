@@ -3,28 +3,23 @@
 
 void UIEventQueue::lock()
 {
-	/*bool completed=false;
-	while(!completed)
-	{
-		if(!m_lock)
-		{
-			m_lock = true;
-			completed = true;
-		}
-	}*/
 	m_lock.lock();
 }
 void UIEventQueue::unlock()
 {
-	//m_lock = false;
 	m_lock.unlock();
 }
 
+#ifndef _WIN32 
 UIEventQueue::UIEventQueue(std::string p_name, int p_readfd, int p_writefd)
 {
-	m_name = p_name;
 	m_readfd = p_readfd;
 	m_writefd = p_writefd;
+#else
+UIEventQueue::UIEventQueue(std::string p_name)
+{	
+#endif
+	m_name = p_name;
 }
 
 int UIEventQueue::getReadFd() const 

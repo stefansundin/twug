@@ -27,6 +27,7 @@ int main (int argc, char *argv[])
 {
 	Gtk::Main kit(argc, argv);
 
+	#ifndef _WIN32 
 	//set up event queues
 	int to_network_pipes[2];
 	int to_ui_pipes[2];
@@ -46,6 +47,14 @@ int main (int argc, char *argv[])
 	//initialize network thread
 	pthread_t networkthread;
 	pthread_create( &networkthread, NULL, network_code, NULL );
+
+	#else
+	g_to_ui = new UIEventQueue("to_ui");
+ 	g_to_network = new UIEventQueue("to_network");
+
+	DWORD id;
+	CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE) &network_code,NULL,0,&id);
+	#endif	
 
 	//initialize gui
 	g_ui = new UIManager(g_to_ui, g_to_network, &update_UItoUI);

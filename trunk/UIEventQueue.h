@@ -2,11 +2,13 @@
 #define UIEventQueue_h
 
 #include "debug.h"
-
 #include "UIEvent.h"
 #include <queue>
-#include <fcntl.h>
 #include "Lock.h"
+
+#ifndef _WIN32 
+#include <fcntl.h>
+#endif
 
 class UIEventQueue {
 private:
@@ -19,7 +21,11 @@ private:
 	void lock();
 	void unlock();
 public:
+	#ifndef _WIN32 
 	UIEventQueue(std::string p_name, int p_readfd, int p_writefd);
+	#else
+	UIEventQueue(std::string p_name);
+	#endif
 	int getReadFd() const;
 	int getWriteFd() const;
 	std::string getName() const;

@@ -4,12 +4,12 @@ NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network
 {
 	m_to_network = p_to_network;
 
+	#ifndef _WIN32 
 	m_readfd = p_to_network->getReadFd();
+	#endif
 	m_sending = false;
 
 	m_events = new EventsToUI(p_to_ui);
-
-//	m_socket = m_client_network.getSocket(); // socket file descriptor 
 
     m_data.record_buffer.frameIndex=0;
     m_data.record_buffer.maxFrameIndex=60*SAMPLE_RATE;
@@ -116,20 +116,30 @@ void NetworkManager::run()
 
 		if(!new_connection_status) // if we arent connected only select on readfd
 		{
+			#ifndef _WIN32 
 			tv.tv_sec = 1024;
 			tv.tv_usec = 0;
 
-			//print_me("selecting on readfd");
 			int select_returned = select(m_readfd+1, &read, NULL, NULL, &tv);
-			//print_me("selected on readfd");
 			if(select_returned == -1)
 			{
 				report_error(strerror(errno));
 			}
+			#else
+			tv.tv_sec = 0;
+			tv.tv_usec = 10000;
 
+			int select_returned = select(0, &read, NULL, NULL, &tv);
+			if(select_returned == -1)
+			{
+				report_error(strerror(errno));
+			}
+			#endif
 		} else { //selecting on both fds
 
 			FD_SET(m_socket, &read);
+
+			int highest;
 
 			if(m_sending) // means we need to wake up more often and send audio data
 			{
@@ -145,16 +155,23 @@ void NetworkManager::run()
 					buffer->tx_pos+=bytestosend;
 				}
 			} else {
+#ifndef _WIN32 
 				tv.tv_sec = 1024;
 				tv.tv_usec = 0;
 			}		
 
-			int highest;
+
 			if (m_socket > m_readfd) {
 				highest = m_socket+1;
 			} else {
 				highest = m_readfd+1;
 			}
+#else
+				tv.tv_sec = 0;
+				tv.tv_usec = 10000;
+			}		
+			highest = m_socket+1;
+#endif
 
 			//print_me("selecting on both fds");
 			int select_returned = select(highest, &read, NULL, NULL, &tv);
@@ -177,6 +194,7 @@ void NetworkManager::run()
 			}
 		}
 
+#ifndef _WIN32 
 		if(FD_ISSET(m_readfd, &read))
 		{
 			//print_me("got pipe data");
@@ -185,6 +203,9 @@ void NetworkManager::run()
 			processUIEvents();
 			//print_me("processed UI events");
 		}
+#else
+		processUIEvents();
+#endif
 
 		last_connected_status = new_connection_status;	
 	}

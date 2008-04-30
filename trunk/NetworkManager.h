@@ -4,7 +4,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/select.h>
-#include <fcntl.h>
 #include <cstdio>
 #include <iostream>
 #include "UIEventQueueHolder.h"
@@ -60,6 +59,7 @@ struct paData
     int num_play_buffers;
 };
 
+#ifndef _WIN32
 class EventsToUI : public UIEventQueueHolder
 {
 public:
@@ -77,6 +77,19 @@ public:
 private:
 	int m_fd;
 };
+#else
+class EventsToUI : public UIEventQueueHolder
+{
+public:
+	EventsToUI(UIEventQueue* p_eventqueue) : UIEventQueueHolder(p_eventqueue)
+	{
+	}
+	void pushEvent(UIEvent p_event)
+	{
+		m_eventqueue->pushEvent(p_event);
+	}
+};
+#endif
 
 class NetworkManager
 {
