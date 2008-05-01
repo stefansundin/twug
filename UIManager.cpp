@@ -2,6 +2,8 @@
 
 UIManager::UIManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network, void (*p_funptr)())
 {
+
+
 	m_events = new UIEvents(p_to_ui, p_to_network, p_funptr);
 
 	m_restore_prefs_window = false;
@@ -86,6 +88,8 @@ bool UIManager::processEvents()
 				m_window->event_Notification(event.pop(), event.pop() );
 		} else if (event.getType() == "ERROR_MESSAGE") {
 				m_window->event_ErrorMessage(event.pop(), event.pop() );
+		} else if (event.getType() == "SHOW_ABOUT") {
+				m_window->event_runAbout();
 		} else {
 				print_me("Got invalid event");
 		}

@@ -16,6 +16,7 @@
 #include "gui/MainWindow.h"
 #include "gui/PrefsWindow.h"
 
+
 class UIManager
 {
 public:
@@ -34,6 +35,7 @@ private:
 	MainWindow* m_window;
 	PrefsWindow* m_prefs_window;
 	bool m_restore_prefs_window;
+
 };
 
 #endif //UIManager_h

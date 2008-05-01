@@ -11,7 +11,7 @@ MainWindow::MainWindow(UIEvents* p_events)
 #ifndef _WIN32
 	set_default_icon_from_file("/usr/share/pixmaps/twug.png");
 #endif
-
+	m_about = new AboutTwug();
 	//set_border_width(10);
 
 	m_dont_do_shit = false;
@@ -26,6 +26,27 @@ MainWindow::MainWindow(UIEvents* p_events)
 	m_button.set_label("Click-To-Talk");
 
 
+	//new stuff
+	Gtk::Button* aboutbutton = new Gtk::Button(Gtk::Stock::ABOUT);
+	aboutbutton->signal_clicked().connect(
+		sigc::mem_fun(*this,&MainWindow::on_aboutbutton_clicked));
+
+	Gtk::Button* quitbutton = new Gtk::Button(Gtk::Stock::QUIT);
+	quitbutton->signal_clicked().connect(
+		sigc::mem_fun(*this,&MainWindow::on_quitbutton_clicked));
+
+	Gtk::Button* prefsbutton = new Gtk::Button(Gtk::Stock::PREFERENCES);
+	prefsbutton->signal_clicked().connect(
+		sigc::mem_fun(*this,&MainWindow::on_prefsbutton_clicked));
+
+	Gtk::HBox* hbox2 = new Gtk::HBox();
+	
+	hbox2->add(*aboutbutton);
+	hbox2->add(*prefsbutton);
+
+	// end new stuff
+
+
 	Gtk::Button* addbutton = new Gtk::Button(Gtk::Stock::ADD);
 	addbutton->signal_clicked().connect(
 		sigc::mem_fun(*this,&MainWindow::on_addbutton_clicked));
@@ -38,7 +59,9 @@ MainWindow::MainWindow(UIEvents* p_events)
 	Gtk::HBox* hbox = new Gtk::HBox();
 	hbox->add(*addbutton);
 	hbox->add(*broadcastbutton);
+	hbox->add(*quitbutton);
 
+	vbox->add(*hbox2);
 	vbox->add(m_popup);
 	vbox->add(m_button);
 	vbox->add(*m_channellist);
@@ -56,6 +79,29 @@ MainWindow::MainWindow(UIEvents* p_events)
 
 	m_add_dialog = new AddChannelDialog(m_events);
 	m_broadcast_dialog = new BroadcastDialog(m_events);
+}
+
+
+void MainWindow::on_aboutbutton_clicked()
+{
+	event_runAbout();
+}
+
+void MainWindow::on_prefsbutton_clicked()
+{
+	m_events->to_ui->pushEvent( UIEvent ( "SHOW_PREFSWINDOW" ) );
+}
+
+void MainWindow::on_quitbutton_clicked()
+{
+	Gtk::Main::quit();
+}
+
+
+void MainWindow::event_runAbout()
+{
+	m_about->run();
+	m_about->hide();
 }
 
 
