@@ -5,9 +5,17 @@
 #include "ServerNetwork.h"
 #include "strip.h"
 #include "ClientPool.h"
+#include "ServerSettings.h"
 
 ServerNetwork *g_network;
 ClientPool *g_client_pool;
+ServerSettings g_settings;
+
+
+void saveChannelList()
+{
+	g_settings.setChannelList( g_client_pool->getChannelNames() );
+}
 
 void printClientPool(ClientPool *p_client_pool)
 {
@@ -463,6 +471,8 @@ void handleMessage(Message p_message)
 					printf("to socket (%d).\n", p_message.getSocket());
 				}
 			}
+
+			saveChannelList();
 		}
 		else
 		{
@@ -491,6 +501,7 @@ void handleMessage(Message p_message)
 			fill(channel_name, MESSAGE_FILL);
 			Data response = Data(SERVER_REMOVE_CHANNEL, channel_name);
 			broadcastSend(response);
+			saveChannelList();
 		}
 		else
 		{
@@ -535,6 +546,8 @@ void handleMessage(Message p_message)
 	}
 }
 
+
+
 int main()
 {
 	printf("running server\n");
@@ -554,6 +567,13 @@ int main()
 	//setup the client pool
 	g_client_pool = new ClientPool();
 	g_client_pool->addChannel(DEFAULT_CHANNEL, "");
+
+	//load channels from file
+	std::vector<std::string> channels = g_settings.getChannelList();
+	for(int i=0;i<channels.size();i++)
+	{
+		g_client_pool->addChannel(channels.at(i), "");
+	}
 
 	printClientPool(g_client_pool);
 

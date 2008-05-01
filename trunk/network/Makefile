@@ -1,7 +1,7 @@
 OLD_OBJECTS = Channel.o ChannelList.o Client.o ClientNetwork.o Data.o Network.o ServerNetwork.o strip.o fill.o
 
 COMMON_OBJECTS = Network.o Data.o strip.o fill.o ClientPool.o Channel.o Client.o Buffer.o Message.o
-SERVER_OBJECTS = ServerNetwork.o server.o
+SERVER_OBJECTS = ServerNetwork.o ServerSettings.o server.o
 CLIENT_OBJECTS = ClientNetwork.o
 
 CFLAGS = -g -O0 -Wall

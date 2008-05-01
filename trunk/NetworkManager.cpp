@@ -1,5 +1,9 @@
 #include "NetworkManager.h"
 
+#ifdef _WIN32
+#define errno WSAGetLastError
+#endif
+
 NetworkManager::NetworkManager(UIEventQueue* p_to_ui, UIEventQueue* p_to_network)
 {
 	m_to_network = p_to_network;
@@ -129,7 +133,7 @@ void NetworkManager::run()
 			tv.tv_sec = 0;
 			tv.tv_usec = 10000;
 
-			int select_returned = select(0, &read, NULL, NULL, &tv);
+			int select_returned = select(&tv);
 			if(select_returned == -1)
 			{
 				report_error(strerror(errno));
