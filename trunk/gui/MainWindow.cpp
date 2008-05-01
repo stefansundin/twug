@@ -3,6 +3,8 @@
 
 MainWindow::MainWindow(UIEvents* p_events)
 {
+	Gtk::HBox* hbox = new Gtk::HBox();
+
 	m_events = p_events;
 
 	m_nameptr = new std::string();
@@ -27,6 +29,7 @@ MainWindow::MainWindow(UIEvents* p_events)
 
 
 	//new stuff
+	#ifdef _WIN32
 	Gtk::Button* aboutbutton = new Gtk::Button(Gtk::Stock::ABOUT);
 	aboutbutton->signal_clicked().connect(
 		sigc::mem_fun(*this,&MainWindow::on_aboutbutton_clicked));
@@ -43,6 +46,7 @@ MainWindow::MainWindow(UIEvents* p_events)
 	
 	hbox2->add(*aboutbutton);
 	hbox2->add(*prefsbutton);
+	#endif
 
 	// end new stuff
 
@@ -56,12 +60,16 @@ MainWindow::MainWindow(UIEvents* p_events)
 	broadcastbutton->signal_clicked().connect(
 		sigc::mem_fun(*this,&MainWindow::on_broadcastbutton_clicked));
 
-	Gtk::HBox* hbox = new Gtk::HBox();
+
+
 	hbox->add(*addbutton);
 	hbox->add(*broadcastbutton);
+	#ifdef _WIN32
 	hbox->add(*quitbutton);
+	
 
 	vbox->add(*hbox2);
+	#endif
 	vbox->add(m_popup);
 	vbox->add(m_button);
 	vbox->add(*m_channellist);
