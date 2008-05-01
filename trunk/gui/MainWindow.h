@@ -13,11 +13,34 @@
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/stock.h>
+#include <gtkmm/aboutdialog.h>
 
 #include "../debug.h"
 #include "UIEvents.h"
 #include "MessageHandler.h"
 #include "ChannelList.h"
+
+class AboutTwug : public Gtk::AboutDialog
+{
+private:
+	std::vector<Glib::ustring> m_credits;
+	void addCredits(Glib::ustring line)
+	{
+		m_credits.push_back(line);
+	}
+public:
+	AboutTwug()
+	{
+		addCredits("made by certain people...");
+
+		set_authors(m_credits);
+		set_name("Twug");
+		set_comments("The Voice Communications Tool");
+		set_copyright("©2007-2008 The Twug Team");
+		set_website("http://code.google.com/p/twug");
+		set_version("0.2");
+	}
+};
 
 class EntryDialog : public Gtk::MessageDialog
 {
@@ -105,7 +128,12 @@ public:
 	void event_loggingIn(std::string p_server);
 	void event_ErrorMessage(std::string p_header, std::string p_message);
 	void event_Notification(std::string p_header, std::string p_message);
+	void event_runAbout();
 protected:
+	virtual void on_aboutbutton_clicked();
+	virtual void on_prefsbutton_clicked();
+	virtual void on_quitbutton_clicked();
+
 	virtual void on_button_released();
 	virtual void on_addbutton_clicked();
 	virtual void on_broadcastbutton_clicked();
@@ -132,7 +160,7 @@ protected:
 
 	AddChannelDialog* m_add_dialog;
 	BroadcastDialog* m_broadcast_dialog;
-	
+	AboutTwug* m_about;
 };
 
 #endif //MainWindow_h

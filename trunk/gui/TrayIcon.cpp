@@ -6,12 +6,9 @@ TrayIcon::TrayIcon(UIEvents* p_events)
 #ifndef _WIN32
 	set_from_file("/usr/share/pixmaps/twug.png");
 #endif
-
-	m_restoreprefs = false;
-
 	m_events = p_events;
 
-	m_about = new AboutTwug();
+
 	m_menu = new Gtk::Menu();
 
 #ifndef _WIN32
@@ -59,8 +56,5 @@ void TrayIcon::on_action_quit()
 
 void TrayIcon::on_action_about()
 {
-	//m_about->show();
-	//m_about->present();
-	m_about->run();
-	m_about->hide();
+	m_events->to_ui->pushEvent( UIEvent ( "SHOW_ABOUT" ) );
 }
